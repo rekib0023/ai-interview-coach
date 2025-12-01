@@ -46,6 +46,7 @@ I'm building this **in public** to share the full journey: from "first commit" t
 ## 🛠 Tech Stack
 
 **Frontend:**
+
 - Next.js 14 (App Router)
 - TypeScript
 - Tailwind CSS
@@ -53,18 +54,21 @@ I'm building this **in public** to share the full journey: from "first commit" t
 - Monaco Editor (VS Code in browser)
 
 **Backend:**
+
 - FastAPI (Python)
 - SQLAlchemy (ORM)
 - Pydantic (Validation)
 - Alembic (Migrations)
 
 **AI/ML:**
+
 - OpenAI GPT-4
 - LangChain
 - Sentence Transformers
 - LanceDB (Vector storage)
 
 **Infrastructure:**
+
 - PostgreSQL
 - Redis
 - Docker & Docker Compose
@@ -84,6 +88,7 @@ ai-interview-coach/
 ```
 
 **Current Status (Day 1):**
+
 - ✅ Next.js scaffold created
 - ✅ FastAPI backend initialized
 - ✅ Docker Compose with PostgreSQL & Redis
@@ -91,6 +96,7 @@ ai-interview-coach/
 - ✅ Project structure ready for feature development
 
 ---
+
 <!--
 ## 📸 Daily Progress Gallery
 
@@ -119,9 +125,11 @@ ai-interview-coach/
 
 ---
 -->
+
 ## 🚀 Getting Started (Local Setup)
 
 ### Prerequisites
+
 - Node.js 18+
 - Python 3.11+
 - Docker & Docker Compose
@@ -155,6 +163,7 @@ uvicorn main:app --reload
 ```
 
 ### Access Points
+
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8000
 - **API Docs**: http://localhost:8000/docs
@@ -179,6 +188,15 @@ cd backend
 source venv/bin/activate
 uvicorn main:app --reload  # Auto-reload on changes
 
+# (Optional) initialize uv for project — if you want uv to manage deps & venv
+uv init   # optionally specify python version, e.g. uv init --python 3.11
+
+# Add dependencies (once)
+uv add fastapi uvicorn  # and any other dependencies required
+
+# Run backend via uv + uvicorn
+uv run uvicorn main:app --reload
+
 # Docker management
 docker-compose up -d       # Start all services
 docker-compose down        # Stop all services
@@ -190,6 +208,7 @@ docker-compose logs -f     # View logs
 Create `.env` files:
 
 **Backend (backend/.env):**
+
 ```env
 OPENAI_API_KEY=your_key_here
 DATABASE_URL=postgresql://admin:secret@localhost:5432/interview_db
@@ -197,6 +216,7 @@ REDIS_URL=redis://localhost:6379
 ```
 
 **Frontend (frontend/.env.local):**
+
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
@@ -208,12 +228,14 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 I'm building this in public and welcome contributions! Here's how you can help:
 
 ### Ways to Contribute
+
 1. **Bug Reports** - Found an issue? Open a GitHub Issue
 2. **Feature Suggestions** - What would make this better for you?
 3. **Code Improvements** - See something that could be optimized?
 4. **Documentation** - Found something unclear? Fix it!
 
 ### Contribution Workflow
+
 ```bash
 # 1. Fork the repository
 # 2. Clone your fork
@@ -233,6 +255,7 @@ git push origin feature/amazing-feature
 ```
 
 ### Before Contributing
+
 - Follow existing code style/structure
 - Add tests for new features (if applicable)
 - Update documentation as needed
@@ -249,27 +272,32 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ## 📞 Contact / Feedback
 
 **Follow the journey:**
+
 - 🐦 **Twitter**: [@rekib0023](https://twitter.com/rekib0023) - Daily updates
 - 💼 **LinkedIn**: [Rekib Ahmed](https://linkedin.com/in/rekib0023) - Weekly deep-dives
 - 📧 **Email**: rkb.ra0025@gmail.com - Direct feedback
 
 **Want to test or give feedback?**
+
 - Join as a beta tester (starting Day 28)
 - Share feature suggestions
 - Report bugs
 - Just chat about the project!
 <!--
+
 ---
 
 ## 📊 Daily Updates Archive
 
 ### Day 1 (November 4, 2024)
+
 **What I built:** Project setup & initial infrastructure
 **Key Learning:** Docker networking for multi-service apps
 **Screenshot:** [View](screenshots/days/1.png)
 **Tomorrow:** OpenAI integration & first AI-generated question
 
 ### Day 2 (Coming Tomorrow)
+
 **Planned:** OpenAI API integration, first AI interviewer prompt
 
 ---
@@ -287,12 +315,12 @@ Built with ❤️ during 100 days of #BuildInPublic
 
 ## 📈 Live Progress Tracker
 
-| Day | Status | Feature | Screenshot |
-|-----|--------|---------|------------|
-| 1 | ✅ **Complete** | Project foundation | [View](screenshots/days/1.png) |
-| 2 | 🔄 **In Progress** | OpenAI integration | Coming tomorrow |
-| 3 | 📅 **Planned** | Chat UI polish | Coming soon |
-| 4 | 📅 **Planned** | Code execution sandbox | Coming soon |
+| Day | Status             | Feature                | Screenshot                     |
+| --- | ------------------ | ---------------------- | ------------------------------ |
+| 1   | ✅ **Complete**    | Project foundation     | [View](screenshots/days/1.png) |
+| 2   | 🔄 **In Progress** | OpenAI integration     | Coming tomorrow                |
+| 3   | 📅 **Planned**     | Chat UI polish         | Coming soon                    |
+| 4   | 📅 **Planned**     | Code execution sandbox | Coming soon                    |
 
 ---
 
@@ -302,6 +330,7 @@ Built with ❤️ during 100 days of #BuildInPublic
 ---
 
 ## 🔄 Quick Links
+
 - [View Project Board](https://github.com/users/rekib0023/projects/1)
 - [Join Discord Community](https://discord.gg/your-link)
 - [Watch Demo Video](https://youtube.com/your-link)
