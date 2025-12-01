@@ -1,280 +1,310 @@
-# AI Interview Coach
+# 🚀 AI Interview Coach — 100 Days Build in Public
 
-> 🚀 Day 1/100 of Building in Public - An AI-powered technical interview preparation platform
+<div align="center">
+  
+![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.104-green?style=for-the-badge&logo=fastapi)
+![OpenAI](https://img.shields.io/badge/OpenAI-GPT4-purple?style=for-the-badge&logo=openai)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue?style=for-the-badge&logo=postgresql)
+![Docker](https://img.shields.io/badge/Docker-24-blue?style=for-the-badge&logo=docker)
+![BuildInPublic](https://img.shields.io/badge/Build-In_Public-orange?style=for-the-badge)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Twitter Follow](https://img.shields.io/twitter/follow/YourHandle?style=social)](https://twitter.com/YourHandle)
+**An AI-powered technical interview coach that adapts to your weaknesses in real-time**
 
-## 🎯 Project Overview
+[![Twitter Follow](https://img.shields.io/twitter/follow/rekib0023?style=social)](https://twitter.com/rekib0023)
+[![GitHub Stars](https://img.shields.io/github/stars/rekib0023/ai-interview-coach?style=social)](https://github.com/rekib0023/ai-interview-coach)
 
-An intelligent interview preparation platform that adapts to your skill level and provides real-time feedback. Built with modern AI to help developers ace technical interviews.
+</div>
 
-**Live Demo:** [Coming Soon]  
-**Build Progress:** Follow my [100 Days journey](https://twitter.com/rekib0023)
+---
 
-## ✨ Features (Building in Public)
+## 📖 Table of Contents
 
-- [x] Day 1: AI-powered interview question generation
-- [ ] Day 1: Basic chat interface
-- [ ] Day 2: Multi-turn conversation with context
-- [ ] Day 3: Socratic questioning mode
-- [ ] Day 4: Code execution sandbox
-- [ ] Day 5: Conversation memory system
-- [ ] Week 2: System design mode
-- [ ] Week 2: Real-time code feedback
-- [ ] Week 2: Performance analytics
+- [🎯 What is this?](#-what-is-this)
+- [🛠 Tech Stack](#-tech-stack)
+- [📁 What's in this repo (so far)](#-whats-in-this-repo-so-far)
+  <!-- [📸 Daily Progress Gallery](#-daily-progress-gallery) -->
+  <!-- [🎯 Goals & Vision (MVP → Beyond)](#-goals--vision-mvp--beyond) -->
+- [🚀 Getting Started (Local Setup)](#-getting-started-local-setup)
+- [⚡ How to Use / Run](#-how-to-use--run)
+- [🤝 How to Contribute](#-how-to-contribute)
+- [📝 License](#-license)
+- [📞 Contact / Feedback](#-contact--feedback)
+  <!-- [📊 Daily Updates Archive](#-daily-updates-archive) -->
 
-See [ROADMAP.md](./ROADMAP.md) for full feature timeline.
+---
 
-## 🛠️ Tech Stack
+## 🎯 What is this?
 
-**Frontend**
+I'm building an "AI Interview Coach" to address the limitations common in typical interview preparation: static problem sets, lack of adaptive difficulty, and absence of personalized feedback.  
+This tool will let users take mock coding interviews — with AI-generated questions — and receive real-time feedback on their code, track performance over time, and identify weak areas automatically.
+
+I'm building this **in public** to share the full journey: from "first commit" to shipping a usable platform — flaws, challenges, learnings and all.
+
+---
+
+## 🛠 Tech Stack
+
+**Frontend:**
 - Next.js 14 (App Router)
 - TypeScript
 - Tailwind CSS
 - shadcn/ui components
+- Monaco Editor (VS Code in browser)
 
-**Backend**
-- FastAPI
-- Python 3.11+
+**Backend:**
+- FastAPI (Python)
+- SQLAlchemy (ORM)
+- Pydantic (Validation)
+- Alembic (Migrations)
+
+**AI/ML:**
+- OpenAI GPT-4
 - LangChain
+- Sentence Transformers
+- LanceDB (Vector storage)
+
+**Infrastructure:**
 - PostgreSQL
 - Redis
-
-**AI/ML**
-- OpenAI GPT-4
-- LanceDB (Vector Database)
-- Text Embeddings
-
-**Infrastructure**
 - Docker & Docker Compose
-- AWS (planned)
-- GitHub Actions CI/CD
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- Node.js 18+
-- Python 3.11+
-- Docker & Docker Compose
-- OpenAI API key
-
-### Installation
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/rekib0023/ai-interview-coach.git
-cd ai-interview-coach
-```
-
-2. **Set up environment variables**
-```bash
-# Copy example env files
-cp frontend/.env.example frontend/.env.local
-cp backend/.env.example backend/.env
-
-# Add your OpenAI API key to backend/.env
-OPENAI_API_KEY=your_key_here
-```
-
-3. **Start with Docker Compose**
-```bash
-docker-compose up -d
-```
-
-4. **Or run locally**
-
-Frontend:
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Backend:
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-```
-
-Visit `http://localhost:3000` to see the app!
-
-## 📁 Project Structure
-
-```
-ai-interview-coach/
-├── frontend/                 # Next.js frontend
-│   ├── app/
-│   │   ├── (auth)/          # Authentication pages
-│   │   ├── (dashboard)/     # Main app pages
-│   │   └── api/             # API routes
-│   ├── components/          # React components
-│   │   ├── ui/              # shadcn/ui components
-│   │   ├── chat/            # Chat interface
-│   │   └── editor/          # Code editor
-│   └── lib/                 # Utilities
-│
-├── backend/                  # FastAPI backend
-│   ├── app/
-│   │   ├── api/             # API endpoints
-│   │   │   ├── chat.py
-│   │   │   ├── interview.py
-│   │   │   └── analytics.py
-│   │   ├── core/            # Core functionality
-│   │   │   ├── ai/          # AI/LLM integration
-│   │   │   ├── security.py
-│   │   │   └── config.py
-│   │   ├── models/          # Database models
-│   │   ├── services/        # Business logic
-│   │   └── main.py
-│   ├── tests/
-│   └── requirements.txt
-│
-├── docker/                   # Docker configurations
-│   ├── frontend.Dockerfile
-│   ├── backend.Dockerfile
-│   └── nginx.conf
-│
-├── docs/                     # Documentation
-│   ├── architecture.md
-│   ├── api.md
-│   └── daily-logs/          # Daily build logs
-│       ├── day-01.md
-│       └── day-02.md
-│
-└── docker-compose.yml
-```
-
-## 🧪 Testing
-
-```bash
-# Backend tests
-cd backend
-pytest
-
-# Frontend tests
-cd frontend
-npm test
-
-# E2E tests
-npm run test:e2e
-```
-
-## 📊 Build Metrics
-
-Current stats (Day 1):
-- Lines of Code: ~500
-- API Response Time: ~2s
-- Test Coverage: 0% (starting tomorrow!)
-- Commits: 5
-
-## 🤝 Contributing
-
-This is a learning project built in public! Contributions, issues, and feature requests are welcome.
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
-
-## 📝 Daily Build Logs
-
-I'm documenting everything I build, every decision I make, and every bug I encounter:
-
-- [Day 1: Initial Setup & GPT-4 Integration](./docs/daily-logs/day-01.md)
-- [Day 2: Architecture & Memory System](./docs/daily-logs/day-02.md)
-- [More coming...](./docs/daily-logs/)
-
-## 🗺️ Roadmap
-
-### Phase 1: Foundation (Days 1-7)
-- [x] Basic chat interface
-- [x] AI question generation
-- [ ] Conversation memory
-- [ ] Code execution sandbox
-
-### Phase 2: Core Features (Days 8-14)
-- [ ] System design mode
-- [ ] Real-time feedback
-- [ ] Performance analytics
-- [ ] Voice interviews
-
-### Phase 3: Advanced (Days 15-21)
-- [ ] Behavioral interviews
-- [ ] Adaptive difficulty
-- [ ] Company-specific modes
-- [ ] Interview replay
-
-### Phase 4: Polish (Days 22-30)
-- [ ] UI/UX refinement
-- [ ] Performance optimization
-- [ ] Documentation
-- [ ] Public launch
-
-See [ROADMAP.md](./ROADMAP.md) for detailed timeline.
-
-## 💡 Technical Decisions
-
-Key architectural choices explained:
-
-**Why FastAPI over Django?**
-- Async support for real-time features
-- Better performance for AI workloads
-- Modern, clean API design
-
-**Why LangChain?**
-- Simplifies LLM integration
-- Built-in memory management
-- Easy to swap AI providers
-
-**Why LanceDB over Pinecone?**
-- Local-first development
-- No vendor lock-in
-- Cost-effective for MVP
-
-See [docs/architecture.md](./docs/architecture.md) for more.
-
-## 📈 Performance Goals
-
-Target metrics by Day 30:
-- API Response Time: < 500ms
-- AI Accuracy: > 85%
-- User Satisfaction: > 4/5
-- Monthly API Cost: < $100
-
-## 🐛 Known Issues
-
-Track issues and bugs [here](https://github.com/rekib0023/ai-interview-coach/issues).
-
-Current bugs:
-- AI sometimes repeats questions (Day 1)
-- No error handling for API failures (Day 1)
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- Built during my #100DaysOfBuilding challenge
-- Inspired by the #BuildInPublic community
-- Using OpenAI's incredible GPT-4 API
-
-## 📬 Contact
-
-Rekib Ahmed - [@rekib0023](https://twitter.com/rekib0023) - rkb.ra0025@gmail.com
-
-Project Link: [https://github.com/rekib0023/ai-interview-coach](https://github.com/rekib0023/ai-interview-coach)
+- GitHub Actions (CI/CD)
 
 ---
 
-**⭐ If you find this project interesting, give it a star!**
+## 📁 What's in this repo (so far)
 
-Built with ❤️ during #100DaysOfBuilding | [Follow the journey](https://twitter.com/YourHandle)
+```
+ai-interview-coach/
+├── frontend/          # Next.js application
+├── backend/           # FastAPI application
+├── docker-compose.yml # Local development setup
+├── screenshots/       # Daily progress screenshots
+└── README.md          # You're here!
+```
+
+**Current Status (Day 1):**
+- ✅ Next.js scaffold created
+- ✅ FastAPI backend initialized
+- ✅ Docker Compose with PostgreSQL & Redis
+- ✅ Basic "Hello World" running on both ends
+- ✅ Project structure ready for feature development
+
+---
+<!--
+## 📸 Daily Progress Gallery
+
+### Week 1 (Days 1-7)
+<div align="center">
+
+| Day 1: Project Setup | Day 2: Coming Soon | Day 3: Coming Soon | Day 4: Coming Soon |
+|----------------------|---------------------|---------------------|---------------------|
+| <img src="screenshots/days/1.png" width="180" alt="Day 1 Screenshot"> | <img src="screenshots/placeholder.png" width="180" alt="Coming Soon"> | <img src="screenshots/placeholder.png" width="180" alt="Coming Soon"> | <img src="screenshots/placeholder.png" width="180" alt="Coming Soon"> |
+
+*Updated daily at 6 PM EST. Follow [@rekib0023](https://twitter.com/rekib0023) for real-time updates.*
+
+</div>
+
+---
+
+## 🎯 Goals & Vision (MVP → Beyond)
+
+| **Phase** | **What to Ship** | **Timeline** |
+|-----------|------------------|--------------|
+| **Week 1: Foundation** | Basic interview flow: generate question → run code → get AI feedback | Days 1-7 |
+| **Week 2: Core Features** | Conversation history, performance analytics, adaptive difficulty | Days 8-14 |
+| **Week 3: Advanced** | Multi-language support, system design mode, behavioral interviews | Days 15-21 |
+| **Week 4: Polish & Launch** | Testing, optimization, documentation, public launch | Days 22-30 |
+| **Beyond MVP** | Voice interviews, company-specific modes, mobile app, community features | Days 31-100 |
+
+---
+-->
+## 🚀 Getting Started (Local Setup)
+
+### Prerequisites
+- Node.js 18+ 
+- Python 3.11+
+- Docker & Docker Compose
+- Git
+
+### Quick Start
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/rekib0023/ai-interview-coach.git
+cd ai-interview-coach
+
+# 2. Start all services
+docker-compose up -d
+
+# 3. Set up frontend
+cd frontend
+npm install
+npm run dev
+
+# 4. Set up backend
+cd ../backend
+python -m venv venv
+# On Mac/Linux:
+source venv/bin/activate
+# On Windows:
+venv\Scripts\activate
+
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
+
+### Access Points
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8000
+- **API Docs**: http://localhost:8000/docs
+- **PostgreSQL**: localhost:5432
+- **Redis**: localhost:6379
+
+---
+
+## ⚡ How to Use / Run
+
+### Development Commands
+
+```bash
+# Frontend development
+cd frontend
+npm run dev      # Start dev server
+npm run build    # Production build
+npm run lint     # Code linting
+
+# Backend development
+cd backend
+source venv/bin/activate
+uvicorn main:app --reload  # Auto-reload on changes
+
+# Docker management
+docker-compose up -d       # Start all services
+docker-compose down        # Stop all services
+docker-compose logs -f     # View logs
+```
+
+### Environment Variables
+
+Create `.env` files:
+
+**Backend (backend/.env):**
+```env
+OPENAI_API_KEY=your_key_here
+DATABASE_URL=postgresql://admin:secret@localhost:5432/interview_db
+REDIS_URL=redis://localhost:6379
+```
+
+**Frontend (frontend/.env.local):**
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+---
+
+## 🤝 How to Contribute
+
+I'm building this in public and welcome contributions! Here's how you can help:
+
+### Ways to Contribute
+1. **Bug Reports** - Found an issue? Open a GitHub Issue
+2. **Feature Suggestions** - What would make this better for you?
+3. **Code Improvements** - See something that could be optimized?
+4. **Documentation** - Found something unclear? Fix it!
+
+### Contribution Workflow
+```bash
+# 1. Fork the repository
+# 2. Clone your fork
+git clone https://github.com/rekib0023/ai-interview-coach.git
+
+# 3. Create a feature branch
+git checkout -b feature/amazing-feature
+
+# 4. Make your changes
+# 5. Commit with descriptive message
+git commit -m "Add amazing feature"
+
+# 6. Push to your fork
+git push origin feature/amazing-feature
+
+# 7. Open a Pull Request
+```
+
+### Before Contributing
+- Follow existing code style/structure
+- Add tests for new features (if applicable)
+- Update documentation as needed
+- Keep PRs focused on one change
+
+---
+
+## 📝 License
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 📞 Contact / Feedback
+
+**Follow the journey:**
+- 🐦 **Twitter**: [@rekib0023](https://twitter.com/rekib0023) - Daily updates
+- 💼 **LinkedIn**: [Your LinkedIn](https://linkedin.com/in/rekib0023) - Weekly deep-dives
+- 📧 **Email**: rkb.ra0025@gmail.com - Direct feedback
+
+**Want to test or give feedback?**
+- Join as a beta tester (starting Day 28)
+- Share feature suggestions
+- Report bugs
+- Just chat about the project!
+<!--
+---
+
+## 📊 Daily Updates Archive
+
+### Day 1 (November 4, 2024)
+**What I built:** Project setup & initial infrastructure  
+**Key Learning:** Docker networking for multi-service apps  
+**Screenshot:** [View](screenshots/days/1.png)  
+**Tomorrow:** OpenAI integration & first AI-generated question
+
+### Day 2 (Coming Tomorrow)
+**Planned:** OpenAI API integration, first AI interviewer prompt
+
+---
+
+<div align="center">
+
+### ⭐ **Star this repo to follow the 100-day journey!**
+
+**"The best way to learn is to build in public"**  
+Built with ❤️ during 100 days of #BuildInPublic
+
+</div>
+
+---
+
+## 📈 Live Progress Tracker
+
+| Day | Status | Feature | Screenshot |
+|-----|--------|---------|------------|
+| 1 | ✅ **Complete** | Project foundation | [View](screenshots/days/1.png) |
+| 2 | 🔄 **In Progress** | OpenAI integration | Coming tomorrow |
+| 3 | 📅 **Planned** | Chat UI polish | Coming soon |
+| 4 | 📅 **Planned** | Code execution sandbox | Coming soon |
+
+---
+
+**Last Updated:** November 4, 2024  
+**Next Update:** Daily at 6 PM EST
+
+---
+
+## 🔄 Quick Links
+- [View Project Board](https://github.com/users/rekib0023/projects/1)
+- [Join Discord Community](https://discord.gg/your-link)
+- [Watch Demo Video](https://youtube.com/your-link)
+- [Read Blog Updates](https://your-blog.com)
+
+-->
