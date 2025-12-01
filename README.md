@@ -1,7 +1,7 @@
 # 🚀 AI Interview Coach — 100 Days Build in Public
 
 <div align="center">
-  
+
 ![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.104-green?style=for-the-badge&logo=fastapi)
 ![OpenAI](https://img.shields.io/badge/OpenAI-GPT4-purple?style=for-the-badge&logo=openai)
@@ -36,7 +36,7 @@
 
 ## 🎯 What is this?
 
-I'm building an "AI Interview Coach" to address the limitations common in typical interview preparation: static problem sets, lack of adaptive difficulty, and absence of personalized feedback.  
+I'm building an "AI Interview Coach" to address the limitations common in typical interview preparation: static problem sets, lack of adaptive difficulty, and absence of personalized feedback.
 This tool will let users take mock coding interviews — with AI-generated questions — and receive real-time feedback on their code, track performance over time, and identify weak areas automatically.
 
 I'm building this **in public** to share the full journey: from "first commit" to shipping a usable platform — flaws, challenges, learnings and all.
@@ -122,7 +122,7 @@ ai-interview-coach/
 ## 🚀 Getting Started (Local Setup)
 
 ### Prerequisites
-- Node.js 18+ 
+- Node.js 18+
 - Python 3.11+
 - Docker & Docker Compose
 - Git
@@ -250,7 +250,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 **Follow the journey:**
 - 🐦 **Twitter**: [@rekib0023](https://twitter.com/rekib0023) - Daily updates
-- 💼 **LinkedIn**: [Your LinkedIn](https://linkedin.com/in/rekib0023) - Weekly deep-dives
+- 💼 **LinkedIn**: [Rekib Ahmed](https://linkedin.com/in/rekib0023) - Weekly deep-dives
 - 📧 **Email**: rkb.ra0025@gmail.com - Direct feedback
 
 **Want to test or give feedback?**
@@ -264,9 +264,9 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ## 📊 Daily Updates Archive
 
 ### Day 1 (November 4, 2024)
-**What I built:** Project setup & initial infrastructure  
-**Key Learning:** Docker networking for multi-service apps  
-**Screenshot:** [View](screenshots/days/1.png)  
+**What I built:** Project setup & initial infrastructure
+**Key Learning:** Docker networking for multi-service apps
+**Screenshot:** [View](screenshots/days/1.png)
 **Tomorrow:** OpenAI integration & first AI-generated question
 
 ### Day 2 (Coming Tomorrow)
@@ -278,7 +278,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ### ⭐ **Star this repo to follow the 100-day journey!**
 
-**"The best way to learn is to build in public"**  
+**"The best way to learn is to build in public"**
 Built with ❤️ during 100 days of #BuildInPublic
 
 </div>
@@ -296,7 +296,7 @@ Built with ❤️ during 100 days of #BuildInPublic
 
 ---
 
-**Last Updated:** November 4, 2024  
+**Last Updated:** November 4, 2024
 **Next Update:** Daily at 6 PM EST
 
 ---
