@@ -160,6 +160,15 @@ venv\Scripts\activate
 
 pip install -r requirements.txt
 uvicorn main:app --reload
+
+# (Optional) initialize uv for project — if you want uv to manage deps & venv
+uv init   # optionally specify python version, e.g. uv init --python 3.11
+
+# Add dependencies (once)
+uv add fastapi uvicorn  # and any other dependencies required
+
+# Run backend via uv + uvicorn
+uv run uvicorn main:app --reload
 ```
 
 ### Access Points
@@ -187,15 +196,6 @@ npm run lint     # Code linting
 cd backend
 source venv/bin/activate
 uvicorn main:app --reload  # Auto-reload on changes
-
-# (Optional) initialize uv for project — if you want uv to manage deps & venv
-uv init   # optionally specify python version, e.g. uv init --python 3.11
-
-# Add dependencies (once)
-uv add fastapi uvicorn  # and any other dependencies required
-
-# Run backend via uv + uvicorn
-uv run uvicorn main:app --reload
 
 # Docker management
 docker-compose up -d       # Start all services
