@@ -1,10 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import { SocialLogins } from "@/components/auth/social-logins";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -12,13 +9,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Code2, ArrowLeft } from "lucide-react";
-import { motion } from "framer-motion";
-import { useState } from "react";
-import { SocialLogins } from "@/components/auth/social-logins";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
 import { useAuthForm } from "@/hooks/use-auth-form";
 import { useFormState } from "@/hooks/use-form-state";
-import { PasswordInput } from "@/components/ui/password-input";
+import { motion } from "framer-motion";
+import { ArrowLeft, Code2 } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 
 export default function SignUpPage() {
   const [agreeToTerms, setAgreeToTerms] = useState(false);

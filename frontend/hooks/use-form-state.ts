@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 
 type FormState<T> = {
     [K in keyof T]: T[K];

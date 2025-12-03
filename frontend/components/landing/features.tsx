@@ -7,18 +7,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  MessageSquare,
-  Code2,
-  BarChart3,
-  Sparkles,
-  GitBranch,
-  Zap,
-  Brain,
-  Target,
-  Clock,
-} from "lucide-react";
 import { motion } from "framer-motion";
+import {
+  BarChart3,
+  Brain,
+  Clock,
+  Code2,
+  GitBranch,
+  MessageSquare,
+  Sparkles,
+  Target,
+  Zap,
+} from "lucide-react";
 
 const features = [
   {

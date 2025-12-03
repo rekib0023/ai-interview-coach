@@ -1,8 +1,8 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { TrendingUp, Users, Star, Award } from "lucide-react";
 import { motion } from "framer-motion";
+import { Award, Star, TrendingUp, Users } from "lucide-react";
 
 const stats = [
   {

@@ -1,11 +1,10 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Play, Sparkles, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { ArrowRight, CheckCircle2, Play, Sparkles } from "lucide-react";
+import Link from "next/link";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },

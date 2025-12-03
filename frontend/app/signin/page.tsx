@@ -1,11 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { SocialLogins } from "@/components/auth/social-logins";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -13,18 +9,23 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Code2, ArrowLeft } from "lucide-react";
-import { motion } from "framer-motion";
-import { useState } from "react";
-import { SocialLogins } from "@/components/auth/social-logins";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
 import { useAuthForm } from "@/hooks/use-auth-form";
 import { useFormState } from "@/hooks/use-form-state";
-import { PasswordInput } from "@/components/ui/password-input";
+import { motion } from "framer-motion";
+import { ArrowLeft, Code2 } from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 
 export default function SignInPage() {
   const searchParams = useSearchParams();
   const urlError = searchParams.get("error");
   const oauthProvider = searchParams.get("provider");
+  const message = searchParams.get("message");
 
   const [rememberMe, setRememberMe] = useState(false);
 
@@ -72,6 +73,12 @@ export default function SignInPage() {
       "The identity provider response looked invalid, so we blocked the login for your security.";
   }
 
+  // Handle session expired message
+  let sessionMessage: string | null = null;
+  if (message === "session_expired") {
+    sessionMessage = "Your session has expired. Please sign in again.";
+  }
+
   const combinedError = oauthErrorMessage || error;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -114,6 +121,11 @@ export default function SignInPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="pb-8">
+            {sessionMessage && (
+              <div className="mb-4 p-3 text-sm text-blue-600 bg-blue-50 border border-blue-200 rounded-md">
+                {sessionMessage}
+              </div>
+            )}
             {combinedError && (
               <div className="mb-4 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
                 {combinedError}
