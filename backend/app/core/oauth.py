@@ -4,7 +4,7 @@ from app.core.config import settings
 
 oauth = OAuth()
 
-# Google
+# Google OAuth
 oauth.register(
     name="google",
     client_id=settings.GOOGLE_CLIENT_ID,
@@ -18,4 +18,14 @@ oauth.register(
     redirect_uri=settings.OAUTH_REDIRECT_URI,
     jwks_uri="https://www.googleapis.com/oauth2/v3/certs",
     client_kwargs={"scope": "openid profile email"},
+)
+
+# GitHub OAuth
+oauth.register(
+    name="github",
+    client_id=settings.GITHUB_CLIENT_ID,
+    client_secret=settings.GITHUB_CLIENT_SECRET,
+    authorize_url="https://github.com/login/oauth/authorize",
+    access_token_url="https://github.com/login/oauth/access_token",
+    client_kwargs={"scope": "user:email"},
 )

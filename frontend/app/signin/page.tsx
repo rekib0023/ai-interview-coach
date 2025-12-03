@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +22,10 @@ import { useFormState } from "@/hooks/use-form-state";
 import { PasswordInput } from "@/components/ui/password-input";
 
 export default function SignInPage() {
+  const searchParams = useSearchParams();
+  const urlError = searchParams.get("error");
+  const oauthProvider = searchParams.get("provider");
+
   const [rememberMe, setRememberMe] = useState(false);
 
   const { isLoading, error, handleLogin } = useAuthForm();
@@ -43,6 +48,31 @@ export default function SignInPage() {
         },
       }
     );
+
+  let oauthErrorMessage: string | null = null;
+  if (urlError === "account_already_exists") {
+    if (oauthProvider === "google") {
+      oauthErrorMessage =
+        "An account already exists with Google. Please continue with Google or use email sign in with the same address.";
+    } else if (oauthProvider === "github") {
+      oauthErrorMessage =
+        "An account already exists with GitHub. Please continue with GitHub or use email sign in with the same address.";
+    } else {
+      oauthErrorMessage =
+        "An account already exists with a different sign-in method. Please use the provider you originally used.";
+    }
+  } else if (urlError === "oauth_failed") {
+    oauthErrorMessage =
+      "Sign-in with the provider failed. Please try again or use email sign in.";
+  } else if (urlError === "missing_user_info") {
+    oauthErrorMessage =
+      "We couldn't get your email from the provider. Please ensure your email is available or use email sign in.";
+  } else if (urlError === "invalid_issuer") {
+    oauthErrorMessage =
+      "The identity provider response looked invalid, so we blocked the login for your security.";
+  }
+
+  const combinedError = oauthErrorMessage || error;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,9 +114,9 @@ export default function SignInPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="pb-8">
-            {error && (
+            {combinedError && (
               <div className="mb-4 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
-                {error}
+                {combinedError}
               </div>
             )}
             <form onSubmit={handleSubmit} className="space-y-4">

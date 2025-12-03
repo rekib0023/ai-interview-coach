@@ -24,7 +24,8 @@ export function useAuthForm(options: UseAuthFormOptions = {}) {
                 password,
             });
 
-            await login(response.access_token);
+            // Backend sets HTTP-only cookie and returns user info
+            await login(response.user);
             options.onSuccess?.();
         } catch (err: any) {
             const errorMessage = err.message || "Login failed. Please try again.";
@@ -40,24 +41,14 @@ export function useAuthForm(options: UseAuthFormOptions = {}) {
         setError("");
 
         try {
-            // Create user account (backend now automatically logs them in via cookie)
-            await authApi.signup({
+            const response = await authApi.signup({
                 email,
                 password,
                 full_name: fullName,
             });
 
-            // Since backend sets HTTP-only cookie, we can't access the token
-            // Instead, we'll fetch the current user to update the auth state
-            try {
-                const user = await authApi.getCurrentUser("");
-                // Manually update auth state since we're using cookies now
-                await login("cookie-based-auth"); // Placeholder token
-            } catch {
-                // If getCurrentUser fails, still consider signup successful
-                // The cookie is set, user just needs to refresh or navigate
-            }
-
+            // Use returned user to hydrate auth state
+            await login(response.user);
             options.onSuccess?.();
         } catch (err: any) {
             const errorMessage = err.message || "Signup failed. Please try again.";

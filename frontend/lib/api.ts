@@ -11,9 +11,10 @@ interface SignupRequest {
     full_name?: string;
 }
 
+// Backend AuthResponse currently returns user + message
 interface AuthResponse {
-    access_token: string;
-    token_type: string;
+    user: User;
+    message: string;
 }
 
 interface User {
@@ -38,11 +39,12 @@ async function apiRequest<T>(
     const url = `${API_BASE_URL}/api/v1${endpoint}`;
 
     const response = await fetch(url, {
+        credentials: "include",
+        ...options,
         headers: {
             "Content-Type": "application/json",
-            ...options.headers,
+            ...(options.headers || {}),
         },
-        ...options,
     });
 
     if (!response.ok) {
@@ -66,6 +68,7 @@ export const authApi = {
         const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
             method: "POST",
             body: formData,
+            credentials: "include",
         });
 
         if (!response.ok) {
@@ -79,19 +82,16 @@ export const authApi = {
         return response.json();
     },
 
-    async signup(userData: SignupRequest): Promise<User> {
-        return apiRequest<User>("/auth/signup", {
+    async signup(userData: SignupRequest): Promise<AuthResponse> {
+        return apiRequest<AuthResponse>("/auth/signup", {
             method: "POST",
             body: JSON.stringify(userData),
         });
     },
 
-    async getCurrentUser(token: string): Promise<User> {
-        return apiRequest<User>("/auth/me", {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
+    async getCurrentUser(): Promise<User> {
+        // Backend reads token from HTTP-only cookie
+        return apiRequest<User>("/auth/me");
     },
 
     async logout(): Promise<{ message: string }> {

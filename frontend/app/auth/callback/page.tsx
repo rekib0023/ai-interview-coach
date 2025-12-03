@@ -10,20 +10,17 @@ function CallbackContent() {
   const { login } = useAuth();
 
   useEffect(() => {
-    const token = searchParams.get("token");
     const error = searchParams.get("error");
 
-    if (token) {
-      // Use auth context to handle login
-      login(token);
-    } else if (error) {
-      // Redirect to signin with error
+    if (error) {
       router.push(`/signin?error=${error}`);
-    } else {
-      // Fallback
-      router.push("/signin");
+      return;
     }
-  }, [router, searchParams]);
+
+    login().catch(() => {
+      router.push("/signin?error=oauth_failed");
+    });
+  }, [router, searchParams, login]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-stone-50">

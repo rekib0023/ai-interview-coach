@@ -8,7 +8,7 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   isLoading: boolean;
-  login: (token: string) => Promise<void>;
+  login: (initialUser?: User | null) => Promise<void>;
   logout: () => void;
 }
 
@@ -20,58 +20,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // Check for existing token on mount
+  // Hydrate user from HTTP-only cookie on mount
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    if (storedToken) {
-      setToken(storedToken);
-      // Fetch user data from backend using token
-      authApi
-        .getCurrentUser(storedToken)
-        .then((userData) => {
-          setUser(userData);
-        })
-        .catch((error) => {
-          console.error("Failed to fetch user data:", error);
-          // Token might be invalid, clear it
-          localStorage.removeItem("token");
-          document.cookie =
-            "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
-    } else {
-      setIsLoading(false);
-    }
+    authApi
+      .getCurrentUser()
+      .then((userData) => {
+        setUser(userData);
+      })
+      .catch((error) => {
+        // Most likely unauthenticated; log for debugging but don't block UI
+        console.error("Failed to fetch user data:", error);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   }, []);
 
-  const login = async (newToken: string) => {
+  const login = async (initialUser?: User | null) => {
     try {
-      setToken(newToken);
-      localStorage.setItem("token", newToken);
-      document.cookie = `token=${newToken}; path=/; max-age=86400; SameSite=Lax`;
+      setIsLoading(true);
 
-      // Fetch user data from backend
-      const userData = await authApi.getCurrentUser(newToken);
-      setUser(userData);
+      if (initialUser) {
+        setUser(initialUser);
+      } else {
+        // Fetch current user based on HTTP-only cookie set by the backend
+        const userData = await authApi.getCurrentUser();
+        setUser(userData);
+      }
+
+      // We no longer rely on a client-side token, but keep the field for compatibility
+      setToken(null);
 
       router.push("/dashboard");
     } catch (error) {
       console.error("Login failed:", error);
-      // Clear invalid token
+      setUser(null);
       setToken(null);
-      localStorage.removeItem("token");
-      document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const logout = () => {
     setToken(null);
     setUser(null);
-    localStorage.removeItem("token");
-    document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     router.push("/signin");
   };
 

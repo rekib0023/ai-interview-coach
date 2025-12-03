@@ -11,6 +11,7 @@ from app import crud, schemas
 from app.api import deps
 from app.core import security
 from app.core.config import settings
+from app.core.cookies import clear_auth_cookie, set_auth_cookie
 from app.models.user import User
 
 router = APIRouter()
@@ -77,17 +78,13 @@ def login(
     # Create response with user data using schema
     response_data = schemas.AuthResponse(user=user, message="Login successful")
 
-    # Create JSON response
     response = JSONResponse(content=response_data.model_dump())
 
-    # Set HTTP-only cookie
-    response.set_cookie(
-        key="access_token",
-        value=access_token,
-        httponly=True,
-        secure=True,  # Ensure HTTPS in production
-        samesite="strict",
-        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,  # Convert to seconds
+    # Set HTTP-only cookie via shared helper
+    set_auth_cookie(
+        response,
+        token=access_token,
+        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
 
     return response
@@ -127,13 +124,10 @@ def create_user_signup(
     response = JSONResponse(content=response_data.model_dump())
 
     # Set HTTP-only cookie
-    response.set_cookie(
-        key="access_token",
-        value=access_token,
-        httponly=True,
-        secure=True,  # Ensure HTTPS in production
-        samesite="strict",
-        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,  # Convert to seconds
+    set_auth_cookie(
+        response,
+        token=access_token,
+        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
 
     return response
@@ -156,13 +150,6 @@ def logout():
     response = JSONResponse(content=response_data.model_dump())
 
     # Clear the access token cookie
-    response.set_cookie(
-        key="access_token",
-        value="",
-        httponly=True,
-        secure=True,
-        samesite="strict",
-        max_age=0,  # Expire immediately
-    )
+    clear_auth_cookie(response)
 
     return response
