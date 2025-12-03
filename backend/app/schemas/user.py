@@ -45,3 +45,13 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     email: Optional[str] = None
+
+
+# Auth response schemas
+class AuthResponse(BaseModel):
+    user: User
+    message: str
+
+
+class LogoutResponse(BaseModel):
+    message: str

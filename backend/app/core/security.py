@@ -1,18 +1,36 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any, Union
 
-from fastapi import Cookie, HTTPException
+import bcrypt
 from jose import jwt
-from passlib.context import CryptContext
 
 from app.core.config import settings
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def get_password_hash(password: str) -> str:
+    """Hash a password using bcrypt with proper 72-byte limit handling."""
+    password_bytes = password.encode("utf-8")
+
+    # Generate salt and hash the password
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(password_bytes, salt).decode("utf-8")
+
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify a password against its hash."""
+    password_bytes = plain_password.encode("utf-8")
+
+    # Convert hash back to bytes if it's a string
+    if isinstance(hashed_password, str):
+        hashed_password = hashed_password.encode("utf-8")
+
+    return bcrypt.checkpw(password_bytes, hashed_password)
 
 
 def create_access_token(
     subject: Union[str, Any], expires_delta: timedelta = None
 ) -> str:
+    """Create a JWT access token."""
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
@@ -25,28 +43,3 @@ def create_access_token(
         to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
     )
     return encoded_jwt
-
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
-
-
-def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
-
-
-def get_current_user(token: str = Cookie(None)):
-    if not token:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    try:
-        payload = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
-        )
-        subject = payload.get("sub")
-        if subject is None:
-            raise HTTPException(status_code=401, detail="Not authenticated")
-        return subject
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Token expired")
-    except jwt.JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
