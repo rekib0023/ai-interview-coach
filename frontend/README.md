@@ -1,3 +1,18 @@
+# AI Interview Coach - Frontend
+
+Modern, animated landing page for the AI Interview Coach platform built with Next.js 14, TypeScript, Tailwind CSS, shadcn/ui, and Framer Motion.
+
+## ✨ Features
+
+- **Smooth Animations**: Beautiful entrance and scroll animations powered by Framer Motion
+- **Complete Landing Page**: Hero, Stats, Features, How It Works, Pricing, CTA sections
+- **Authentication Pages**: Sign In, Sign Up, and Forgot Password pages
+- **Pricing Section**: Complete 3-tier pricing (Free, Pro, Enterprise)
+- **Responsive Design**: Fully responsive across mobile, tablet, and desktop
+- **shadcn/ui Components**: Professional UI component library
+- **Dark Mode**: Built-in dark mode support
+- **Performance Optimized**: Server components with minimal client-side JavaScript
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
