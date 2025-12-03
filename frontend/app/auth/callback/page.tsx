@@ -20,7 +20,7 @@ function CallbackContent() {
     login().catch(() => {
       router.push("/signin?error=oauth_failed");
     });
-  }, [router, searchParams, login]);
+  }, [router, searchParams]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-stone-50">
