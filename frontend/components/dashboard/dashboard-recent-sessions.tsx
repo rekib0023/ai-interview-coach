@@ -21,7 +21,8 @@ import {
   TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
-import { cardVariants, itemVariants } from "./shared-animation-variants";
+import { DashboardCard } from "./dashboard-card";
+import { itemVariants } from "./shared-animation-variants";
 
 interface Interview {
   id: number;
@@ -33,12 +34,6 @@ interface Interview {
   trend?: "up" | "down" | "same";
 }
 
-interface RecentSessionsTableProps {
-  interviews: Interview[];
-  onViewDetails?: (id: number) => void;
-  onViewAnalytics?: (id: number) => void;
-}
-
 interface DashboardRecentSessionsSectionProps {
   interviews: Interview[];
   onViewAll?: () => void;
@@ -47,17 +42,17 @@ interface DashboardRecentSessionsSectionProps {
 const difficultyConfig = {
   Easy: {
     badge:
-      "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800",
+      "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800",
     dot: "bg-emerald-500",
   },
   Medium: {
     badge:
-      "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800",
+      "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800",
     dot: "bg-amber-500",
   },
   Hard: {
     badge:
-      "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950 dark:text-rose-300 dark:border-rose-800",
+      "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800",
     dot: "bg-rose-500",
   },
 };
@@ -73,59 +68,41 @@ export function DashboardRecentSessionsSection({
   onViewAll,
 }: DashboardRecentSessionsSectionProps) {
   return (
-    <motion.div
-      variants={cardVariants}
-      initial="hidden"
-      animate="visible"
-      transition={{ duration: 0.3, delay: 0.5 }}
-      className="space-y-4"
-    >
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="space-y-1">
-          <h2 className="text-lg font-semibold">Recent Sessions</h2>
-          <p className="text-sm text-muted-foreground">
-            Review your latest interview performance
-          </p>
-        </div>
+    <DashboardCard
+      title="Recent Sessions"
+      description="Review your latest interview performance"
+      action={
         <Button
           variant="ghost"
           size="sm"
-          className="gap-1 text-muted-foreground hover:text-foreground -mt-1"
+          className="gap-1 text-muted-foreground hover:text-foreground h-8"
           onClick={onViewAll}
         >
           <span className="text-sm">View All</span>
           <ArrowRight className="h-3.5 w-3.5" />
         </Button>
-      </div>
-
-      {/* Table */}
+      }
+      className="col-span-full"
+    >
       {interviews.length === 0 ? (
         <EmptyState />
       ) : (
-        <>
+        <div className="space-y-4">
           {/* Desktop View */}
-          <div className="hidden md:block rounded-lg border bg-card overflow-hidden">
-            {/* Table Header */}
-            <div className="bg-muted/30 px-6 py-3 border-b">
+          <div className="hidden md:block rounded-md border border-border/50 overflow-hidden">
+            <div className="bg-muted/40 px-6 py-3 border-b border-border/50">
               <div className="grid grid-cols-12 gap-4 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                <div className="col-span-4">Topic</div>
+                <div className="col-span-5">Topic</div>
                 <div className="col-span-3">Date & Time</div>
                 <div className="col-span-2">Difficulty</div>
                 <div className="col-span-2 text-right">Score</div>
-                <div className="col-span-1 text-right">Actions</div>
               </div>
             </div>
-
-            {/* Table Body */}
-            <div>
+            <div className="divide-y divide-border/50 bg-card">
               {interviews.map((interview, index) => (
                 <motion.div
                   key={interview.id}
                   variants={itemVariants}
-                  initial="hidden"
-                  animate="visible"
-                  transition={{ delay: index * 0.05, duration: 0.2 }}
                 >
                   <DesktopSessionRow
                     interview={interview}
@@ -143,50 +120,37 @@ export function DashboardRecentSessionsSection({
               <motion.div
                 key={interview.id}
                 variants={itemVariants}
-                initial="hidden"
-                animate="visible"
-                transition={{ delay: index * 0.05, duration: 0.2 }}
               >
                 <MobileSessionCard interview={interview} />
               </motion.div>
             ))}
           </div>
-        </>
+        </div>
       )}
-    </motion.div>
+    </DashboardCard>
   );
 }
 
-// Desktop Row Component
 function DesktopSessionRow({
   interview,
-  index,
-  totalRows,
 }: {
   interview: Interview;
   index: number;
   totalRows: number;
 }) {
-  const isLast = index === totalRows - 1;
-
   return (
-    <div
-      className={cn(
-        "group hover:bg-muted/50 transition-colors",
-        !isLast && "border-b"
-      )}
-    >
+    <div className="group hover:bg-muted/30 transition-colors">
       <div className="grid grid-cols-12 gap-4 items-center px-6 py-4">
         {/* Topic */}
-        <div className="col-span-4 flex items-center gap-3 min-w-0">
+        <div className="col-span-5 flex items-center gap-3 min-w-0">
           <span
             className={cn(
-              "h-2 w-2 rounded-full flex-shrink-0",
+              "h-2 w-2 rounded-full flex-shrink-0 ring-4 ring-background",
               difficultyConfig[interview.difficulty].dot
             )}
           />
           <div className="min-w-0">
-            <p className="font-medium text-sm truncate">{interview.topic}</p>
+            <p className="font-medium text-sm truncate group-hover:text-primary transition-colors">{interview.topic}</p>
             {interview.duration && (
               <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                 <Clock className="h-3 w-3" />
@@ -206,7 +170,7 @@ function DesktopSessionRow({
           <Badge
             variant="outline"
             className={cn(
-              "text-xs font-medium",
+              "text-xs font-medium border",
               difficultyConfig[interview.difficulty].badge
             )}
           >
@@ -214,80 +178,69 @@ function DesktopSessionRow({
           </Badge>
         </div>
 
-        {/* Score */}
-        <div className="col-span-2 flex items-center justify-end gap-2">
-          {interview.trend && (
-            <>
-              {interview.trend === "up" && (
-                <TrendingUp className="h-4 w-4 text-emerald-500" />
-              )}
-              {interview.trend === "down" && (
-                <TrendingDown className="h-4 w-4 text-rose-500" />
-              )}
-              {interview.trend === "same" && (
-                <Minus className="h-4 w-4 text-muted-foreground" />
-              )}
-            </>
-          )}
-          <span
-            className={cn(
-              "text-sm font-semibold",
-              getScoreColor(interview.score)
-            )}
-          >
-            {interview.score}%
-          </span>
-        </div>
+        {/* Score & Actions */}
+        <div className="col-span-2 flex items-center justify-end gap-3">
+            <div className="flex flex-col items-end">
+                <div className="flex items-center gap-1.5">
+                    <span
+                        className={cn(
+                        "text-sm font-bold tabular-nums",
+                        getScoreColor(interview.score)
+                        )}
+                    >
+                        {interview.score}%
+                    </span>
+                    {interview.trend && (
+                        <span>
+                        {interview.trend === "up" && (
+                            <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
+                        )}
+                        {interview.trend === "down" && (
+                            <TrendingDown className="h-3.5 w-3.5 text-rose-500" />
+                        )}
+                        {interview.trend === "same" && (
+                            <Minus className="h-3.5 w-3.5 text-muted-foreground" />
+                        )}
+                        </span>
+                    )}
+                </div>
+            </div>
 
-        {/* Actions */}
-        <div className="col-span-1 flex items-center justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-            asChild
-          >
-            <Link href={`/dashboard/sessions/${interview.id}`}>
-              <Eye className="h-4 w-4" />
-            </Link>
-          </Button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link href={`/dashboard/sessions/${interview.id}`}>
-                  <Eye className="mr-2 h-4 w-4" />
-                  View Details
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href={`/dashboard/analytics/${interview.id}`}>
-                  <BarChart3 className="mr-2 h-4 w-4" />
-                  View Analytics
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Download className="mr-2 h-4 w-4" />
-                Export Session
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                    <MoreVertical className="h-4 w-4" />
+                </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                    <Link href={`/dashboard/sessions/${interview.id}`}>
+                    <Eye className="mr-2 h-4 w-4" />
+                    View Details
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link href={`/dashboard/analytics/${interview.id}`}>
+                    <BarChart3 className="mr-2 h-4 w-4" />
+                    View Analytics
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                    <Download className="mr-2 h-4 w-4" />
+                    Export Session
+                </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
         </div>
       </div>
     </div>
   );
 }
 
-// Mobile Card Component
 function MobileSessionCard({ interview }: { interview: Interview }) {
   return (
-    <div className="rounded-lg border bg-card p-4 hover:bg-muted/50 transition-colors">
+    <div className="rounded-lg border border-border/50 bg-card p-4 hover:border-border transition-colors">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <span
@@ -301,7 +254,7 @@ function MobileSessionCard({ interview }: { interview: Interview }) {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 text-muted-foreground">
               <MoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -344,7 +297,7 @@ function MobileSessionCard({ interview }: { interview: Interview }) {
         <Badge
           variant="outline"
           className={cn(
-            "text-xs font-medium",
+            "text-xs font-medium border",
             difficultyConfig[interview.difficulty].badge
           )}
         >
@@ -367,7 +320,7 @@ function MobileSessionCard({ interview }: { interview: Interview }) {
           )}
           <span
             className={cn(
-              "text-sm font-semibold",
+              "text-sm font-bold tabular-nums",
               getScoreColor(interview.score)
             )}
           >
@@ -379,18 +332,17 @@ function MobileSessionCard({ interview }: { interview: Interview }) {
   );
 }
 
-// Empty State
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center py-12 px-4 text-center border rounded-lg bg-muted/20">
+    <div className="flex flex-col items-center justify-center py-12 px-4 text-center border-dashed border-2 rounded-lg bg-muted/10">
       <div className="rounded-full bg-muted p-4 mb-4">
         <BarChart3 className="h-8 w-8 text-muted-foreground" />
       </div>
       <h3 className="text-base font-semibold mb-1">No sessions yet</h3>
-      <p className="text-sm text-muted-foreground mb-4">
+      <p className="text-sm text-muted-foreground mb-4 max-w-xs mx-auto">
         Start your first interview to see your progress here
       </p>
-      <Button>Start Interview</Button>
+      <Button variant="outline">Start Interview</Button>
     </div>
   );
 }

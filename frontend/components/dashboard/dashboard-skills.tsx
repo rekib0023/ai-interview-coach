@@ -1,16 +1,15 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
   BarChart3,
-  LucideIcon,
   TrendingDown,
   TrendingUp
 } from "lucide-react";
-import { cardVariants, itemVariants } from "./shared-animation-variants";
+import { DashboardCard } from "./dashboard-card";
+import { itemVariants } from "./shared-animation-variants";
 
 interface SkillMetric {
   name: string;
@@ -32,24 +31,30 @@ export function DashboardSkillsSection({
   onSkillClick,
 }: DashboardSkillsSectionProps) {
   return (
-    <motion.div
-      variants={cardVariants}
-      initial="hidden"
-      animate="visible"
-      transition={{ duration: 0.3, delay: 0.3 }}
-      className="grid grid-cols-1 gap-6 lg:grid-cols-2"
-    >
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       {/* Areas to Improve */}
-      <div className="space-y-4">
-        <SectionHeader
-          icon={TrendingUp}
-          iconColor="text-amber-500"
-          title="Areas to Improve"
-          subtitle="Focus on these for maximum growth"
-          onViewAll={() => onViewAll?.("improve")}
-        />
-        <Card className="border-border/50 shadow-sm">
-          <CardContent className="pt-6 space-y-5">
+      <DashboardCard
+        title="Areas to Improve"
+        description="Focus on these for maximum growth"
+        icon={<TrendingUp className="h-5 w-5 text-amber-500" />}
+        action={
+          onViewAll && (
+            <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1 text-muted-foreground hover:text-foreground h-8"
+                onClick={() => onViewAll("improve")}
+            >
+                <span className="text-sm">View All</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+            </Button>
+          )
+        }
+        containerClassName="h-full"
+        className="h-full flex flex-col"
+        contentClassName="flex-1"
+      >
+        <div className="space-y-5">
             {areasToImprove.map((skill, index) => (
               <SkillItem
                 key={skill.name}
@@ -59,21 +64,32 @@ export function DashboardSkillsSection({
                 onClick={(name) => onSkillClick?.(name, "improve")}
               />
             ))}
-          </CardContent>
-        </Card>
-      </div>
+        </div>
+      </DashboardCard>
 
       {/* Strengths */}
-      <div className="space-y-4">
-        <SectionHeader
-          icon={BarChart3}
-          iconColor="text-emerald-500"
-          title="Your Strengths"
-          subtitle="Keep practicing to maintain excellence"
-          onViewAll={() => onViewAll?.("strengths")}
-        />
-        <Card className="border-border/50 shadow-sm">
-          <CardContent className="pt-6 space-y-5">
+      <DashboardCard
+        title="Your Strengths"
+        description="Keep practicing to maintain excellence"
+        icon={<BarChart3 className="h-5 w-5 text-emerald-500" />}
+        action={
+          onViewAll && (
+            <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1 text-muted-foreground hover:text-foreground h-8"
+                onClick={() => onViewAll("strengths")}
+            >
+                <span className="text-sm">View All</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+            </Button>
+          )
+        }
+        containerClassName="h-full"
+        className="h-full flex flex-col"
+        contentClassName="flex-1"
+      >
+         <div className="space-y-5">
             {strengths.map((skill, index) => (
               <SkillItem
                 key={skill.name}
@@ -83,49 +99,8 @@ export function DashboardSkillsSection({
                 onClick={(name) => onSkillClick?.(name, "strengths")}
               />
             ))}
-          </CardContent>
-        </Card>
-      </div>
-    </motion.div>
-  );
-}
-
-// Section Header Component
-interface SectionHeaderProps {
-  icon: LucideIcon;
-  iconColor: string;
-  title: string;
-  subtitle: string;
-  onViewAll?: () => void;
-}
-
-function SectionHeader({
-  icon: Icon,
-  iconColor,
-  title,
-  subtitle,
-  onViewAll,
-}: SectionHeaderProps) {
-  return (
-    <div className="flex items-start justify-between">
-      <div className="space-y-1">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <Icon className={cn("h-5 w-5", iconColor)} />
-          {title}
-        </h2>
-        <p className="text-sm text-muted-foreground">{subtitle}</p>
-      </div>
-      {onViewAll && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="gap-1 text-muted-foreground hover:text-foreground -mt-1"
-          onClick={onViewAll}
-        >
-          <span className="text-sm">View All</span>
-          <ArrowRight className="h-3.5 w-3.5" />
-        </Button>
-      )}
+         </div>
+      </DashboardCard>
     </div>
   );
 }
@@ -147,14 +122,10 @@ function SkillItem({ skill, progressColor, onClick, index }: SkillItemProps) {
 
   // Determine if this is a high-performing skill
   const isExcellent = progress >= 90;
-  const isGood = progress >= 75 && progress < 90;
 
   return (
     <motion.div
       variants={itemVariants}
-      initial="hidden"
-      animate="visible"
-      transition={{ delay: index * 0.1, duration: 0.3 }}
       className={cn(
         "space-y-2 rounded-lg p-2 -mx-2 transition-colors",
         clickable && "cursor-pointer hover:bg-muted/50"
@@ -178,8 +149,8 @@ function SkillItem({ skill, progressColor, onClick, index }: SkillItemProps) {
               className={cn(
                 "h-5 gap-0.5 px-1.5 text-xs font-medium shrink-0",
                 trendPositive &&
-                  "bg-emerald-50 text-emerald-700 border-emerald-200",
-                trendNegative && "bg-rose-50 text-rose-700 border-rose-200"
+                  "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800",
+                trendNegative && "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-800"
               )}
             >
               {trendPositive ? (
@@ -202,7 +173,7 @@ function SkillItem({ skill, progressColor, onClick, index }: SkillItemProps) {
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+            transition={{ duration: 0.8, ease: "easeOut", delay: index * 0.1 }}
             className={cn("h-full rounded-full", progressColor)}
           />
         </div>
@@ -219,94 +190,6 @@ function SkillItem({ skill, progressColor, onClick, index }: SkillItemProps) {
           />
         )}
       </div>
-
-      {/* Achievement badges */}
-      {/* {progress === 100 && (
-        <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-600">
-          <Sparkles className="h-3 w-3" />
-          <span>Mastered!</span>
-        </div>
-      )}
-
-      {isExcellent && progress < 100 && (
-        <p className="text-xs text-emerald-600/80 font-medium">
-          Almost there! Keep going 💪
-        </p>
-      )}
-
-      {isGood && (
-        <p className="text-xs text-amber-600/80 font-medium">
-          Good progress! Practice more 📈
-        </p>
-      )} */}
     </motion.div>
-  );
-}
-
-// Optional: Compact version for smaller spaces
-export function DashboardSkillsSectionCompact({
-  areasToImprove,
-  strengths,
-}: Omit<DashboardSkillsSectionProps, "onViewAll" | "onSkillClick">) {
-  return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-      <CompactSkillCard
-        title="Areas to Improve"
-        icon={TrendingUp}
-        iconColor="text-amber-500"
-        skills={areasToImprove}
-        progressColor="bg-amber-500"
-      />
-      <CompactSkillCard
-        title="Your Strengths"
-        icon={BarChart3}
-        iconColor="text-emerald-500"
-        skills={strengths}
-        progressColor="bg-emerald-500"
-      />
-    </div>
-  );
-}
-
-function CompactSkillCard({
-  title,
-  icon: Icon,
-  iconColor,
-  skills,
-  progressColor,
-}: {
-  title: string;
-  icon: LucideIcon;
-  iconColor: string;
-  skills: SkillMetric[];
-  progressColor: string;
-}) {
-  return (
-    <Card className="border-border/50">
-      <CardContent className="pt-4 space-y-3">
-        <div className="flex items-center gap-2 mb-2">
-          <Icon className={cn("h-4 w-4", iconColor)} />
-          <h3 className="text-sm font-semibold">{title}</h3>
-        </div>
-        {skills.slice(0, 3).map((skill) => (
-          <div key={skill.name} className="space-y-1.5">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-medium truncate flex-1">{skill.name}</span>
-              <span className="font-semibold tabular-nums ml-2">
-                {skill.progress}%
-              </span>
-            </div>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted/50">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${skill.progress}%` }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                className={cn("h-full rounded-full", progressColor)}
-              />
-            </div>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
   );
 }

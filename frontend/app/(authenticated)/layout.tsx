@@ -1,9 +1,7 @@
 import { cookies } from "next/headers";
 
 import { AppSidebar } from "@/components/layout/app-sidebar";
-import { NavNotification } from "@/components/layout/nav-notification";
-import { NavUser } from "@/components/layout/nav-user";
-import { Button } from "@/components/ui/button";
+import { HeaderActions } from "@/components/layout/header-actions";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -11,12 +9,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import {
-  LineChart,
-  Search,
-  Settings,
-  Share2
-} from "lucide-react";
+import { Search } from "lucide-react";
 
 export default async function Layout({
   children,
@@ -26,21 +19,12 @@ export default async function Layout({
   const cookieStore = await cookies();
   const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
 
-  // TODO: Get user data from session/auth
-  const user = {
-    name: "Rekib Ahmed",
-    email: "rkb.ra0025@gmail.com",
-    avatar: "",
-    initials: "RA",
-    hasUnreadNotifications: true,
-  };
-
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
       <AppSidebar />
       <SidebarInset>
         {/* Header */}
-        <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+        <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:bg-background/95 dark:supports-[backdrop-filter]:bg-background/60">
           <div className="flex w-full items-center gap-2 px-4">
             {/* Left Section - Sidebar Toggle + Search */}
             <div className="flex flex-1 items-center gap-2">
@@ -58,46 +42,8 @@ export default async function Layout({
               </div>
             </div>
 
-            {/* Right Section - Actions + User */}
-            <div className="flex items-center gap-1">
-              {/* Share Button */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9"
-                aria-label="Share"
-              >
-                <Share2 className="h-4 w-4" />
-              </Button>
-
-              {/* Settings Button */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9"
-                aria-label="Settings"
-              >
-                <Settings className="h-4 w-4" />
-              </Button>
-
-              {/* Analytics Button */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9"
-                aria-label="Analytics"
-              >
-                <LineChart className="h-4 w-4" />
-              </Button>
-
-              {/* Notifications Dropdown */}
-              <NavNotification user={user} />
-
-              <Separator orientation="vertical" className="mx-2 h-6" />
-
-              {/* User Menu */}
-              <NavUser user={user} />
-            </div>
+            {/* Right Section - Actions + User (Client Component) */}
+            <HeaderActions />
           </div>
         </header>
 

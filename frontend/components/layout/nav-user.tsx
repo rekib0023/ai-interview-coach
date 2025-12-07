@@ -12,11 +12,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useSidebar } from "@/components/ui/sidebar";
 
-export function NavUser({
-  user,
-}: {
+interface NavUserProps {
   user: {
     name: string;
     email: string;
@@ -24,9 +21,10 @@ export function NavUser({
     initials: string;
     hasUnreadNotifications: boolean;
   };
-}) {
-  const { isMobile } = useSidebar();
+  onLogout?: () => void;
+}
 
+export function NavUser({ user, onLogout }: NavUserProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -70,7 +68,10 @@ export function NavUser({
           <span>Help & Support</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive">
+        <DropdownMenuItem
+          className="cursor-pointer text-destructive focus:text-destructive"
+          onClick={onLogout}
+        >
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>
         </DropdownMenuItem>

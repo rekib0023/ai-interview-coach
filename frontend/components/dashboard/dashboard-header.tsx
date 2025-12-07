@@ -12,9 +12,6 @@ export function DashboardHeader({ greeting, firstName }: DashboardHeaderProps) {
   return (
     <motion.div
       variants={cardVariants}
-      initial="hidden"
-      animate="visible"
-      transition={{ duration: 0.3, delay: 0 }}
       className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
     >
       <div className="space-y-1">

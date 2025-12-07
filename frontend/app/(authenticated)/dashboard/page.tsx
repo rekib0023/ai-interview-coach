@@ -59,7 +59,7 @@ const strengths = [
 const weeklyGoals = [
   {
     label: "Complete 5 interviews",
-    current: 3,
+    current: 5,
     total: 5,
     priority: "high" as const,
   },
