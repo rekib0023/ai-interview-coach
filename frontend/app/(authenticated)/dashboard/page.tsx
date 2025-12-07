@@ -9,90 +9,41 @@ import { DashboardWeeklyGoals } from "@/components/dashboard/dashboard-weekly-go
 import { staggerContainer } from "@/components/dashboard/shared-animation-variants";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/auth-context";
+import {
+  transformGoals,
+  transformSessions,
+  transformSkills,
+  useDashboardData,
+  useGreeting,
+} from "@/hooks/use-dashboard";
 import { motion } from "framer-motion";
-import { useMemo } from "react";
-
-// Mock data - replace with API calls
-const recentInterviews = [
-  {
-    id: 1,
-    topic: "React Hooks & State Management",
-    date: "Today, 10:23 AM",
-    difficulty: "Medium" as const,
-    score: 85,
-    duration: "45 min",
-    trend: "up" as const,
-  },
-  {
-    id: 2,
-    topic: "Binary Search Trees",
-    date: "Yesterday, 3:15 PM",
-    difficulty: "Hard" as const,
-    score: 72,
-    duration: "52 min",
-    trend: "down" as const,
-  },
-  {
-    id: 3,
-    topic: "System Design - URL Shortener",
-    date: "2 days ago",
-    difficulty: "Medium" as const,
-    score: 88,
-    duration: "38 min",
-    trend: "up" as const,
-  },
-];
-
-const areasToImprove = [
-  { name: "Dynamic Programming", progress: 65, trend: 5 },
-  { name: "System Design", progress: 70, trend: 8 },
-  { name: "Graph Algorithms", progress: 72, trend: -2 },
-];
-
-const strengths = [
-  { name: "Array & Strings", progress: 92, trend: 3 },
-  { name: "Trees & Graphs", progress: 88, trend: 5 },
-  { name: "Problem Solving", progress: 85, trend: 2 },
-  { name: "New Strength", progress: 90, trend: 4 },
-];
-
-const weeklyGoals = [
-  {
-    label: "Complete 5 interviews",
-    current: 5,
-    total: 5,
-    priority: "high" as const,
-  },
-  {
-    label: "Practice Dynamic Programming",
-    current: 2,
-    total: 3,
-    priority: "medium" as const,
-  },
-  {
-    label: "Maintain 7-day streak",
-    current: 5,
-    total: 7,
-    priority: "low" as const,
-  },
-];
 
 export default function DashboardPage() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
+  const greeting = useGreeting();
+  const { data, isLoading, error, refetch } = useDashboardData(!authLoading && !!user);
 
-  // Get time-based greeting
-  const greeting = useMemo(() => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 18) return "Good afternoon";
-    return "Good evening";
-  }, []);
+  const firstName = user?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "there";
 
-  const firstName = user?.full_name?.split(" ")[0] || "Rekib";
-
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return <DashboardSkeleton />;
   }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-center">
+        <p className="text-destructive mb-4">{error}</p>
+        <button onClick={refetch} className="text-primary hover:underline">
+          Try again
+        </button>
+      </div>
+    );
+  }
+
+  // Transform data using helpers
+  const recentInterviews = transformSessions(data.sessions);
+  const { areasToImprove, strengths } = transformSkills(data.skills);
+  const weeklyGoals = transformGoals(data.goals);
 
   return (
     <motion.div
@@ -101,35 +52,19 @@ export default function DashboardPage() {
       animate="visible"
       className="space-y-6"
     >
-      {/* Header Section */}
       <DashboardHeader greeting={greeting} firstName={firstName} />
-
-      {/* Quick Stats */}
       <DashboardQuickStats />
-
-      {/* AI Insights Card */}
       <DashboardAiInsight />
-
-      {/* Recent Sessions */}
       <DashboardRecentSessionsSection interviews={recentInterviews} />
-
-      {/* Skills Progress Grid */}
-      <DashboardSkillsSection
-        areasToImprove={areasToImprove}
-        strengths={strengths}
-      />
-
-      {/* Weekly Goals */}
+      <DashboardSkillsSection areasToImprove={areasToImprove} strengths={strengths} />
       <DashboardWeeklyGoals goals={weeklyGoals} />
     </motion.div>
   );
 }
 
-// Loading Skeleton
 function DashboardSkeleton() {
   return (
     <div className="space-y-6">
-      {/* Header Skeleton */}
       <div className="flex justify-between items-start">
         <div className="space-y-2">
           <Skeleton className="h-8 w-64" />
@@ -141,23 +76,19 @@ function DashboardSkeleton() {
         </div>
       </div>
 
-      {/* Stats Skeleton */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[...Array(4)].map((_, i) => (
           <Skeleton key={i} className="h-24 rounded-lg" />
         ))}
       </div>
 
-      {/* AI Insight Skeleton */}
       <Skeleton className="h-20 rounded-lg" />
 
-      {/* Recent Sessions Skeleton */}
       <div className="space-y-3">
         <Skeleton className="h-6 w-40" />
         <Skeleton className="h-64 rounded-lg" />
       </div>
 
-      {/* Skills Progress Skeleton */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {[...Array(2)].map((_, i) => (
           <div key={i} className="space-y-3">
@@ -167,7 +98,6 @@ function DashboardSkeleton() {
         ))}
       </div>
 
-      {/* Goals Skeleton */}
       <div className="space-y-3">
         <Skeleton className="h-6 w-32" />
         <Skeleton className="h-48 rounded-lg" />
