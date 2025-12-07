@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 import { Calendar, Play } from "lucide-react";
+import { cardVariants } from "./shared-animation-variants";
 
 interface DashboardHeaderProps {
   greeting: string;
@@ -8,7 +10,13 @@ interface DashboardHeaderProps {
 
 export function DashboardHeader({ greeting, firstName }: DashboardHeaderProps) {
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <motion.div
+      variants={cardVariants}
+      initial="hidden"
+      animate="visible"
+      transition={{ duration: 0.3, delay: 0 }}
+      className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+    >
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
           {greeting}, {firstName}!
@@ -27,6 +35,6 @@ export function DashboardHeader({ greeting, firstName }: DashboardHeaderProps) {
           Start Interview
         </Button>
       </div>
-    </div>
+    </motion.div>
   );
 }

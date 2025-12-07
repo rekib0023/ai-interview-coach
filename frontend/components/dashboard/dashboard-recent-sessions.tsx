@@ -21,6 +21,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
+import { cardVariants, itemVariants } from "./shared-animation-variants";
 
 interface Interview {
   id: number;
@@ -45,23 +46,26 @@ interface DashboardRecentSessionsSectionProps {
 
 const difficultyConfig = {
   Easy: {
-    badge: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    badge:
+      "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800",
     dot: "bg-emerald-500",
   },
   Medium: {
-    badge: "bg-amber-50 text-amber-700 border-amber-200",
+    badge:
+      "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800",
     dot: "bg-amber-500",
   },
   Hard: {
-    badge: "bg-rose-50 text-rose-700 border-rose-200",
+    badge:
+      "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950 dark:text-rose-300 dark:border-rose-800",
     dot: "bg-rose-500",
   },
 };
 
 function getScoreColor(score: number) {
-  if (score >= 85) return "text-emerald-600";
-  if (score >= 70) return "text-amber-600";
-  return "text-rose-600";
+  if (score >= 85) return "text-emerald-600 dark:text-emerald-400";
+  if (score >= 70) return "text-amber-600 dark:text-amber-400";
+  return "text-rose-600 dark:text-rose-400";
 }
 
 export function DashboardRecentSessionsSection({
@@ -69,7 +73,13 @@ export function DashboardRecentSessionsSection({
   onViewAll,
 }: DashboardRecentSessionsSectionProps) {
   return (
-    <div className="space-y-4">
+    <motion.div
+      variants={cardVariants}
+      initial="hidden"
+      animate="visible"
+      transition={{ duration: 0.3, delay: 0.5 }}
+      className="space-y-4"
+    >
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="space-y-1">
@@ -112,8 +122,9 @@ export function DashboardRecentSessionsSection({
               {interviews.map((interview, index) => (
                 <motion.div
                   key={interview.id}
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  variants={itemVariants}
+                  initial="hidden"
+                  animate="visible"
                   transition={{ delay: index * 0.05, duration: 0.2 }}
                 >
                   <DesktopSessionRow
@@ -131,8 +142,9 @@ export function DashboardRecentSessionsSection({
             {interviews.map((interview, index) => (
               <motion.div
                 key={interview.id}
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
+                variants={itemVariants}
+                initial="hidden"
+                animate="visible"
                 transition={{ delay: index * 0.05, duration: 0.2 }}
               >
                 <MobileSessionCard interview={interview} />
@@ -141,7 +153,7 @@ export function DashboardRecentSessionsSection({
           </div>
         </>
       )}
-    </div>
+    </motion.div>
   );
 }
 

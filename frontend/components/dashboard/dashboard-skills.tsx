@@ -6,11 +6,11 @@ import { motion } from "framer-motion";
 import {
   ArrowRight,
   BarChart3,
-  TrendingDown,
-  TrendingUp,
   LucideIcon,
-  Sparkles,
+  TrendingDown,
+  TrendingUp
 } from "lucide-react";
+import { cardVariants, itemVariants } from "./shared-animation-variants";
 
 interface SkillMetric {
   name: string;
@@ -32,7 +32,13 @@ export function DashboardSkillsSection({
   onSkillClick,
 }: DashboardSkillsSectionProps) {
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <motion.div
+      variants={cardVariants}
+      initial="hidden"
+      animate="visible"
+      transition={{ duration: 0.3, delay: 0.3 }}
+      className="grid grid-cols-1 gap-6 lg:grid-cols-2"
+    >
       {/* Areas to Improve */}
       <div className="space-y-4">
         <SectionHeader
@@ -80,7 +86,7 @@ export function DashboardSkillsSection({
           </CardContent>
         </Card>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -145,10 +151,10 @@ function SkillItem({ skill, progressColor, onClick, index }: SkillItemProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.08, duration: 0.25 }}
-      viewport={{ once: true }}
+      variants={itemVariants}
+      initial="hidden"
+      animate="visible"
+      transition={{ delay: index * 0.1, duration: 0.3 }}
       className={cn(
         "space-y-2 rounded-lg p-2 -mx-2 transition-colors",
         clickable && "cursor-pointer hover:bg-muted/50"

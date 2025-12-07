@@ -6,9 +6,10 @@ import { DashboardQuickStats } from "@/components/dashboard/dashboard-quick-stat
 import { DashboardRecentSessionsSection } from "@/components/dashboard/dashboard-recent-sessions";
 import { DashboardSkillsSection } from "@/components/dashboard/dashboard-skills";
 import { DashboardWeeklyGoals } from "@/components/dashboard/dashboard-weekly-goals";
+import { staggerContainer } from "@/components/dashboard/shared-animation-variants";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/auth-context";
-import { motion, Variants } from "framer-motion";
+import { motion } from "framer-motion";
 import { useMemo } from "react";
 
 // Mock data - replace with API calls
@@ -52,30 +53,29 @@ const strengths = [
   { name: "Array & Strings", progress: 92, trend: 3 },
   { name: "Trees & Graphs", progress: 88, trend: 5 },
   { name: "Problem Solving", progress: 85, trend: 2 },
+  { name: "New Strength", progress: 90, trend: 4 },
 ];
 
-// Animation variants
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.1,
-    },
+const weeklyGoals = [
+  {
+    label: "Complete 5 interviews",
+    current: 3,
+    total: 5,
+    priority: "high" as const,
   },
-};
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.4,
-    },
+  {
+    label: "Practice Dynamic Programming",
+    current: 2,
+    total: 3,
+    priority: "medium" as const,
   },
-};
+  {
+    label: "Maintain 7-day streak",
+    current: 5,
+    total: 7,
+    priority: "low" as const,
+  },
+];
 
 export default function DashboardPage() {
   const { user, isLoading } = useAuth();
@@ -96,61 +96,31 @@ export default function DashboardPage() {
 
   return (
     <motion.div
-      variants={containerVariants}
+      variants={staggerContainer}
       initial="hidden"
       animate="visible"
       className="space-y-6"
     >
       {/* Header Section */}
-      <motion.div variants={itemVariants}>
-        <DashboardHeader greeting={greeting} firstName={firstName} />
-      </motion.div>
+      <DashboardHeader greeting={greeting} firstName={firstName} />
 
       {/* Quick Stats */}
-      <motion.div variants={itemVariants}>
-        <DashboardQuickStats />
-      </motion.div>
+      <DashboardQuickStats />
 
       {/* AI Insights Card */}
-      <motion.div variants={itemVariants}>
-        <DashboardAiInsight />
-      </motion.div>
+      <DashboardAiInsight />
 
       {/* Recent Sessions */}
-      <motion.div variants={itemVariants}>
-        <DashboardRecentSessionsSection interviews={recentInterviews} />
-      </motion.div>
+      <DashboardRecentSessionsSection interviews={recentInterviews} />
 
       {/* Skills Progress Grid */}
-      <motion.div variants={itemVariants}>
-        <DashboardSkillsSection
-          areasToImprove={areasToImprove}
-          strengths={strengths}
-        />
-      </motion.div>
+      <DashboardSkillsSection
+        areasToImprove={areasToImprove}
+        strengths={strengths}
+      />
 
       {/* Weekly Goals */}
-      <motion.div variants={itemVariants}>
-        <DashboardWeeklyGoals
-          goals={[
-            {
-              label: "Complete 5 coding interviews",
-              current: 3,
-              total: 5,
-            },
-            {
-              label: "Practice system design",
-              current: 2,
-              total: 3,
-            },
-            {
-              label: "Maintain 7-day streak",
-              current: 5,
-              total: 7,
-            },
-          ]}
-        />
-      </motion.div>
+      <DashboardWeeklyGoals goals={weeklyGoals} />
     </motion.div>
   );
 }
