@@ -1,3 +1,18 @@
+from .dashboard import (
+    AiInsightResponse,
+    DashboardResponse,
+    Difficulty,
+    GoalsResponse,
+    InterviewSession,
+    Priority,
+    QuickStatsResponse,
+    RecentSessionsResponse,
+    SkillMetric,
+    SkillsResponse,
+    StatItem,
+    Trend,
+    WeeklyGoal,
+)
 from .user import (
     AuthResponse,
     LogoutResponse,
@@ -10,6 +25,7 @@ from .user import (
 )
 
 __all__ = [
+    # User schemas
     "Token",
     "TokenData",
     "User",
@@ -18,4 +34,19 @@ __all__ = [
     "UserUpdate",
     "AuthResponse",
     "LogoutResponse",
+    # Dashboard schemas
+    "Difficulty",
+    "Trend",
+    "Priority",
+    "StatItem",
+    "QuickStatsResponse",
+    "InterviewSession",
+    "RecentSessionsResponse",
+    "SkillMetric",
+    "SkillsResponse",
+    "WeeklyGoal",
+    "GoalsResponse",
+    "AiInsightResponse",
+    "DashboardResponse",
 ]
+

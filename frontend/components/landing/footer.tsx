@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { Code2, Github, Twitter, Linkedin } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { Code2, Github, Linkedin, Twitter } from "lucide-react";
+import Link from "next/link";
 
 const footerLinks = {
   product: [

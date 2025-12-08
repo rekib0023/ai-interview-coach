@@ -102,4 +102,5 @@ export const authApi = {
 };
 
 export { ApiError };
-export type { User, AuthResponse, LoginRequest, SignupRequest };
+export type { AuthResponse, LoginRequest, SignupRequest, User };
+

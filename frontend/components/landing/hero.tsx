@@ -1,11 +1,10 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Play, Sparkles, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { ArrowRight, CheckCircle2, Play, Sparkles } from "lucide-react";
+import Link from "next/link";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -25,7 +24,7 @@ export function Hero() {
   return (
     <section className="relative pt-32 pb-20 overflow-hidden">
       {/* Background Gradient */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-50 via-indigo-50 to-white dark:from-blue-950/20 dark:via-indigo-950/20 dark:to-background" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/5 via-accent/5 to-background dark:from-primary/10 dark:via-accent/10 dark:to-background" />
       <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]" />
 
       <div className="container mx-auto px-4 max-w-7xl">
@@ -52,7 +51,7 @@ export function Hero() {
             className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight max-w-4xl"
           >
             Master Technical Interviews with{" "}
-            <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary via-accent to-primary/80 bg-clip-text text-transparent">
               AI-Powered Coaching
             </span>
           </motion.h1>
@@ -98,7 +97,7 @@ export function Hero() {
             <Button
               asChild
               size="lg"
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-lg h-14 px-8 gap-2 hover:scale-105 transition-transform"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg h-14 px-8 gap-2 hover:scale-105 transition-transform"
             >
               <Link href="/signup">
                 Start Free Trial
@@ -130,7 +129,7 @@ export function Hero() {
           {/* Preview Image Placeholder with Animation */}
           <motion.div variants={fadeInUp} className="mt-12 w-full max-w-5xl">
             <div className="relative rounded-xl border bg-card shadow-2xl overflow-hidden hover:shadow-3xl transition-shadow duration-300">
-              <div className="aspect-video bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100 dark:from-blue-950 dark:via-indigo-950 dark:to-purple-950 flex items-center justify-center">
+              <div className="aspect-video bg-gradient-to-br from-primary/10 via-accent/10 to-primary/5 dark:from-primary/20 dark:via-accent/20 dark:to-primary/10 flex items-center justify-center">
                 <div className="text-center space-y-4">
                   <motion.div
                     className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-background/80 backdrop-blur cursor-pointer"

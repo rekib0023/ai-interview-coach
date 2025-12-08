@@ -1,5 +1,7 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -7,8 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Check, Sparkles } from "lucide-react";
 import Link from "next/link";
 
@@ -77,7 +77,7 @@ export function Pricing() {
         <div className="text-center space-y-4 mb-16">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight">
             Simple,{" "}
-            <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               Transparent Pricing
             </span>
           </h2>
@@ -99,7 +99,7 @@ export function Pricing() {
             >
               {plan.badge && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <Badge className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-1">
+                  <Badge className="bg-primary text-primary-foreground px-4 py-1">
                     <Sparkles className="h-3 w-3 mr-1" />
                     {plan.badge}
                   </Badge>
@@ -107,18 +107,33 @@ export function Pricing() {
               )}
 
               <CardHeader className="text-center pb-8 pt-8">
-                <CardTitle className="text-2xl mb-2">{plan.name}</CardTitle>
-                <CardDescription className="mb-4">
-                  {plan.description}
-                </CardDescription>
-                <div className="mt-4">
-                  <span className="text-5xl font-bold">{plan.price}</span>
+                {/* Plan name */}
+                <CardTitle className="text-2xl font-semibold tracking-tight mb-1">
+                  {plan.name}
+                </CardTitle>
+
+                {/* Price as primary focal point */}
+                <div className="mt-2 flex items-baseline justify-center gap-2">
+                  <span
+                    className={
+                      plan.name === "Pro"
+                        ? "text-5xl font-bold"
+                        : "text-4xl font-bold"
+                    }
+                  >
+                    {plan.price}
+                  </span>
                   {plan.period && (
-                    <span className="text-muted-foreground ml-2">
+                    <span className="text-sm text-muted-foreground">
                       / {plan.period}
                     </span>
                   )}
                 </div>
+
+                {/* Subtitle / supporting text */}
+                <CardDescription className="mt-3">
+                  {plan.description}
+                </CardDescription>
               </CardHeader>
 
               <CardContent className="space-y-6">
@@ -127,7 +142,9 @@ export function Pricing() {
                   {plan.features.map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-start gap-3">
                       <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                      <span className="text-sm">{feature}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {feature}
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -137,7 +154,7 @@ export function Pricing() {
                   asChild
                   className={`w-full h-12 text-base ${
                     plan.highlighted
-                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                      ? "bg-primary hover:bg-primary/90 text-primary-foreground"
                       : ""
                   }`}
                   variant={plan.highlighted ? "default" : "outline"}
@@ -154,9 +171,13 @@ export function Pricing() {
         </div>
 
         {/* Trust Message */}
-        <p className="text-center text-sm text-muted-foreground mt-12">
-          All plans include a 7-day money-back guarantee • No credit card
-          required for Free plan
+        <p className="text-center mt-12 space-y-1">
+          <span className="block text-sm font-medium text-muted-foreground">
+            All plans include a 7-day money-back guarantee
+          </span>
+          <span className="block text-xs text-muted-foreground">
+            No credit card required for Free plan
+          </span>
         </p>
       </div>
     </section>
