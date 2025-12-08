@@ -29,7 +29,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
       {/* Background Elements */}
-      <div className="absolute top-0 inset-x-0 h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-100/40 via-background to-background dark:from-teal-950/20 dark:via-background dark:to-background -z-10" />
+      <div className="absolute top-0 inset-x-0 h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background dark:from-primary/20 dark:via-background dark:to-background -z-10" />
       <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:14px_24px]" />
 
       <motion.div
@@ -51,8 +51,8 @@ export default function ForgotPasswordPage() {
         <Card className="border-border/50 shadow-xl bg-card/95 backdrop-blur-sm dark:bg-card dark:border-border dark:shadow-2xl">
           <CardHeader className="space-y-1 text-center pt-8">
             <div className="flex justify-center mb-4">
-              <div className="h-14 w-14 rounded-2xl bg-teal-50 dark:bg-teal-950/30 flex items-center justify-center ring-4 ring-teal-50/50 dark:ring-teal-900/30">
-                <Mail className="h-7 w-7 text-teal-600 dark:text-teal-400" />
+              <div className="h-14 w-14 rounded-2xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center ring-4 ring-primary/10 dark:ring-primary/20">
+                <Mail className="h-7 w-7 text-primary" />
               </div>
             </div>
             <CardTitle className="text-2xl font-bold text-foreground">
@@ -79,14 +79,14 @@ export default function ForgotPasswordPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="h-11 bg-background border-input focus:border-teal-500 focus:ring-teal-500/20 transition-all"
+                    className="h-11 bg-background border-input focus:border-primary focus:ring-primary/20 transition-all"
                   />
                 </div>
 
                 {/* Submit Button */}
                 <Button
                   type="submit"
-                  className="w-full h-11 bg-teal-600 dark:bg-teal-500 hover:bg-teal-700 dark:hover:bg-teal-600 text-white dark:text-white shadow-lg shadow-teal-200 dark:shadow-teal-950/50 transition-all hover:scale-[1.02]"
+                  className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 dark:shadow-primary/10 transition-all hover:scale-[1.02]"
                 >
                   Reset Password
                 </Button>
@@ -119,7 +119,7 @@ export default function ForgotPasswordPage() {
                   Didn&apos;t receive the email?{" "}
                   <button
                     onClick={() => setSubmitted(false)}
-                    className="text-teal-600 dark:text-teal-400 hover:underline font-medium hover:text-teal-700 transition-colors"
+                    className="text-primary hover:underline font-medium hover:text-primary/80 transition-colors"
                   >
                     Click to resend
                   </button>

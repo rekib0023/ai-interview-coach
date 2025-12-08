@@ -42,8 +42,8 @@ interface DashboardRecentSessionsSectionProps {
 const difficultyConfig = {
   Easy: {
     badge:
-      "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800",
-    dot: "bg-blue-500",
+      "bg-chart-2/10 text-chart-2 border-chart-2/30 dark:bg-chart-2/20 dark:text-chart-2 dark:border-chart-2/40",
+    dot: "bg-chart-2",
   },
   Medium: {
     badge:
@@ -58,7 +58,7 @@ const difficultyConfig = {
 };
 
 function getScoreColor(score: number) {
-  if (score >= 85) return "text-blue-600 dark:text-blue-400";
+  if (score >= 85) return "text-chart-2";
   if (score >= 70) return "text-amber-600 dark:text-amber-400";
   return "text-rose-600 dark:text-rose-400";
 }

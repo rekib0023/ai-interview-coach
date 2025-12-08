@@ -41,8 +41,8 @@ export function DashboardWeeklyGoals({
               variant="secondary"
               className={cn(
                 "hidden sm:inline-flex",
-                "bg-emerald-50 text-emerald-700 border-emerald-200",
-                "dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800"
+                "bg-chart-4/10 text-chart-4 border-chart-4/30",
+                "dark:bg-chart-4/20 dark:text-chart-4 dark:border-chart-4/40"
               )}
             >
               {completedGoals}/{totalGoals} completed
@@ -100,7 +100,7 @@ function GoalProgress({ goal, index, onClick }: GoalProgressProps) {
       case "medium":
         return "text-amber-500 dark:text-amber-400";
       case "low":
-        return "text-blue-500 dark:text-blue-400";
+        return "text-chart-2";
       default:
         return "text-muted-foreground";
     }
@@ -164,7 +164,7 @@ function GoalProgress({ goal, index, onClick }: GoalProgressProps) {
             "flex items-center gap-1 shrink-0 px-2 py-0.5 rounded-md text-xs font-semibold tabular-nums",
             "bg-background border border-border/50",
             isCompleted
-              ? "text-emerald-600 dark:text-emerald-400"
+              ? "text-chart-4"
               : "text-foreground"
           )}
         >
@@ -175,14 +175,14 @@ function GoalProgress({ goal, index, onClick }: GoalProgressProps) {
       </div>
 
       {/* Progress Bar */}
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+      <div className="h-2 w-full overflow-hidden rounded-full bg-muted/50">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${percentage}%` }}
-          transition={{ duration: 0.6, ease: "easeOut", delay: index * 0.1 }}
+          transition={{ duration: 0.8, ease: "easeOut", delay: index * 0.1 }}
           className={cn(
-            "h-full rounded-full transition-colors",
-            isCompleted ? "bg-emerald-500" : "bg-primary"
+            "h-full rounded-full",
+            isCompleted ? "bg-chart-4" : "bg-primary"
           )}
         />
       </div>

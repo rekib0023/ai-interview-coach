@@ -92,7 +92,7 @@ export default function SignInPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
       {/* Background Elements */}
-      <div className="absolute top-0 inset-x-0 h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-100/40 via-background to-background dark:from-teal-950/20 dark:via-background dark:to-background -z-10" />
+      <div className="absolute top-0 inset-x-0 h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background dark:from-primary/20 dark:via-background dark:to-background -z-10" />
       <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:14px_24px]" />
 
       <motion.div
@@ -122,7 +122,7 @@ export default function SignInPage() {
           </CardHeader>
           <CardContent className="pb-8">
             {sessionMessage && (
-              <div className="mb-4 p-3 text-sm text-teal-700 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-800/50 rounded-md">
+              <div className="mb-4 p-3 text-sm text-primary bg-primary/10 dark:bg-primary/20 dark:text-primary border border-primary/20 dark:border-primary/30 rounded-md">
                 {sessionMessage}
               </div>
             )}
@@ -145,7 +145,7 @@ export default function SignInPage() {
                   onChange={(e) => updateField("email", e.target.value)}
                   onBlur={() => touchField("email")}
                   required
-                  className={`h-11 bg-background border-input focus:border-teal-500 dark:focus:border-teal-400 focus:ring-teal-500/20 dark:focus:ring-teal-400/20 transition-all ${
+                  className={`h-11 bg-background border-input focus:border-primary focus:ring-primary/20 transition-all ${
                     getFieldError("email")
                       ? "border-red-500 dark:border-red-400 focus:border-red-500 dark:focus:border-red-400 focus:ring-red-500/20 dark:focus:ring-red-400/20"
                       : ""
@@ -167,7 +167,7 @@ export default function SignInPage() {
                   </Label>
                   <Link
                     href="/forgot-password"
-                    className="text-sm text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 hover:underline font-medium"
+                    className="text-sm text-primary hover:text-primary/80 hover:underline font-medium"
                   >
                     Forgot password?
                   </Link>
@@ -180,7 +180,7 @@ export default function SignInPage() {
                   onBlur={() => touchField("password")}
                   required
                   error={getFieldError("password")}
-                  className="h-11 bg-background border-input focus:border-teal-500 dark:focus:border-teal-400 focus:ring-teal-500/20 dark:focus:ring-teal-400/20 transition-all"
+                  className="h-11 bg-background border-input focus:border-primary focus:ring-primary/20 transition-all"
                 />
               </div>
 
@@ -192,7 +192,7 @@ export default function SignInPage() {
                   onCheckedChange={(checked) =>
                     setRememberMe(checked as boolean)
                   }
-                  className="border-input data-[state=checked]:bg-teal-600 dark:data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-600 dark:data-[state=checked]:border-teal-500"
+                  className="border-input data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                 />
                 <label
                   htmlFor="remember"
@@ -206,7 +206,7 @@ export default function SignInPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-11 bg-teal-600 dark:bg-teal-500 hover:bg-teal-700 dark:hover:bg-teal-600 disabled:opacity-50 text-white dark:text-white shadow-lg shadow-teal-200 dark:shadow-teal-950/50 transition-all hover:scale-[1.02]"
+                className="w-full h-11 bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground shadow-lg shadow-primary/20 dark:shadow-primary/10 transition-all hover:scale-[1.02]"
               >
                 {isLoading ? "Signing In..." : "Sign In"}
               </Button>
@@ -232,7 +232,7 @@ export default function SignInPage() {
               Don&apos;t have an account?{" "}
               <Link
                 href="/signup"
-                className="text-teal-600 dark:text-teal-400 font-medium hover:underline hover:text-teal-700 dark:hover:text-teal-300"
+                className="text-primary font-medium hover:underline hover:text-primary/80"
               >
                 Sign up
               </Link>

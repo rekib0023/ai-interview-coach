@@ -38,12 +38,12 @@ export default function Home() {
             containerRef={containerRef}
           />
           <FloatingDataElement
-            className="top-[40%] right-0 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl opacity-20"
+            className="top-[40%] right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl opacity-20"
             depth={1.2}
             containerRef={containerRef}
           />
-          <FloatingDataElement
-            className="bottom-20 left-[20%] w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl opacity-20"
+           <FloatingDataElement
+            className="bottom-20 left-[20%] w-72 h-72 bg-accent/10 rounded-full blur-3xl opacity-20"
             depth={0.8}
             containerRef={containerRef}
           />

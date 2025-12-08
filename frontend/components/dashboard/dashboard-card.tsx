@@ -19,7 +19,7 @@ interface DashboardCardProps {
   contentClassName?: string;
   containerClassName?: string;
   icon?: ReactNode;
-  gradient?: "teal" | "emerald" | "cyan" | "none";
+  gradient?: "primary" | "accent" | "secondary" | "none";
 }
 
 export function DashboardCard({
@@ -37,9 +37,9 @@ export function DashboardCard({
 
   // Gradient border styles
   const gradientClasses = {
-    teal: "before:from-teal-500/20 before:to-cyan-500/20",
-    emerald: "before:from-emerald-500/20 before:to-teal-500/20",
-    cyan: "before:from-cyan-500/20 before:to-emerald-500/20",
+    primary: "before:from-primary/20 before:to-accent/20",
+    accent: "before:from-accent/20 before:to-primary/20",
+    secondary: "before:from-secondary/20 before:to-accent/20",
     none: "",
   };
 

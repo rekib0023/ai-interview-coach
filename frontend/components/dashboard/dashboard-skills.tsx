@@ -56,7 +56,7 @@ export function DashboardSkillsSection({
             <SkillItem
               key={skill.name}
               skill={skill}
-              progressColor="bg-orange-500 dark:bg-orange-400"
+              progressColor="bg-accent"
               index={index}
               onClick={(name) => onSkillClick?.(name, "improve")}
             />
@@ -93,7 +93,7 @@ export function DashboardSkillsSection({
             <SkillItem
               key={skill.name}
               skill={skill}
-              progressColor="bg-blue-500 dark:bg-blue-400"
+              progressColor="bg-primary"
               index={index}
               onClick={(name) => onSkillClick?.(name, "strengths")}
             />
@@ -118,9 +118,6 @@ function SkillItem({ skill, progressColor, onClick, index }: SkillItemProps) {
 
   const trendPositive = trend && trend > 0;
   const trendNegative = trend && trend < 0;
-
-  // Determine if this is a high-performing skill
-  const isExcellent = progress >= 90;
 
   return (
     <motion.div
@@ -148,7 +145,7 @@ function SkillItem({ skill, progressColor, onClick, index }: SkillItemProps) {
               className={cn(
                 "h-5 gap-0.5 px-1.5 text-xs font-medium shrink-0",
                 trendPositive &&
-                  "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800",
+                  "bg-chart-4/10 text-chart-4 border-chart-4/30 dark:bg-chart-4/20 dark:text-chart-4 dark:border-chart-4/40",
                 trendNegative &&
                   "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-800"
               )}
@@ -168,27 +165,13 @@ function SkillItem({ skill, progressColor, onClick, index }: SkillItemProps) {
         </span>
       </div>
 
-      <div className="relative">
-        <div className="h-2 w-full overflow-hidden rounded-full bg-muted/50">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.8, ease: "easeOut", delay: index * 0.1 }}
-            className={cn("h-full rounded-full", progressColor)}
-          />
-        </div>
-
-        {/* Glow effect for high scores */}
-        {isExcellent && (
-          <motion.div
-            className={cn(
-              "absolute inset-0 h-2 rounded-full opacity-30 blur-sm",
-              progressColor
-            )}
-            animate={{ opacity: [0.3, 0.5, 0.3] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          />
-        )}
+      <div className="h-2 w-full overflow-hidden rounded-full bg-muted/50">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${progress}%` }}
+          transition={{ duration: 0.8, ease: "easeOut", delay: index * 0.1 }}
+          className={cn("h-full rounded-full", progressColor)}
+        />
       </div>
     </motion.div>
   );
