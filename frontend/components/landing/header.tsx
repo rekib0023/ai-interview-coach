@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Code2 } from "lucide-react";
 import Link from "next/link";
 
@@ -14,7 +15,7 @@ export function Header() {
           className="flex items-center gap-2 font-semibold text-xl"
         >
           <Code2 className="h-6 w-6 text-primary" />
-          <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
             AI Interview Coach
           </span>
         </Link>
@@ -43,12 +44,13 @@ export function Header() {
 
         {/* Auth Buttons */}
         <div className="flex items-center gap-3">
+          <ThemeToggle />
           <Button variant="ghost" asChild>
             <Link href="/signin">Sign In</Link>
           </Button>
           <Button
             asChild
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+            className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700"
           >
             <Link href="/signup">Get Started</Link>
           </Button>

@@ -3,6 +3,7 @@
 import { useAuth } from "@/contexts/auth-context";
 import { NavNotification } from "./nav-notification";
 import { NavUser } from "./nav-user";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { LineChart, Settings, Share2 } from "lucide-react";
@@ -77,6 +78,9 @@ export function HeaderActions() {
 
       {/* Notifications Dropdown */}
       <NavNotification user={userData} />
+
+      {/* Theme Toggle */}
+      <ThemeToggle />
 
       <Separator orientation="vertical" className="mx-2 h-6" />
 

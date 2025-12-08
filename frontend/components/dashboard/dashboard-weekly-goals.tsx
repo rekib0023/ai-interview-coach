@@ -95,10 +95,14 @@ function GoalProgress({ goal, index, onClick }: GoalProgressProps) {
 
   const getPriorityColor = () => {
     switch (priority) {
-      case "high": return "text-rose-500";
-      case "medium": return "text-amber-500";
-      case "low": return "text-blue-500";
-      default: return "text-muted-foreground";
+      case "high":
+        return "text-rose-500";
+      case "medium":
+        return "text-teal-500";
+      case "low":
+        return "text-cyan-500";
+      default:
+        return "text-muted-foreground";
     }
   };
 
@@ -130,10 +134,12 @@ function GoalProgress({ goal, index, onClick }: GoalProgressProps) {
             <Circle className={cn("h-3 w-3 shrink-0", getPriorityColor())} />
           )}
 
-          <span className={cn(
-            "text-sm font-medium truncate transition-colors",
-            isCompleted && "text-muted-foreground line-through"
-          )}>
+          <span
+            className={cn(
+              "text-sm font-medium truncate transition-colors",
+              isCompleted && "text-muted-foreground line-through"
+            )}
+          >
             {label}
           </span>
 
@@ -142,8 +148,8 @@ function GoalProgress({ goal, index, onClick }: GoalProgressProps) {
               variant="secondary"
               className={cn(
                 "text-[10px] h-5 px-1.5",
-                "bg-amber-50 text-amber-600 border-amber-200",
-                "dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800",
+                "bg-teal-50 text-teal-600 border-teal-200",
+                "dark:bg-teal-950/30 dark:text-teal-400 dark:border-teal-800",
                 "animate-pulse"
               )}
             >
@@ -153,11 +159,15 @@ function GoalProgress({ goal, index, onClick }: GoalProgressProps) {
           )}
         </div>
 
-        <div className={cn(
-          "flex items-center gap-1 shrink-0 px-2 py-0.5 rounded-md text-xs font-semibold tabular-nums",
-          "bg-background border border-border/50",
-          isCompleted ? "text-emerald-600 dark:text-emerald-400" : "text-foreground"
-        )}>
+        <div
+          className={cn(
+            "flex items-center gap-1 shrink-0 px-2 py-0.5 rounded-md text-xs font-semibold tabular-nums",
+            "bg-background border border-border/50",
+            isCompleted
+              ? "text-emerald-600 dark:text-emerald-400"
+              : "text-foreground"
+          )}
+        >
           <span>{current}</span>
           <span className="text-muted-foreground">/</span>
           <span className="text-muted-foreground">{total}</span>
@@ -188,7 +198,9 @@ function EmptyGoals() {
       </div>
       <h3 className="text-sm font-semibold mb-1">No goals set</h3>
       <p className="text-xs mb-4">Set weekly goals to track your progress</p>
-      <Button size="sm" variant="outline">Add Goal</Button>
+      <Button size="sm" variant="outline">
+        Add Goal
+      </Button>
     </div>
   );
 }

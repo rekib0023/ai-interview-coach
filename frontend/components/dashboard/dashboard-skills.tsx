@@ -2,12 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import {
-  ArrowRight,
-  BarChart3,
-  TrendingDown,
-  TrendingUp
-} from "lucide-react";
+import { ArrowRight, BarChart3, TrendingDown, TrendingUp } from "lucide-react";
 import { DashboardCard } from "./dashboard-card";
 import { itemVariants } from "./shared-animation-variants";
 
@@ -36,17 +31,17 @@ export function DashboardSkillsSection({
       <DashboardCard
         title="Areas to Improve"
         description="Focus on these for maximum growth"
-        icon={<TrendingUp className="h-5 w-5 text-amber-500" />}
+        icon={<TrendingUp className="h-5 w-5 text-teal-500" />}
         action={
           onViewAll && (
             <Button
-                variant="ghost"
-                size="sm"
-                className="gap-1 text-muted-foreground hover:text-foreground h-8"
-                onClick={() => onViewAll("improve")}
+              variant="ghost"
+              size="sm"
+              className="gap-1 text-muted-foreground hover:text-foreground h-8"
+              onClick={() => onViewAll("improve")}
             >
-                <span className="text-sm">View All</span>
-                <ArrowRight className="h-3.5 w-3.5" />
+              <span className="text-sm">View All</span>
+              <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           )
         }
@@ -55,15 +50,15 @@ export function DashboardSkillsSection({
         contentClassName="flex-1"
       >
         <div className="space-y-5">
-            {areasToImprove.map((skill, index) => (
-              <SkillItem
-                key={skill.name}
-                skill={skill}
-                progressColor="bg-amber-500"
-                index={index}
-                onClick={(name) => onSkillClick?.(name, "improve")}
-              />
-            ))}
+          {areasToImprove.map((skill, index) => (
+            <SkillItem
+              key={skill.name}
+              skill={skill}
+              progressColor="bg-teal-500"
+              index={index}
+              onClick={(name) => onSkillClick?.(name, "improve")}
+            />
+          ))}
         </div>
       </DashboardCard>
 
@@ -75,13 +70,13 @@ export function DashboardSkillsSection({
         action={
           onViewAll && (
             <Button
-                variant="ghost"
-                size="sm"
-                className="gap-1 text-muted-foreground hover:text-foreground h-8"
-                onClick={() => onViewAll("strengths")}
+              variant="ghost"
+              size="sm"
+              className="gap-1 text-muted-foreground hover:text-foreground h-8"
+              onClick={() => onViewAll("strengths")}
             >
-                <span className="text-sm">View All</span>
-                <ArrowRight className="h-3.5 w-3.5" />
+              <span className="text-sm">View All</span>
+              <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           )
         }
@@ -89,17 +84,17 @@ export function DashboardSkillsSection({
         className="h-full flex flex-col"
         contentClassName="flex-1"
       >
-         <div className="space-y-5">
-            {strengths.map((skill, index) => (
-              <SkillItem
-                key={skill.name}
-                skill={skill}
-                progressColor="bg-emerald-500"
-                index={index}
-                onClick={(name) => onSkillClick?.(name, "strengths")}
-              />
-            ))}
-         </div>
+        <div className="space-y-5">
+          {strengths.map((skill, index) => (
+            <SkillItem
+              key={skill.name}
+              skill={skill}
+              progressColor="bg-emerald-500"
+              index={index}
+              onClick={(name) => onSkillClick?.(name, "strengths")}
+            />
+          ))}
+        </div>
       </DashboardCard>
     </div>
   );
@@ -150,7 +145,8 @@ function SkillItem({ skill, progressColor, onClick, index }: SkillItemProps) {
                 "h-5 gap-0.5 px-1.5 text-xs font-medium shrink-0",
                 trendPositive &&
                   "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800",
-                trendNegative && "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-800"
+                trendNegative &&
+                  "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-800"
               )}
             >
               {trendPositive ? (

@@ -1,4 +1,10 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { ReactNode } from "react";
@@ -13,7 +19,7 @@ interface DashboardCardProps {
   contentClassName?: string;
   containerClassName?: string;
   icon?: ReactNode;
-  gradient?: "amber" | "emerald" | "blue" | "purple" | "none";
+  gradient?: "teal" | "emerald" | "cyan" | "none";
 }
 
 export function DashboardCard({
@@ -31,10 +37,9 @@ export function DashboardCard({
 
   // Gradient border styles
   const gradientClasses = {
-    amber: "before:from-amber-500/20 before:to-orange-500/20",
+    teal: "before:from-teal-500/20 before:to-cyan-500/20",
     emerald: "before:from-emerald-500/20 before:to-teal-500/20",
-    blue: "before:from-blue-500/20 before:to-indigo-500/20",
-    purple: "before:from-purple-500/20 before:to-pink-500/20",
+    cyan: "before:from-cyan-500/20 before:to-emerald-500/20",
     none: "",
   };
 

@@ -47,8 +47,8 @@ const difficultyConfig = {
   },
   Medium: {
     badge:
-      "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800",
-    dot: "bg-amber-500",
+      "bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/50 dark:text-teal-300 dark:border-teal-800",
+    dot: "bg-teal-500",
   },
   Hard: {
     badge:
@@ -59,7 +59,7 @@ const difficultyConfig = {
 
 function getScoreColor(score: number) {
   if (score >= 85) return "text-emerald-600 dark:text-emerald-400";
-  if (score >= 70) return "text-amber-600 dark:text-amber-400";
+  if (score >= 70) return "text-teal-600 dark:text-teal-400";
   return "text-rose-600 dark:text-rose-400";
 }
 
@@ -100,10 +100,7 @@ export function DashboardRecentSessionsSection({
             </div>
             <div className="divide-y divide-border/50 bg-card">
               {interviews.map((interview, index) => (
-                <motion.div
-                  key={interview.id}
-                  variants={itemVariants}
-                >
+                <motion.div key={interview.id} variants={itemVariants}>
                   <DesktopSessionRow
                     interview={interview}
                     index={index}
@@ -117,10 +114,7 @@ export function DashboardRecentSessionsSection({
           {/* Mobile View */}
           <div className="md:hidden space-y-3">
             {interviews.map((interview, index) => (
-              <motion.div
-                key={interview.id}
-                variants={itemVariants}
-              >
+              <motion.div key={interview.id} variants={itemVariants}>
                 <MobileSessionCard interview={interview} />
               </motion.div>
             ))}
@@ -150,7 +144,9 @@ function DesktopSessionRow({
             )}
           />
           <div className="min-w-0">
-            <p className="font-medium text-sm truncate group-hover:text-primary transition-colors">{interview.topic}</p>
+            <p className="font-medium text-sm truncate group-hover:text-primary transition-colors">
+              {interview.topic}
+            </p>
             {interview.duration && (
               <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                 <Clock className="h-3 w-3" />
@@ -180,58 +176,62 @@ function DesktopSessionRow({
 
         {/* Score & Actions */}
         <div className="col-span-2 flex items-center justify-end gap-3">
-            <div className="flex flex-col items-end">
-                <div className="flex items-center gap-1.5">
-                    <span
-                        className={cn(
-                        "text-sm font-bold tabular-nums",
-                        getScoreColor(interview.score)
-                        )}
-                    >
-                        {interview.score}%
-                    </span>
-                    {interview.trend && (
-                        <span>
-                        {interview.trend === "up" && (
-                            <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
-                        )}
-                        {interview.trend === "down" && (
-                            <TrendingDown className="h-3.5 w-3.5 text-rose-500" />
-                        )}
-                        {interview.trend === "same" && (
-                            <Minus className="h-3.5 w-3.5 text-muted-foreground" />
-                        )}
-                        </span>
-                    )}
-                </div>
+          <div className="flex flex-col items-end">
+            <div className="flex items-center gap-1.5">
+              <span
+                className={cn(
+                  "text-sm font-bold tabular-nums",
+                  getScoreColor(interview.score)
+                )}
+              >
+                {interview.score}%
+              </span>
+              {interview.trend && (
+                <span>
+                  {interview.trend === "up" && (
+                    <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
+                  )}
+                  {interview.trend === "down" && (
+                    <TrendingDown className="h-3.5 w-3.5 text-rose-500" />
+                  )}
+                  {interview.trend === "same" && (
+                    <Minus className="h-3.5 w-3.5 text-muted-foreground" />
+                  )}
+                </span>
+              )}
             </div>
+          </div>
 
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
-                    <MoreVertical className="h-4 w-4" />
-                </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
-                    <Link href={`/dashboard/sessions/${interview.id}`}>
-                    <Eye className="mr-2 h-4 w-4" />
-                    View Details
-                    </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                    <Link href={`/dashboard/analytics/${interview.id}`}>
-                    <BarChart3 className="mr-2 h-4 w-4" />
-                    View Analytics
-                    </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                    <Download className="mr-2 h-4 w-4" />
-                    Export Session
-                </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link href={`/dashboard/sessions/${interview.id}`}>
+                  <Eye className="mr-2 h-4 w-4" />
+                  View Details
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href={`/dashboard/analytics/${interview.id}`}>
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  View Analytics
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <Download className="mr-2 h-4 w-4" />
+                Export Session
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </div>
@@ -254,7 +254,11 @@ function MobileSessionCard({ interview }: { interview: Interview }) {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 text-muted-foreground">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 -mr-2 text-muted-foreground"
+            >
               <MoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
