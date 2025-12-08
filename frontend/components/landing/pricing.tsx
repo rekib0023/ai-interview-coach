@@ -2,14 +2,8 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Check, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
+import { Check, Sparkles, Zap } from "lucide-react";
 import Link from "next/link";
 
 const pricingPlans = [
@@ -62,86 +56,146 @@ const pricingPlans = [
       "Bulk licenses",
       "Custom branding",
       "SLA guarantee",
-      "Priority support",
     ],
     cta: "Contact Sales",
     highlighted: false,
   },
 ];
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: [0.21, 0.47, 0.32, 0.98],
+    },
+  },
+};
+
 export function Pricing() {
   return (
-    <section id="pricing" className="py-20 bg-muted/50">
+    <section id="pricing" className="py-24 relative overflow-hidden">
+      {/* Background */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/20 to-background" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[600px] bg-primary/5 blur-[120px] rounded-full" />
+      </div>
+
       <div className="container mx-auto px-4 max-w-7xl">
         {/* Section Header */}
-        <div className="text-center space-y-4 mb-16">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight">
+        <motion.div
+          className="text-center space-y-6 mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <Badge
+            variant="outline"
+            className="px-4 py-1.5 text-sm border-primary/30 bg-primary/10"
+          >
+            <Zap className="h-3.5 w-3.5 mr-1.5 text-primary" />
+            Pricing
+          </Badge>
+
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
             Simple,{" "}
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               Transparent Pricing
             </span>
           </h2>
+
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Choose the perfect plan for your interview preparation journey
+            Choose the perfect plan for your interview preparation journey.
+            Start free, upgrade when you&apos;re ready.
           </p>
-        </div>
+        </motion.div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto items-start"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
           {pricingPlans.map((plan, index) => (
-            <Card
+            <motion.div
               key={index}
-              className={`relative border transition-all duration-300 ${
-                plan.highlighted
-                  ? "border-primary shadow-2xl scale-105 md:scale-110 z-10"
-                  : "border-border/50 hover:border-primary/20 hover:shadow-lg bg-card/50 backdrop-blur-sm"
-              }`}
+              variants={itemVariants}
+              className={`relative ${plan.highlighted ? "md:-mt-4 md:mb-4" : ""}`}
             >
-              {plan.badge && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <Badge className="bg-primary text-primary-foreground px-4 py-1">
-                    <Sparkles className="h-3 w-3 mr-1" />
-                    {plan.badge}
-                  </Badge>
-                </div>
+              {/* Glow effect for highlighted plan */}
+              {plan.highlighted && (
+                <div className="absolute -inset-1 bg-gradient-to-r from-primary via-accent to-primary rounded-3xl blur-lg opacity-30 animate-pulse" />
               )}
 
-              <CardHeader className="text-center pb-8 pt-8">
-                {/* Plan name */}
-                <CardTitle className="text-2xl font-semibold tracking-tight mb-1">
-                  {plan.name}
-                </CardTitle>
+              <div
+                className={`relative h-full p-8 rounded-2xl border transition-all duration-500 flex flex-col overflow-hidden ${
+                  plan.highlighted
+                    ? "border-primary/50 bg-gradient-to-b from-primary/10 via-card/80 to-card/80 backdrop-blur-xl shadow-2xl shadow-primary/10"
+                    : "border-white/10 bg-card/50 backdrop-blur-md hover:border-white/20 hover:bg-card/70"
+                }`}
+              >
+                {/* Badge */}
+                {plan.badge && (
+                  <div className="absolute -top-px left-1/2 -translate-x-1/2">
+                    <div className="px-4 py-1 bg-gradient-to-r from-primary to-accent text-primary-foreground text-xs font-semibold rounded-b-lg flex items-center gap-1.5 shadow-lg">
+                      <Sparkles className="h-3 w-3" />
+                      {plan.badge}
+                    </div>
+                  </div>
+                )}
 
-                {/* Price as primary focal point */}
-                <div className="mt-2 flex items-baseline justify-center gap-2">
-                  <span
-                    className={
-                      plan.name === "Pro"
-                        ? "text-5xl font-bold"
-                        : "text-4xl font-bold"
-                    }
-                  >
-                    {plan.price}
-                  </span>
-                  {plan.period && (
-                    <span className="text-sm text-muted-foreground">
-                      / {plan.period}
+                {/* Plan Header */}
+                <div className="text-center pb-8 pt-4">
+                  <h3 className="text-xl font-semibold mb-2">{plan.name}</h3>
+
+                  <div className="flex items-baseline justify-center gap-1 mb-2">
+                    <span
+                      className={`font-bold tracking-tight ${
+                        plan.highlighted ? "text-5xl" : "text-4xl"
+                      }`}
+                    >
+                      {plan.price}
                     </span>
-                  )}
+                    {plan.period && (
+                      <span className="text-sm text-muted-foreground">
+                        /{plan.period}
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="text-sm text-muted-foreground">
+                    {plan.description}
+                  </p>
                 </div>
 
-                {/* Subtitle / supporting text */}
-                <CardDescription className="mt-3">
-                  {plan.description}
-                </CardDescription>
-              </CardHeader>
-
-              <CardContent className="space-y-6">
-                {/* Features List */}
-                <ul className="space-y-3">
+                {/* Features */}
+                <ul className="space-y-4 flex-1 mb-8">
                   {plan.features.map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-start gap-3">
-                      <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <div
+                        className={`mt-0.5 rounded-full p-1 ${
+                          plan.highlighted
+                            ? "bg-primary/20 text-primary"
+                            : "bg-white/10 text-muted-foreground"
+                        }`}
+                      >
+                        <Check className="h-3 w-3" />
+                      </div>
                       <span className="text-sm text-muted-foreground">
                         {feature}
                       </span>
@@ -152,10 +206,10 @@ export function Pricing() {
                 {/* CTA Button */}
                 <Button
                   asChild
-                  className={`w-full h-12 text-base ${
+                  className={`w-full h-12 text-base font-medium transition-all duration-300 ${
                     plan.highlighted
-                      ? "bg-primary hover:bg-primary/90 text-primary-foreground"
-                      : ""
+                      ? "bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-primary/40"
+                      : "bg-white/10 hover:bg-white/20 text-foreground border border-white/10 hover:border-white/20"
                   }`}
                   variant={plan.highlighted ? "default" : "outline"}
                 >
@@ -165,20 +219,26 @@ export function Pricing() {
                     {plan.cta}
                   </Link>
                 </Button>
-              </CardContent>
-            </Card>
+              </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {/* Trust Message */}
-        <p className="text-center mt-12 space-y-1">
-          <span className="block text-sm font-medium text-muted-foreground">
+        <motion.div
+          className="text-center mt-12 space-y-2"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+        >
+          <p className="text-sm text-muted-foreground">
             All plans include a 7-day money-back guarantee
-          </span>
-          <span className="block text-xs text-muted-foreground">
-            No credit card required for Free plan
-          </span>
-        </p>
+          </p>
+          <p className="text-xs text-muted-foreground/70">
+            No credit card required for Free plan • Cancel anytime
+          </p>
+        </motion.div>
       </div>
     </section>
   );
