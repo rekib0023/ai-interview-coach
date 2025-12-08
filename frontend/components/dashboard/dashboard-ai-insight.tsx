@@ -8,23 +8,19 @@ import { cardVariants } from "./shared-animation-variants";
 
 export function DashboardAiInsight() {
   return (
-    <motion.div
-      variants={cardVariants}
-      initial="hidden"
-      animate="visible"
-    >
+    <motion.div variants={cardVariants} initial="hidden" animate="visible">
       <div
         className={cn(
           "relative overflow-hidden rounded-xl p-4",
-          "bg-gradient-to-r from-violet-500/10 via-purple-500/10 to-fuchsia-500/10",
-          "border border-violet-200/50 dark:border-violet-800/50",
+          "bg-gradient-to-r from-purple-500/10 via-indigo-500/10 to-blue-500/10",
+          "border border-purple-200/60 dark:border-purple-800/60",
           "shadow-sm hover:shadow-md transition-all duration-300"
         )}
       >
         {/* Animated sparkle background */}
         <div className="absolute inset-0 overflow-hidden">
           <motion.div
-            className="absolute -top-4 -right-4 h-24 w-24 rounded-full bg-gradient-to-br from-violet-400/20 to-fuchsia-400/20 blur-2xl"
+            className="absolute -top-4 -right-4 h-24 w-24 rounded-full bg-gradient-to-br from-purple-400/20 to-indigo-400/20 blur-2xl"
             animate={{
               scale: [1, 1.2, 1],
               opacity: [0.3, 0.5, 0.3],
@@ -38,14 +34,21 @@ export function DashboardAiInsight() {
         </div>
 
         <div className="relative flex items-center gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg shadow-violet-500/25">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg shadow-purple-500/25">
             <Sparkles className="h-5 w-5 text-white" />
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="mb-0.5 text-sm font-semibold text-foreground">AI Insight</h3>
+            <h3 className="mb-0.5 text-sm font-semibold text-foreground">
+              AI Insight
+            </h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              You've improved significantly in <span className="font-medium text-foreground">System Design</span> this week!
-              Consider tackling <span className="font-medium text-foreground">Dynamic Programming</span> next for balanced growth.
+              You've improved significantly in{" "}
+              <span className="font-medium text-foreground">System Design</span>{" "}
+              this week! Consider tackling{" "}
+              <span className="font-medium text-foreground">
+                Dynamic Programming
+              </span>{" "}
+              next for balanced growth.
             </p>
           </div>
           <Button
@@ -53,9 +56,9 @@ export function DashboardAiInsight() {
             size="sm"
             className={cn(
               "shrink-0 gap-2 h-9 px-4",
-              "bg-violet-100 hover:bg-violet-200 text-violet-700",
-              "dark:bg-violet-950/50 dark:hover:bg-violet-900/50 dark:text-violet-300",
-              "border border-violet-200 dark:border-violet-800",
+              "bg-purple-100 hover:bg-purple-200 text-purple-700",
+              "dark:bg-purple-950/50 dark:hover:bg-purple-900/50 dark:text-purple-300",
+              "border border-purple-200 dark:border-purple-800",
               "transition-colors"
             )}
           >

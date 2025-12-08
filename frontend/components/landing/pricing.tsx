@@ -77,7 +77,7 @@ export function Pricing() {
         <div className="text-center space-y-4 mb-16">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight">
             Simple,{" "}
-            <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               Transparent Pricing
             </span>
           </h2>
@@ -99,7 +99,7 @@ export function Pricing() {
             >
               {plan.badge && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <Badge className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-1">
+                  <Badge className="bg-primary text-primary-foreground px-4 py-1">
                     <Sparkles className="h-3 w-3 mr-1" />
                     {plan.badge}
                   </Badge>
@@ -154,7 +154,7 @@ export function Pricing() {
                   asChild
                   className={`w-full h-12 text-base ${
                     plan.highlighted
-                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                      ? "bg-primary hover:bg-primary/90 text-primary-foreground"
                       : ""
                   }`}
                   variant={plan.highlighted ? "default" : "outline"}

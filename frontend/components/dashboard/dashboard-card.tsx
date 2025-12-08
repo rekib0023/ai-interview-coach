@@ -1,4 +1,10 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { ReactNode } from "react";
@@ -13,7 +19,7 @@ interface DashboardCardProps {
   contentClassName?: string;
   containerClassName?: string;
   icon?: ReactNode;
-  gradient?: "amber" | "emerald" | "blue" | "purple" | "none";
+  gradient?: "primary" | "accent" | "secondary" | "none";
 }
 
 export function DashboardCard({
@@ -31,10 +37,9 @@ export function DashboardCard({
 
   // Gradient border styles
   const gradientClasses = {
-    amber: "before:from-amber-500/20 before:to-orange-500/20",
-    emerald: "before:from-emerald-500/20 before:to-teal-500/20",
-    blue: "before:from-blue-500/20 before:to-indigo-500/20",
-    purple: "before:from-purple-500/20 before:to-pink-500/20",
+    primary: "before:from-primary/20 before:to-accent/20",
+    accent: "before:from-accent/20 before:to-primary/20",
+    secondary: "before:from-secondary/20 before:to-accent/20",
     none: "",
   };
 
@@ -47,8 +52,9 @@ export function DashboardCard({
     >
       <Card
         className={cn(
-          "relative overflow-hidden border-border/50 shadow-sm transition-all duration-300",
-          "hover:shadow-lg hover:border-border/80",
+          "relative overflow-hidden border-border shadow-sm transition-all duration-300",
+          "dark:border-border/80",
+          "hover:shadow-lg hover:border-primary/20 dark:hover:border-primary/30",
           gradient !== "none" && [
             "before:absolute before:inset-0 before:rounded-xl before:p-[1px]",
             "before:bg-gradient-to-br before:opacity-0 before:transition-opacity before:duration-300",

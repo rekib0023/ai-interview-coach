@@ -2,12 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import {
-  ArrowRight,
-  BarChart3,
-  TrendingDown,
-  TrendingUp
-} from "lucide-react";
+import { ArrowRight, BarChart3, TrendingDown, TrendingUp } from "lucide-react";
 import { DashboardCard } from "./dashboard-card";
 import { itemVariants } from "./shared-animation-variants";
 
@@ -36,17 +31,19 @@ export function DashboardSkillsSection({
       <DashboardCard
         title="Areas to Improve"
         description="Focus on these for maximum growth"
-        icon={<TrendingUp className="h-5 w-5 text-amber-500" />}
+        icon={
+          <TrendingUp className="h-5 w-5 text-orange-500 dark:text-orange-400" />
+        }
         action={
           onViewAll && (
             <Button
-                variant="ghost"
-                size="sm"
-                className="gap-1 text-muted-foreground hover:text-foreground h-8"
-                onClick={() => onViewAll("improve")}
+              variant="ghost"
+              size="sm"
+              className="gap-1 text-muted-foreground hover:text-foreground h-8"
+              onClick={() => onViewAll("improve")}
             >
-                <span className="text-sm">View All</span>
-                <ArrowRight className="h-3.5 w-3.5" />
+              <span className="text-sm">View All</span>
+              <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           )
         }
@@ -55,15 +52,15 @@ export function DashboardSkillsSection({
         contentClassName="flex-1"
       >
         <div className="space-y-5">
-            {areasToImprove.map((skill, index) => (
-              <SkillItem
-                key={skill.name}
-                skill={skill}
-                progressColor="bg-amber-500"
-                index={index}
-                onClick={(name) => onSkillClick?.(name, "improve")}
-              />
-            ))}
+          {areasToImprove.map((skill, index) => (
+            <SkillItem
+              key={skill.name}
+              skill={skill}
+              progressColor="bg-accent"
+              index={index}
+              onClick={(name) => onSkillClick?.(name, "improve")}
+            />
+          ))}
         </div>
       </DashboardCard>
 
@@ -71,17 +68,19 @@ export function DashboardSkillsSection({
       <DashboardCard
         title="Your Strengths"
         description="Keep practicing to maintain excellence"
-        icon={<BarChart3 className="h-5 w-5 text-emerald-500" />}
+        icon={
+          <BarChart3 className="h-5 w-5 text-blue-500 dark:text-blue-400" />
+        }
         action={
           onViewAll && (
             <Button
-                variant="ghost"
-                size="sm"
-                className="gap-1 text-muted-foreground hover:text-foreground h-8"
-                onClick={() => onViewAll("strengths")}
+              variant="ghost"
+              size="sm"
+              className="gap-1 text-muted-foreground hover:text-foreground h-8"
+              onClick={() => onViewAll("strengths")}
             >
-                <span className="text-sm">View All</span>
-                <ArrowRight className="h-3.5 w-3.5" />
+              <span className="text-sm">View All</span>
+              <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           )
         }
@@ -89,17 +88,17 @@ export function DashboardSkillsSection({
         className="h-full flex flex-col"
         contentClassName="flex-1"
       >
-         <div className="space-y-5">
-            {strengths.map((skill, index) => (
-              <SkillItem
-                key={skill.name}
-                skill={skill}
-                progressColor="bg-emerald-500"
-                index={index}
-                onClick={(name) => onSkillClick?.(name, "strengths")}
-              />
-            ))}
-         </div>
+        <div className="space-y-5">
+          {strengths.map((skill, index) => (
+            <SkillItem
+              key={skill.name}
+              skill={skill}
+              progressColor="bg-primary"
+              index={index}
+              onClick={(name) => onSkillClick?.(name, "strengths")}
+            />
+          ))}
+        </div>
       </DashboardCard>
     </div>
   );
@@ -119,9 +118,6 @@ function SkillItem({ skill, progressColor, onClick, index }: SkillItemProps) {
 
   const trendPositive = trend && trend > 0;
   const trendNegative = trend && trend < 0;
-
-  // Determine if this is a high-performing skill
-  const isExcellent = progress >= 90;
 
   return (
     <motion.div
@@ -149,8 +145,9 @@ function SkillItem({ skill, progressColor, onClick, index }: SkillItemProps) {
               className={cn(
                 "h-5 gap-0.5 px-1.5 text-xs font-medium shrink-0",
                 trendPositive &&
-                  "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800",
-                trendNegative && "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-800"
+                  "bg-chart-4/10 text-chart-4 border-chart-4/30 dark:bg-chart-4/20 dark:text-chart-4 dark:border-chart-4/40",
+                trendNegative &&
+                  "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-800"
               )}
             >
               {trendPositive ? (
@@ -168,27 +165,13 @@ function SkillItem({ skill, progressColor, onClick, index }: SkillItemProps) {
         </span>
       </div>
 
-      <div className="relative">
-        <div className="h-2 w-full overflow-hidden rounded-full bg-muted/50">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.8, ease: "easeOut", delay: index * 0.1 }}
-            className={cn("h-full rounded-full", progressColor)}
-          />
-        </div>
-
-        {/* Glow effect for high scores */}
-        {isExcellent && (
-          <motion.div
-            className={cn(
-              "absolute inset-0 h-2 rounded-full opacity-30 blur-sm",
-              progressColor
-            )}
-            animate={{ opacity: [0.3, 0.5, 0.3] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          />
-        )}
+      <div className="h-2 w-full overflow-hidden rounded-full bg-muted/50">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${progress}%` }}
+          transition={{ duration: 0.8, ease: "easeOut", delay: index * 0.1 }}
+          className={cn("h-full rounded-full", progressColor)}
+        />
       </div>
     </motion.div>
   );

@@ -26,63 +26,63 @@ const features = [
     title: "AI Interviewer Chat",
     description:
       "Engage in realistic technical interviews with an AI that adapts to your skill level and provides contextual questions.",
-    gradient: "from-blue-500 to-cyan-500",
+    gradient: "from-primary to-accent",
   },
   {
     icon: Code2,
     title: "Live Code Editor",
     description:
       "Write, test, and execute code in real-time with support for Python, JavaScript, Java, C++, and more languages.",
-    gradient: "from-purple-500 to-pink-500",
+    gradient: "from-accent to-primary",
   },
   {
     icon: BarChart3,
     title: "Performance Analytics",
     description:
       "Track your progress with detailed metrics, identify weak areas, and see your improvement over time.",
-    gradient: "from-orange-500 to-red-500",
+    gradient: "from-primary to-accent",
   },
   {
     icon: GitBranch,
     title: "System Design Whiteboard",
     description:
       "Practice architectural interviews with interactive whiteboarding tools and get AI-powered feedback on your designs.",
-    gradient: "from-green-500 to-emerald-500",
+    gradient: "from-chart-4 to-chart-5",
   },
   {
     icon: Brain,
     title: "Smart Feedback",
     description:
       "Receive instant, actionable feedback on your code quality, time complexity, space complexity, and communication skills.",
-    gradient: "from-indigo-500 to-blue-500",
+    gradient: "from-primary to-accent",
   },
   {
     icon: Zap,
     title: "Real-time Execution",
     description:
       "Run test cases instantly with our optimized execution engine. See results in milliseconds, not minutes.",
-    gradient: "from-yellow-500 to-orange-500",
+    gradient: "from-accent to-primary",
   },
   {
     icon: Target,
     title: "Targeted Practice",
     description:
       "Focus on specific topics like algorithms, data structures, or system design with curated problem sets.",
-    gradient: "from-pink-500 to-rose-500",
+    gradient: "from-chart-3 to-chart-2",
   },
   {
     icon: Clock,
     title: "Interview Simulation",
     description:
       "Practice under real interview conditions with time limits, pressure scenarios, and realistic follow-up questions.",
-    gradient: "from-teal-500 to-cyan-500",
+    gradient: "from-primary to-accent",
   },
   {
     icon: Sparkles,
     title: "Personalized Learning",
     description:
       "AI adapts to your learning style and pace, creating a customized interview prep path just for you.",
-    gradient: "from-violet-500 to-purple-500",
+    gradient: "from-accent to-primary",
   },
 ];
 
@@ -100,7 +100,7 @@ export function Features() {
         >
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight">
             Everything You Need to{" "}
-            <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               Ace Your Interview
             </span>
           </h2>

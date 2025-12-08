@@ -67,10 +67,10 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-stone-50 p-4 py-12 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 py-12 relative overflow-hidden">
       {/* Background Elements */}
-      <div className="absolute top-0 inset-x-0 h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-100/40 via-stone-50 to-stone-50 -z-10" />
-      <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]" />
+      <div className="absolute top-0 inset-x-0 h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background dark:from-primary/20 dark:via-background dark:to-background -z-10" />
+      <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:14px_24px]" />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -83,14 +83,14 @@ export default function SignUpPage() {
           <div className="h-10 w-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/20">
             <Code2 className="h-6 w-6" />
           </div>
-          <span className="text-2xl font-bold tracking-tight text-stone-900">
+          <span className="text-2xl font-bold tracking-tight text-foreground">
             Interview Coach
           </span>
         </Link>
 
-        <Card className="border-border/50 shadow-xl bg-white/80 backdrop-blur-sm">
+        <Card className="border-border/50 shadow-xl bg-card/95 backdrop-blur-sm dark:bg-card dark:border-border dark:shadow-2xl">
           <CardHeader className="space-y-1 text-center pt-8">
-            <CardTitle className="text-2xl font-bold text-stone-900">
+            <CardTitle className="text-2xl font-bold text-foreground">
               Create an account
             </CardTitle>
             <CardDescription className="text-base">
@@ -99,14 +99,14 @@ export default function SignUpPage() {
           </CardHeader>
           <CardContent className="pb-8">
             {error && (
-              <div className="mb-4 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+              <div className="mb-4 p-3 text-sm text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-md">
                 {error}
               </div>
             )}
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Full Name */}
               <div className="space-y-2">
-                <Label htmlFor="fullName" className="text-stone-600">
+                <Label htmlFor="fullName" className="text-foreground">
                   Full Name
                 </Label>
                 <Input
@@ -117,15 +117,15 @@ export default function SignUpPage() {
                   onChange={(e) => updateField("fullName", e.target.value)}
                   onBlur={() => touchField("fullName")}
                   required
-                  className={`h-11 bg-stone-50/50 border-stone-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all ${
+                  className={`h-11 bg-background border-input focus:border-primary focus:ring-primary/20 transition-all ${
                     getFieldError("fullName")
                       ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
                       : ""
                   }`}
                 />
                 {getFieldError("fullName") && (
-                  <p className="text-xs text-red-600 flex items-center gap-1 mt-1">
-                    <div className="w-1 h-1 rounded-full bg-red-500" />
+                  <p className="text-xs text-red-700 dark:text-red-400 flex items-center gap-1 mt-1">
+                    <div className="w-1 h-1 rounded-full bg-red-500 dark:bg-red-400" />
                     {getFieldError("fullName")}
                   </p>
                 )}
@@ -133,7 +133,7 @@ export default function SignUpPage() {
 
               {/* Email */}
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-stone-600">
+                <Label htmlFor="email" className="text-foreground">
                   Email
                 </Label>
                 <Input
@@ -144,15 +144,15 @@ export default function SignUpPage() {
                   onChange={(e) => updateField("email", e.target.value)}
                   onBlur={() => touchField("email")}
                   required
-                  className={`h-11 bg-stone-50/50 border-stone-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all ${
+                  className={`h-11 bg-background border-input focus:border-primary focus:ring-primary/20 transition-all ${
                     getFieldError("email")
                       ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
                       : ""
                   }`}
                 />
                 {getFieldError("email") && (
-                  <p className="text-xs text-red-600 flex items-center gap-1 mt-1">
-                    <div className="w-1 h-1 rounded-full bg-red-500" />
+                  <p className="text-xs text-red-700 dark:text-red-400 flex items-center gap-1 mt-1">
+                    <div className="w-1 h-1 rounded-full bg-red-500 dark:bg-red-400" />
                     {getFieldError("email")}
                   </p>
                 )}
@@ -160,7 +160,7 @@ export default function SignUpPage() {
 
               {/* Password */}
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-stone-600">
+                <Label htmlFor="password" className="text-foreground">
                   Password
                 </Label>
                 <PasswordInput
@@ -172,13 +172,13 @@ export default function SignUpPage() {
                   required
                   showStrengthIndicator={true}
                   error={getFieldError("password")}
-                  className="h-11 bg-stone-50/50 border-stone-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                  className="h-11 bg-background border-input focus:border-primary focus:ring-primary/20 transition-all"
                 />
               </div>
 
               {/* Confirm Password */}
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-stone-600">
+                <Label htmlFor="confirmPassword" className="text-foreground">
                   Confirm Password
                 </Label>
                 <PasswordInput
@@ -191,7 +191,7 @@ export default function SignUpPage() {
                   onBlur={() => touchField("confirmPassword")}
                   required
                   error={getFieldError("confirmPassword")}
-                  className="h-11 bg-stone-50/50 border-stone-200 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
+                  className="h-11 bg-background border-input focus:border-primary focus:ring-primary/20 transition-all"
                 />
               </div>
 
@@ -203,23 +203,23 @@ export default function SignUpPage() {
                   onCheckedChange={(checked) =>
                     setAgreeToTerms(checked as boolean)
                   }
-                  className="mt-1 border-stone-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                  className="mt-1 border-input data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                 />
                 <label
                   htmlFor="terms"
-                  className="text-sm leading-relaxed peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-stone-600"
+                  className="text-sm leading-relaxed peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground"
                 >
                   I agree to the{" "}
                   <Link
                     href="/terms"
-                    className="text-blue-600 hover:underline hover:text-blue-700"
+                    className="text-primary hover:underline hover:text-primary/80"
                   >
                     Terms of Service
                   </Link>{" "}
                   and{" "}
                   <Link
                     href="/privacy"
-                    className="text-blue-600 hover:underline hover:text-blue-700"
+                    className="text-primary hover:underline hover:text-primary/80"
                   >
                     Privacy Policy
                   </Link>
@@ -230,7 +230,7 @@ export default function SignUpPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-11 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white shadow-lg shadow-blue-200 transition-all hover:scale-[1.02]"
+                className="w-full h-11 bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground shadow-lg shadow-primary/20 dark:shadow-primary/10 transition-all hover:scale-[1.02]"
               >
                 {isLoading ? "Creating Account..." : "Create Account"}
               </Button>
@@ -241,7 +241,7 @@ export default function SignUpPage() {
                   <span className="w-full border-t border-stone-200" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-stone-400">
+                  <span className="bg-card px-2 text-muted-foreground">
                     Or continue with
                   </span>
                 </div>
@@ -252,11 +252,11 @@ export default function SignUpPage() {
             </form>
 
             {/* Sign In Link */}
-            <p className="text-center text-sm text-stone-500 mt-8">
+            <p className="text-center text-sm text-muted-foreground mt-8">
               Already have an account?{" "}
               <Link
                 href="/signin"
-                className="text-blue-600 font-medium hover:underline hover:text-blue-700"
+                className="text-teal-600 font-medium hover:underline hover:text-teal-700"
               >
                 Sign in
               </Link>
@@ -265,10 +265,10 @@ export default function SignUpPage() {
         </Card>
 
         {/* Back to Home */}
-        <p className="text-center text-sm text-stone-500 mt-8">
+        <p className="text-center text-sm text-muted-foreground mt-8">
           <Link
             href="/"
-            className="hover:text-stone-900 transition-colors flex items-center justify-center gap-1"
+            className="hover:text-foreground transition-colors flex items-center justify-center gap-1"
           >
             <ArrowLeft className="h-3 w-3" /> Back to home
           </Link>

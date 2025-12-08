@@ -7,7 +7,7 @@ import Link from "next/link";
 
 export function CTA() {
   return (
-    <section className="py-24 bg-gradient-to-r from-blue-600 to-indigo-600 relative overflow-hidden">
+    <section className="py-24 bg-gradient-to-r from-primary to-accent relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-grid-white/[0.05] [mask-image:linear-gradient(0deg,transparent,black)]" />
 
@@ -37,7 +37,7 @@ export function CTA() {
               asChild
               size="lg"
               variant="secondary"
-              className="text-base h-12 px-8 gap-2 bg-white text-blue-600 hover:bg-white hover:scale-105 transition-transform shadow-lg"
+              className="text-base h-12 px-8 gap-2 bg-background text-primary hover:bg-background hover:scale-105 transition-transform shadow-lg"
             >
               <Link href="/signup">
                 Start Free Trial

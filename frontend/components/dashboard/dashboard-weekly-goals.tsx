@@ -41,8 +41,8 @@ export function DashboardWeeklyGoals({
               variant="secondary"
               className={cn(
                 "hidden sm:inline-flex",
-                "bg-emerald-50 text-emerald-700 border-emerald-200",
-                "dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800"
+                "bg-chart-4/10 text-chart-4 border-chart-4/30",
+                "dark:bg-chart-4/20 dark:text-chart-4 dark:border-chart-4/40"
               )}
             >
               {completedGoals}/{totalGoals} completed
@@ -95,10 +95,14 @@ function GoalProgress({ goal, index, onClick }: GoalProgressProps) {
 
   const getPriorityColor = () => {
     switch (priority) {
-      case "high": return "text-rose-500";
-      case "medium": return "text-amber-500";
-      case "low": return "text-blue-500";
-      default: return "text-muted-foreground";
+      case "high":
+        return "text-rose-500 dark:text-rose-400";
+      case "medium":
+        return "text-amber-500 dark:text-amber-400";
+      case "low":
+        return "text-chart-2";
+      default:
+        return "text-muted-foreground";
     }
   };
 
@@ -130,10 +134,12 @@ function GoalProgress({ goal, index, onClick }: GoalProgressProps) {
             <Circle className={cn("h-3 w-3 shrink-0", getPriorityColor())} />
           )}
 
-          <span className={cn(
-            "text-sm font-medium truncate transition-colors",
-            isCompleted && "text-muted-foreground line-through"
-          )}>
+          <span
+            className={cn(
+              "text-sm font-medium truncate transition-colors",
+              isCompleted && "text-muted-foreground line-through"
+            )}
+          >
             {label}
           </span>
 
@@ -153,11 +159,15 @@ function GoalProgress({ goal, index, onClick }: GoalProgressProps) {
           )}
         </div>
 
-        <div className={cn(
-          "flex items-center gap-1 shrink-0 px-2 py-0.5 rounded-md text-xs font-semibold tabular-nums",
-          "bg-background border border-border/50",
-          isCompleted ? "text-emerald-600 dark:text-emerald-400" : "text-foreground"
-        )}>
+        <div
+          className={cn(
+            "flex items-center gap-1 shrink-0 px-2 py-0.5 rounded-md text-xs font-semibold tabular-nums",
+            "bg-background border border-border/50",
+            isCompleted
+              ? "text-chart-4"
+              : "text-foreground"
+          )}
+        >
           <span>{current}</span>
           <span className="text-muted-foreground">/</span>
           <span className="text-muted-foreground">{total}</span>
@@ -165,14 +175,14 @@ function GoalProgress({ goal, index, onClick }: GoalProgressProps) {
       </div>
 
       {/* Progress Bar */}
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+      <div className="h-2 w-full overflow-hidden rounded-full bg-muted/50">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${percentage}%` }}
-          transition={{ duration: 0.6, ease: "easeOut", delay: index * 0.1 }}
+          transition={{ duration: 0.8, ease: "easeOut", delay: index * 0.1 }}
           className={cn(
-            "h-full rounded-full transition-colors",
-            isCompleted ? "bg-emerald-500" : "bg-primary"
+            "h-full rounded-full",
+            isCompleted ? "bg-chart-4" : "bg-primary"
           )}
         />
       </div>
@@ -188,7 +198,9 @@ function EmptyGoals() {
       </div>
       <h3 className="text-sm font-semibold mb-1">No goals set</h3>
       <p className="text-xs mb-4">Set weekly goals to track your progress</p>
-      <Button size="sm" variant="outline">Add Goal</Button>
+      <Button size="sm" variant="outline">
+        Add Goal
+      </Button>
     </div>
   );
 }
