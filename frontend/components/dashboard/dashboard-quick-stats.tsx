@@ -31,9 +31,9 @@ const statsData: StatItem[] = [
     change: "+5%",
     subtitle: "from last week",
     icon: Trophy,
-    iconColor: "text-teal-600",
+    iconColor: "text-amber-600 dark:text-amber-500",
     iconBg:
-      "bg-gradient-to-br from-teal-100 to-cyan-100 dark:from-teal-950/50 dark:to-cyan-950/50",
+      "bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-950/50 dark:to-orange-950/50",
     trend: "up",
   },
   {
@@ -41,25 +41,25 @@ const statsData: StatItem[] = [
     value: 42,
     subtitle: "Top 15% of users",
     icon: CircleCheck,
-    iconColor: "text-cyan-600",
+    iconColor: "text-blue-600 dark:text-blue-400",
     iconBg:
-      "bg-gradient-to-br from-cyan-100 to-emerald-100 dark:from-cyan-950/50 dark:to-emerald-950/50",
+      "bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-950/50",
   },
   {
     title: "Current Streak",
     value: "5 Days",
     subtitle: "Keep it up!",
     icon: Flame,
-    iconColor: "text-emerald-600",
+    iconColor: "text-orange-600 dark:text-orange-500",
     iconBg:
-      "bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-950/50 dark:to-teal-950/50",
+      "bg-gradient-to-br from-orange-100 to-red-100 dark:from-orange-950/50 dark:to-red-950/50",
   },
   {
     title: "Time Invested",
     value: "12.5h",
     subtitle: "This week",
     icon: Clock,
-    iconColor: "text-teal-600",
+    iconColor: "text-teal-600 dark:text-teal-400",
     iconBg:
       "bg-gradient-to-br from-teal-100 to-cyan-100 dark:from-teal-950/50 dark:to-cyan-950/50",
   },
@@ -98,9 +98,10 @@ function StatsCard({
     <motion.div variants={cardVariants}>
       <Card
         className={cn(
-          "relative overflow-hidden border-border/50 shadow-sm",
+          "relative overflow-hidden border-border shadow-sm",
+          "dark:border-border/80",
           "transition-all duration-300 group",
-          "hover:shadow-lg hover:border-border/80 hover:-translate-y-0.5"
+          "hover:shadow-lg hover:border-primary/20 dark:hover:border-primary/30 hover:-translate-y-0.5"
         )}
       >
         <CardContent className="p-5">

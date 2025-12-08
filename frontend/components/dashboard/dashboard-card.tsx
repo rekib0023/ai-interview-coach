@@ -52,8 +52,9 @@ export function DashboardCard({
     >
       <Card
         className={cn(
-          "relative overflow-hidden border-border/50 shadow-sm transition-all duration-300",
-          "hover:shadow-lg hover:border-border/80",
+          "relative overflow-hidden border-border shadow-sm transition-all duration-300",
+          "dark:border-border/80",
+          "hover:shadow-lg hover:border-primary/20 dark:hover:border-primary/30",
           gradient !== "none" && [
             "before:absolute before:inset-0 before:rounded-xl before:p-[1px]",
             "before:bg-gradient-to-br before:opacity-0 before:transition-opacity before:duration-300",

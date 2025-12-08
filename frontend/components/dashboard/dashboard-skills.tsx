@@ -31,7 +31,9 @@ export function DashboardSkillsSection({
       <DashboardCard
         title="Areas to Improve"
         description="Focus on these for maximum growth"
-        icon={<TrendingUp className="h-5 w-5 text-teal-500" />}
+        icon={
+          <TrendingUp className="h-5 w-5 text-orange-500 dark:text-orange-400" />
+        }
         action={
           onViewAll && (
             <Button
@@ -54,7 +56,7 @@ export function DashboardSkillsSection({
             <SkillItem
               key={skill.name}
               skill={skill}
-              progressColor="bg-teal-500"
+              progressColor="bg-orange-500 dark:bg-orange-400"
               index={index}
               onClick={(name) => onSkillClick?.(name, "improve")}
             />
@@ -66,7 +68,9 @@ export function DashboardSkillsSection({
       <DashboardCard
         title="Your Strengths"
         description="Keep practicing to maintain excellence"
-        icon={<BarChart3 className="h-5 w-5 text-emerald-500" />}
+        icon={
+          <BarChart3 className="h-5 w-5 text-blue-500 dark:text-blue-400" />
+        }
         action={
           onViewAll && (
             <Button
@@ -89,7 +93,7 @@ export function DashboardSkillsSection({
             <SkillItem
               key={skill.name}
               skill={skill}
-              progressColor="bg-emerald-500"
+              progressColor="bg-blue-500 dark:bg-blue-400"
               index={index}
               onClick={(name) => onSkillClick?.(name, "strengths")}
             />

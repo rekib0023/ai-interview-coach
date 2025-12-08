@@ -12,15 +12,15 @@ export function DashboardAiInsight() {
       <div
         className={cn(
           "relative overflow-hidden rounded-xl p-4",
-          "bg-gradient-to-r from-teal-500/10 via-cyan-500/10 to-emerald-500/10",
-          "border border-teal-200/50 dark:border-teal-800/50",
+          "bg-gradient-to-r from-purple-500/10 via-indigo-500/10 to-blue-500/10",
+          "border border-purple-200/60 dark:border-purple-800/60",
           "shadow-sm hover:shadow-md transition-all duration-300"
         )}
       >
         {/* Animated sparkle background */}
         <div className="absolute inset-0 overflow-hidden">
           <motion.div
-            className="absolute -top-4 -right-4 h-24 w-24 rounded-full bg-gradient-to-br from-teal-400/20 to-cyan-400/20 blur-2xl"
+            className="absolute -top-4 -right-4 h-24 w-24 rounded-full bg-gradient-to-br from-purple-400/20 to-indigo-400/20 blur-2xl"
             animate={{
               scale: [1, 1.2, 1],
               opacity: [0.3, 0.5, 0.3],
@@ -34,7 +34,7 @@ export function DashboardAiInsight() {
         </div>
 
         <div className="relative flex items-center gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 shadow-lg shadow-teal-500/25">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg shadow-purple-500/25">
             <Sparkles className="h-5 w-5 text-white" />
           </div>
           <div className="min-w-0 flex-1">
@@ -56,9 +56,9 @@ export function DashboardAiInsight() {
             size="sm"
             className={cn(
               "shrink-0 gap-2 h-9 px-4",
-              "bg-teal-100 hover:bg-teal-200 text-teal-700",
-              "dark:bg-teal-950/50 dark:hover:bg-teal-900/50 dark:text-teal-300",
-              "border border-teal-200 dark:border-teal-800",
+              "bg-purple-100 hover:bg-purple-200 text-purple-700",
+              "dark:bg-purple-950/50 dark:hover:bg-purple-900/50 dark:text-purple-300",
+              "border border-purple-200 dark:border-purple-800",
               "transition-colors"
             )}
           >

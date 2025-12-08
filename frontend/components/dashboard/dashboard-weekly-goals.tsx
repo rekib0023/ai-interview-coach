@@ -96,11 +96,11 @@ function GoalProgress({ goal, index, onClick }: GoalProgressProps) {
   const getPriorityColor = () => {
     switch (priority) {
       case "high":
-        return "text-rose-500";
+        return "text-rose-500 dark:text-rose-400";
       case "medium":
-        return "text-teal-500";
+        return "text-amber-500 dark:text-amber-400";
       case "low":
-        return "text-cyan-500";
+        return "text-blue-500 dark:text-blue-400";
       default:
         return "text-muted-foreground";
     }
@@ -148,8 +148,8 @@ function GoalProgress({ goal, index, onClick }: GoalProgressProps) {
               variant="secondary"
               className={cn(
                 "text-[10px] h-5 px-1.5",
-                "bg-teal-50 text-teal-600 border-teal-200",
-                "dark:bg-teal-950/30 dark:text-teal-400 dark:border-teal-800",
+                "bg-amber-50 text-amber-600 border-amber-200",
+                "dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800",
                 "animate-pulse"
               )}
             >
