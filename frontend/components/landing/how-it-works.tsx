@@ -2,7 +2,13 @@
 
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-import { ArrowRight, Code2, MessageSquare, Target, TrendingUp } from "lucide-react";
+import {
+  ChevronRight,
+  Code2,
+  MessageSquare,
+  Target,
+  TrendingUp,
+} from "lucide-react";
 
 const steps = [
   {
@@ -116,19 +122,21 @@ export function HowItWorks() {
               >
                 {/* Connector line (hidden on last item and mobile) */}
                 {index < steps.length - 1 && (
-                  <div className="hidden lg:block absolute top-16 left-full w-full h-px z-10">
-                    <div className="h-full w-3/4 bg-gradient-to-r from-white/20 to-transparent" />
-                    <ArrowRight className="absolute right-1/4 -top-2 h-4 w-4 text-white/20" />
+                  <div className="hidden lg:flex absolute top-16 left-full w-full items-center z-10 px-1">
+                    <div className="flex-1 border-t-2 border-dashed border-muted-foreground/30" />
+                    <ChevronRight className="h-4 w-4 text-muted-foreground/50 -ml-1" />
                   </div>
                 )}
 
-                <div className="relative h-full p-6 rounded-2xl border border-white/10 bg-card/50 backdrop-blur-md transition-all duration-500 hover:border-white/20 hover:bg-card/70 overflow-hidden">
+                <div className="relative h-full p-6 rounded-2xl border border-border bg-card transition-all duration-500 hover:border-primary/30 hover:shadow-lg dark:border-white/10 dark:bg-card/50 dark:backdrop-blur-md dark:hover:border-white/20 dark:hover:bg-card/70 overflow-hidden">
                   {/* Gradient glow on hover */}
-                  <div className={`absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br ${step.color} blur-3xl opacity-0 group-hover:opacity-20 transition-opacity duration-500`} />
+                  <div
+                    className={`absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br ${step.color} blur-3xl opacity-0 group-hover:opacity-10 dark:group-hover:opacity-20 transition-opacity duration-500`}
+                  />
 
                   <div className="relative z-10">
                     {/* Step Number */}
-                    <div className="text-6xl font-bold text-white/5 group-hover:text-white/10 transition-colors mb-4">
+                    <div className="text-6xl font-bold text-muted-foreground/10 group-hover:text-muted-foreground/20 transition-colors mb-4 select-none">
                       {step.number}
                     </div>
 

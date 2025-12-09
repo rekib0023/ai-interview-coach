@@ -13,16 +13,19 @@ export function CTA() {
         {/* Base gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background" />
 
-        {/* Animated blobs */}
+        {/* Animated blobs - more subtle in light mode */}
         <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] animate-blob">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-accent/20 to-chart-3/30 blur-3xl rounded-full opacity-50" />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-accent/10 to-chart-3/20 blur-3xl rounded-full opacity-30 dark:opacity-50" />
         </div>
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] animate-blob" style={{ animationDelay: '2s' }}>
-          <div className="absolute inset-0 bg-gradient-to-br from-accent/30 via-primary/20 to-chart-4/30 blur-3xl rounded-full opacity-50" />
+        <div
+          className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] animate-blob"
+          style={{ animationDelay: "2s" }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-accent/20 via-primary/10 to-chart-4/20 blur-3xl rounded-full opacity-30 dark:opacity-50" />
         </div>
 
-        {/* Grid pattern */}
-        <div className="absolute inset-0 bg-grid opacity-30" />
+        {/* Grid pattern - only in dark mode */}
+        <div className="absolute inset-0 bg-grid opacity-0 dark:opacity-30" />
 
         {/* Radial fade */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,var(--background)_70%)]" />
@@ -63,7 +66,8 @@ export function CTA() {
           {/* Subheading */}
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Start practicing today and join thousands of developers who have
-            successfully prepared for their technical interviews with AI Interview Coach.
+            successfully prepared for their technical interviews with AI
+            Interview Coach.
           </p>
 
           {/* CTA Buttons */}
@@ -91,7 +95,7 @@ export function CTA() {
               asChild
               size="lg"
               variant="outline"
-              className="text-lg h-16 px-10 rounded-full bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 backdrop-blur-md transition-all duration-300"
+              className="text-lg h-16 px-10 rounded-full bg-secondary/50 border-border hover:bg-secondary hover:border-primary/30 dark:bg-white/5 dark:border-white/10 dark:hover:bg-white/10 dark:hover:border-white/20 backdrop-blur-md transition-all duration-300"
             >
               <Link href="#pricing">View Pricing</Link>
             </Button>

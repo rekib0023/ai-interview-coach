@@ -2,6 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Check, Sparkles, Zap } from "lucide-react";
 import Link from "next/link";
@@ -135,7 +136,9 @@ export function Pricing() {
             <motion.div
               key={index}
               variants={itemVariants}
-              className={`relative ${plan.highlighted ? "md:-mt-4 md:mb-4" : ""}`}
+              className={`relative ${
+                plan.highlighted ? "md:-mt-4 md:mb-4" : ""
+              }`}
             >
               {/* Glow effect for highlighted plan */}
               {plan.highlighted && (
@@ -143,11 +146,12 @@ export function Pricing() {
               )}
 
               <div
-                className={`relative h-full p-8 rounded-2xl border transition-all duration-500 flex flex-col overflow-hidden ${
+                className={cn(
+                  "relative h-full p-8 rounded-2xl border transition-all duration-500 flex flex-col overflow-hidden",
                   plan.highlighted
-                    ? "border-primary/50 bg-gradient-to-b from-primary/10 via-card/80 to-card/80 backdrop-blur-xl shadow-2xl shadow-primary/10"
-                    : "border-white/10 bg-card/50 backdrop-blur-md hover:border-white/20 hover:bg-card/70"
-                }`}
+                    ? "border-primary/50 bg-gradient-to-b from-primary/10 via-card to-card shadow-2xl shadow-primary/10"
+                    : "border-border bg-card hover:border-primary/30 hover:shadow-lg dark:border-white/10 dark:bg-card/50 dark:backdrop-blur-md dark:hover:border-white/20 dark:hover:bg-card/70"
+                )}
               >
                 {/* Badge */}
                 {plan.badge && (
@@ -188,11 +192,12 @@ export function Pricing() {
                   {plan.features.map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-start gap-3">
                       <div
-                        className={`mt-0.5 rounded-full p-1 ${
+                        className={cn(
+                          "mt-0.5 rounded-full p-1",
                           plan.highlighted
                             ? "bg-primary/20 text-primary"
-                            : "bg-white/10 text-muted-foreground"
-                        }`}
+                            : "bg-muted text-muted-foreground"
+                        )}
                       >
                         <Check className="h-3 w-3" />
                       </div>
@@ -206,11 +211,12 @@ export function Pricing() {
                 {/* CTA Button */}
                 <Button
                   asChild
-                  className={`w-full h-12 text-base font-medium transition-all duration-300 ${
+                  className={cn(
+                    "w-full h-12 text-base font-medium transition-all duration-300",
                     plan.highlighted
                       ? "bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-primary/40"
-                      : "bg-white/10 hover:bg-white/20 text-foreground border border-white/10 hover:border-white/20"
-                  }`}
+                      : "bg-secondary hover:bg-secondary/80 text-foreground border border-border"
+                  )}
                   variant={plan.highlighted ? "default" : "outline"}
                 >
                   <Link

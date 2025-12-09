@@ -1,7 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardTitle,
+} from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Sparkles, Zap } from "lucide-react";
@@ -9,16 +14,14 @@ import { cardVariants } from "../dashboard/shared-animation-variants";
 
 export function UpgradeCard() {
   return (
-    <motion.div
-      variants={cardVariants}
-      initial="hidden"
-      animate="visible"
-    >
-      <Card className={cn(
-        "relative overflow-hidden border-0",
-        "bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-600",
-        "shadow-xl shadow-violet-500/20"
-      )}>
+    <motion.div variants={cardVariants} initial="hidden" animate="visible">
+      <Card
+        className={cn(
+          "relative overflow-hidden border-0",
+          "bg-gradient-to-br from-primary via-blue-600 to-accent",
+          "shadow-xl shadow-primary/20"
+        )}
+      >
         {/* Animated background elements */}
         <div className="absolute inset-0 overflow-hidden">
           <motion.div
@@ -64,7 +67,8 @@ export function UpgradeCard() {
           </div>
 
           <p className="text-xs text-white/80 mb-3">
-            Unlock unlimited interviews, advanced analytics, and personalized learning paths.
+            Unlock unlimited interviews, advanced analytics, and personalized
+            learning paths.
           </p>
 
           {/* Progress indicator */}
@@ -86,7 +90,7 @@ export function UpgradeCard() {
           <Button
             className={cn(
               "w-full gap-2 font-semibold",
-              "bg-white text-violet-700 hover:bg-white/90",
+              "bg-white text-primary hover:bg-white/90",
               "shadow-lg shadow-black/10"
             )}
             size="sm"

@@ -4,7 +4,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle2, Circle, Target, Zap } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Circle,
+  Plus,
+  Target,
+  Zap,
+} from "lucide-react";
 import { DashboardCard } from "./dashboard-card";
 import { itemVariants } from "./shared-animation-variants";
 
@@ -38,11 +45,10 @@ export function DashboardWeeklyGoals({
         <div className="flex items-center gap-2">
           {completedGoals > 0 && (
             <Badge
-              variant="secondary"
+              variant="outline"
               className={cn(
-                "hidden sm:inline-flex",
-                "bg-chart-4/10 text-chart-4 border-chart-4/30",
-                "dark:bg-chart-4/20 dark:text-chart-4 dark:border-chart-4/40"
+                "hidden sm:inline-flex border",
+                "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
               )}
             >
               {completedGoals}/{totalGoals} completed
@@ -52,7 +58,7 @@ export function DashboardWeeklyGoals({
             <Button
               variant="ghost"
               size="sm"
-              className="gap-1 text-muted-foreground hover:text-foreground h-8"
+              className="gap-1.5 text-muted-foreground hover:text-foreground h-8 hover:bg-white/5"
               onClick={onViewAll}
             >
               <span className="text-sm">View All</span>
@@ -61,6 +67,7 @@ export function DashboardWeeklyGoals({
           )}
         </div>
       }
+      gradient="primary"
     >
       {goals.length === 0 ? (
         <EmptyGoals />
@@ -96,11 +103,11 @@ function GoalProgress({ goal, index, onClick }: GoalProgressProps) {
   const getPriorityColor = () => {
     switch (priority) {
       case "high":
-        return "text-rose-500 dark:text-rose-400";
+        return "text-rose-400";
       case "medium":
-        return "text-amber-500 dark:text-amber-400";
+        return "text-amber-400";
       case "low":
-        return "text-chart-2";
+        return "text-emerald-400";
       default:
         return "text-muted-foreground";
     }
@@ -113,25 +120,26 @@ function GoalProgress({ goal, index, onClick }: GoalProgressProps) {
       animate="visible"
       transition={{ delay: index * 0.05 }}
       className={cn(
-        "group relative rounded-lg bg-muted/30 border border-transparent p-3",
-        "transition-all duration-200",
-        "hover:bg-muted/50 hover:border-border/50",
+        "group relative rounded-xl p-4",
+        "bg-white/5 border border-transparent",
+        "transition-all duration-300",
+        "hover:bg-white/10 hover:border-white/10",
         clickable && "cursor-pointer"
       )}
       onClick={() => onClick?.(label)}
     >
-      <div className="flex items-center justify-between gap-3 mb-2.5">
-        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
           {isCompleted ? (
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="flex items-center justify-center h-5 w-5 rounded-full bg-emerald-500 text-white shrink-0"
+              className="flex items-center justify-center h-6 w-6 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 text-white shrink-0 shadow-lg shadow-emerald-500/30"
             >
-              <CheckCircle2 className="h-3.5 w-3.5" />
+              <CheckCircle2 className="h-4 w-4" />
             </motion.div>
           ) : (
-            <Circle className={cn("h-3 w-3 shrink-0", getPriorityColor())} />
+            <Circle className={cn("h-4 w-4 shrink-0", getPriorityColor())} />
           )}
 
           <span
@@ -145,15 +153,14 @@ function GoalProgress({ goal, index, onClick }: GoalProgressProps) {
 
           {isAlmostDone && (
             <Badge
-              variant="secondary"
+              variant="outline"
               className={cn(
-                "text-[10px] h-5 px-1.5",
-                "bg-amber-50 text-amber-600 border-amber-200",
-                "dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800",
+                "text-[10px] h-5 px-2 gap-1 shrink-0",
+                "bg-amber-500/20 text-amber-400 border-amber-500/30",
                 "animate-pulse"
               )}
             >
-              <Zap className="h-2.5 w-2.5 mr-0.5" />
+              <Zap className="h-2.5 w-2.5" />
               Almost!
             </Badge>
           )}
@@ -161,11 +168,9 @@ function GoalProgress({ goal, index, onClick }: GoalProgressProps) {
 
         <div
           className={cn(
-            "flex items-center gap-1 shrink-0 px-2 py-0.5 rounded-md text-xs font-semibold tabular-nums",
-            "bg-background border border-border/50",
-            isCompleted
-              ? "text-chart-4"
-              : "text-foreground"
+            "flex items-center gap-1 shrink-0 px-2.5 py-1 rounded-lg text-xs font-semibold tabular-nums",
+            "bg-white/10 border border-white/10",
+            isCompleted ? "text-emerald-400" : "text-foreground"
           )}
         >
           <span>{current}</span>
@@ -175,14 +180,16 @@ function GoalProgress({ goal, index, onClick }: GoalProgressProps) {
       </div>
 
       {/* Progress Bar */}
-      <div className="h-2 w-full overflow-hidden rounded-full bg-muted/50">
+      <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${percentage}%` }}
           transition={{ duration: 0.8, ease: "easeOut", delay: index * 0.1 }}
           className={cn(
             "h-full rounded-full",
-            isCompleted ? "bg-chart-4" : "bg-primary"
+            isCompleted
+              ? "bg-gradient-to-r from-emerald-500 to-teal-500"
+              : "bg-gradient-to-r from-primary to-accent"
           )}
         />
       </div>
@@ -192,13 +199,20 @@ function GoalProgress({ goal, index, onClick }: GoalProgressProps) {
 
 function EmptyGoals() {
   return (
-    <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
-      <div className="rounded-full bg-muted p-3 mb-3">
-        <Target className="h-6 w-6" />
+    <div className="flex flex-col items-center justify-center py-12 text-center rounded-xl border-2 border-dashed border-white/10 bg-white/5">
+      <div className="rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 p-4 mb-4">
+        <Target className="h-8 w-8 text-primary" />
       </div>
       <h3 className="text-sm font-semibold mb-1">No goals set</h3>
-      <p className="text-xs mb-4">Set weekly goals to track your progress</p>
-      <Button size="sm" variant="outline">
+      <p className="text-xs text-muted-foreground mb-4">
+        Set weekly goals to track your progress
+      </p>
+      <Button
+        size="sm"
+        variant="outline"
+        className="gap-2 border-white/10 bg-white/5 hover:bg-white/10"
+      >
+        <Plus className="h-4 w-4" />
         Add Goal
       </Button>
     </div>

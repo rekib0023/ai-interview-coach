@@ -95,10 +95,10 @@ export function Stats() {
                 }}
                 className="group"
               >
-                <div className="relative h-full p-6 lg:p-8 rounded-2xl border border-white/10 bg-card/50 backdrop-blur-md transition-all duration-500 hover:border-white/20 hover:bg-card/70 overflow-hidden text-center">
+                <div className="relative h-full p-6 lg:p-8 rounded-2xl border border-border bg-card transition-all duration-500 hover:border-primary/30 hover:shadow-lg dark:border-white/10 dark:bg-card/50 dark:backdrop-blur-md dark:hover:border-white/20 dark:hover:bg-card/70 overflow-hidden text-center">
                   {/* Gradient glow on hover */}
                   <div
-                    className={`absolute -top-20 left-1/2 -translate-x-1/2 w-40 h-40 bg-gradient-to-br ${stat.color} blur-3xl opacity-0 group-hover:opacity-20 transition-opacity duration-500`}
+                    className={`absolute -top-20 left-1/2 -translate-x-1/2 w-40 h-40 bg-gradient-to-br ${stat.color} blur-3xl opacity-0 group-hover:opacity-10 dark:group-hover:opacity-20 transition-opacity duration-500`}
                   />
 
                   <div className="relative z-10 flex flex-col items-center gap-4">
@@ -111,7 +111,7 @@ export function Stats() {
                     </motion.div>
 
                     {/* Value */}
-                    <div className="text-4xl lg:text-5xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                    <div className="text-4xl lg:text-5xl font-bold tracking-tight text-foreground">
                       <AnimatedNumber value={stat.value} suffix={stat.suffix} />
                     </div>
 

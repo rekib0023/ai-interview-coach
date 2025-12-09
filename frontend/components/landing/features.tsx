@@ -21,6 +21,7 @@ const features = [
       "Engage in realistic technical interviews with an AI that adapts to your skill level and provides contextual questions.",
     color: "from-blue-500 to-cyan-500",
     bgColor: "bg-blue-500/10",
+    iconColor: "text-blue-500",
   },
   {
     icon: Code2,
@@ -29,6 +30,7 @@ const features = [
       "Write, test, and execute code in real-time with support for Python, JavaScript, Java, C++, and more languages.",
     color: "from-violet-500 to-purple-500",
     bgColor: "bg-violet-500/10",
+    iconColor: "text-violet-500",
   },
   {
     icon: BarChart3,
@@ -37,6 +39,7 @@ const features = [
       "Track your progress with detailed metrics, identify weak areas, and see your improvement over time.",
     color: "from-emerald-500 to-teal-500",
     bgColor: "bg-emerald-500/10",
+    iconColor: "text-emerald-500",
   },
   {
     icon: GitBranch,
@@ -45,6 +48,7 @@ const features = [
       "Practice architectural interviews with interactive whiteboarding tools and get AI-powered feedback on your designs.",
     color: "from-orange-500 to-amber-500",
     bgColor: "bg-orange-500/10",
+    iconColor: "text-orange-500",
   },
   {
     icon: Brain,
@@ -53,6 +57,7 @@ const features = [
       "Receive instant, actionable feedback on your code quality, time complexity, space complexity, and communication skills.",
     color: "from-pink-500 to-rose-500",
     bgColor: "bg-pink-500/10",
+    iconColor: "text-pink-500",
   },
   {
     icon: Zap,
@@ -61,6 +66,7 @@ const features = [
       "Run test cases instantly with our optimized execution engine. See results in milliseconds, not minutes.",
     color: "from-yellow-500 to-orange-500",
     bgColor: "bg-yellow-500/10",
+    iconColor: "text-yellow-600",
   },
 ];
 
@@ -142,12 +148,16 @@ export function Features() {
                 className="group relative"
               >
                 {/* Card */}
-                <div className="relative h-full p-6 rounded-2xl border border-white/10 bg-card/50 backdrop-blur-md transition-all duration-500 hover:border-white/20 hover:bg-card/70 overflow-hidden">
+                <div className="relative h-full p-6 rounded-2xl border border-border bg-card transition-all duration-500 hover:border-primary/30 hover:shadow-lg dark:border-white/10 dark:bg-card/50 dark:backdrop-blur-md dark:hover:border-white/20 dark:hover:bg-card/70 overflow-hidden">
                   {/* Gradient background on hover */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-5 transition-opacity duration-500`} />
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-5 transition-opacity duration-500`}
+                  />
 
                   {/* Glow effect */}
-                  <div className={`absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br ${feature.color} blur-3xl opacity-0 group-hover:opacity-20 transition-opacity duration-500`} />
+                  <div
+                    className={`absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br ${feature.color} blur-3xl opacity-0 group-hover:opacity-10 dark:group-hover:opacity-20 transition-opacity duration-500`}
+                  />
 
                   {/* Content */}
                   <div className="relative z-10">
@@ -155,25 +165,16 @@ export function Features() {
                     <div
                       className={`inline-flex h-14 w-14 items-center justify-center rounded-xl ${feature.bgColor} mb-5 group-hover:scale-110 transition-transform duration-300`}
                     >
-                      <Icon className={`h-7 w-7 bg-gradient-to-br ${feature.color} bg-clip-text text-transparent`} style={{ stroke: 'url(#gradient)' }} />
-                      <svg width="0" height="0">
-                        <defs>
-                          <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="currentColor" />
-                            <stop offset="100%" stopColor="currentColor" />
-                          </linearGradient>
-                        </defs>
-                      </svg>
-                      <Icon className={`h-7 w-7 absolute bg-gradient-to-br ${feature.color}`} />
+                      <Icon className={`h-7 w-7 ${feature.iconColor}`} />
                     </div>
 
                     {/* Title */}
-                    <h3 className="text-xl font-semibold mb-3 text-foreground group-hover:text-foreground transition-colors">
+                    <h3 className="text-xl font-semibold mb-3 text-foreground">
                       {feature.title}
                     </h3>
 
                     {/* Description */}
-                    <p className="text-muted-foreground leading-relaxed group-hover:text-muted-foreground/90 transition-colors">
+                    <p className="text-muted-foreground leading-relaxed">
                       {feature.description}
                     </p>
                   </div>
@@ -191,7 +192,7 @@ export function Features() {
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          <div className="relative p-8 md:p-12 rounded-3xl border border-white/10 bg-gradient-to-br from-card/80 via-card/50 to-card/80 backdrop-blur-xl overflow-hidden">
+          <div className="relative p-8 md:p-12 rounded-3xl border border-border bg-card dark:border-white/10 dark:bg-gradient-to-br dark:from-card/80 dark:via-card/50 dark:to-card/80 dark:backdrop-blur-xl overflow-hidden">
             {/* Decorative elements */}
             <div className="absolute top-0 left-1/4 w-64 h-64 bg-primary/10 blur-3xl rounded-full" />
             <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-accent/10 blur-3xl rounded-full" />
@@ -210,21 +211,30 @@ export function Features() {
                   Personalized Learning Path
                 </h3>
                 <p className="text-lg text-muted-foreground max-w-2xl">
-                  Our AI adapts to your learning style and pace, creating a customized
-                  interview prep path tailored to your target companies and role. Focus on
-                  what matters most for your success.
+                  Our AI adapts to your learning style and pace, creating a
+                  customized interview prep path tailored to your target
+                  companies and role. Focus on what matters most for your
+                  success.
                 </p>
               </div>
 
               {/* Stats */}
               <div className="flex-shrink-0 flex gap-8">
                 <div className="text-center">
-                  <div className="text-3xl md:text-4xl font-bold text-primary">85%</div>
-                  <div className="text-sm text-muted-foreground">Success Rate</div>
+                  <div className="text-3xl md:text-4xl font-bold text-primary">
+                    85%
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Success Rate
+                  </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl md:text-4xl font-bold text-accent">2x</div>
-                  <div className="text-sm text-muted-foreground">Faster Prep</div>
+                  <div className="text-3xl md:text-4xl font-bold text-primary">
+                    2x
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Faster Prep
+                  </div>
                 </div>
               </div>
             </div>
