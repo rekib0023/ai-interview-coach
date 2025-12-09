@@ -8,6 +8,7 @@ import { Hero } from "@/components/landing/hero";
 import { HowItWorks } from "@/components/landing/how-it-works";
 import { Pricing } from "@/components/landing/pricing";
 import { Stats } from "@/components/landing/stats";
+import { Testimonials } from "@/components/landing/testimonials";
 import { TrustedBy } from "@/components/landing/trusted-by";
 
 export default function Home() {
@@ -31,6 +32,9 @@ export default function Home() {
 
         {/* How It Works */}
         <HowItWorks />
+
+        {/* Testimonials Section */}
+        <Testimonials />
 
         {/* Pricing Section */}
         <Pricing />

@@ -1,6 +1,16 @@
 "use client";
 
 import { NavMain } from "@/components/layout/nav-main";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import {
   Sidebar,
   SidebarContent,
@@ -13,10 +23,9 @@ import {
 import {
   BookOpen,
   Clock,
-  Code2,
+  Command,
   LayoutDashboard,
   Settings2,
-  Sparkles,
 } from "lucide-react";
 import * as React from "react";
 import { UpgradeCard } from "./upgrade-card";
@@ -54,25 +63,20 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar
-      variant="inset"
-      className="border-white/10 bg-sidebar/50 backdrop-blur-xl"
-      {...props}
-    >
-      <SidebarHeader className="border-b border-white/5 pb-4">
+    <Sidebar variant="inset" {...props}>
+      <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="/dashboard" className="group">
-                <div className="flex aspect-square size-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent shadow-lg shadow-primary/25 group-hover:shadow-primary/40 transition-all">
-                  <Code2 className="size-5 text-white" />
+              <a href="/dashboard">
+                <div className="bg-gradient-to-br from-primary to-blue-600 text-white flex aspect-square size-8 items-center justify-center rounded-lg shadow-md shadow-primary/20">
+                  <Command className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent group-hover:from-primary group-hover:to-accent transition-all">
+                  <span className="truncate font-semibold">
                     AI Interview Coach
                   </span>
-                  <span className="truncate text-xs text-muted-foreground flex items-center gap-1">
-                    <Sparkles className="h-3 w-3 text-primary" />
+                  <span className="truncate text-xs text-muted-foreground">
                     Pro Plan
                   </span>
                 </div>
@@ -81,10 +85,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent className="pt-4">
+      <SidebarContent>
         <NavMain items={data.navMain} />
       </SidebarContent>
-      <SidebarFooter className="border-t border-white/5 pt-4">
+      <SidebarFooter>
         <UpgradeCard />
       </SidebarFooter>
     </Sidebar>

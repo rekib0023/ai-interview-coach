@@ -1,14 +1,18 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import {
+  ArrowRight,
+  CheckCircle2,
   ChevronRight,
   Code2,
   MessageSquare,
   Target,
   TrendingUp,
 } from "lucide-react";
+import Link from "next/link";
 
 const steps = [
   {
@@ -17,6 +21,11 @@ const steps = [
     title: "Choose Your Path",
     description:
       "Select from algorithms, system design, or behavioral interviews. Pick your difficulty level and programming language.",
+    details: [
+      "500+ curated problems from real interviews",
+      "Filter by company (Google, Meta, Amazon...)",
+      "Adaptive difficulty based on your level",
+    ],
     color: "from-blue-500 to-cyan-500",
   },
   {
@@ -24,7 +33,12 @@ const steps = [
     icon: MessageSquare,
     title: "Start Interview",
     description:
-      "Engage with our AI interviewer who asks realistic questions and adapts based on your responses and skill level.",
+      "Our AI interviewer asks realistic questions, provides hints when needed, and adapts to your responses in real-time.",
+    details: [
+      "Natural conversation flow like real interviews",
+      "Clarifying questions and edge case prompts",
+      "Behavioral + technical question formats",
+    ],
     color: "from-violet-500 to-purple-500",
   },
   {
@@ -32,7 +46,12 @@ const steps = [
     icon: Code2,
     title: "Code & Execute",
     description:
-      "Write code in our powerful editor, run test cases, and get instant feedback on your solution's correctness and efficiency.",
+      "Write code in our powerful editor with syntax highlighting and run it against comprehensive test cases instantly.",
+    details: [
+      "15+ programming languages supported",
+      "Real-time code execution & debugging",
+      "Hidden test cases reveal edge cases",
+    ],
     color: "from-emerald-500 to-teal-500",
   },
   {
@@ -40,7 +59,12 @@ const steps = [
     icon: TrendingUp,
     title: "Get Feedback",
     description:
-      "Receive detailed analysis on your performance including strengths, areas for improvement, and actionable next steps.",
+      "Receive detailed analysis on your performance including code quality, complexity analysis, and improvement tips.",
+    details: [
+      "Line-by-line code review",
+      "Time & space complexity analysis",
+      "Personalized improvement roadmap",
+    ],
     color: "from-orange-500 to-amber-500",
   },
 ];
@@ -100,7 +124,8 @@ export function HowItWorks() {
           </h2>
 
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Get started with AI Interview Coach in four simple steps
+            Get started with AI Interview Coach in four simple steps. No setup
+            required — begin practicing in under 2 minutes.
           </p>
         </motion.div>
 
@@ -122,9 +147,9 @@ export function HowItWorks() {
               >
                 {/* Connector line (hidden on last item and mobile) */}
                 {index < steps.length - 1 && (
-                  <div className="hidden lg:flex absolute top-16 left-full w-full items-center z-10 px-1">
-                    <div className="flex-1 border-t-2 border-dashed border-muted-foreground/30" />
-                    <ChevronRight className="h-4 w-4 text-muted-foreground/50 -ml-1" />
+                  <div className="hidden lg:flex absolute top-16 -right-4 w-10 items-center justify-center z-20 translate-x-1/2">
+                    <div className="w-full border-t-2 border-dashed border-muted-foreground/30" />
+                    <ChevronRight className="absolute -right-1 h-4 w-4 text-muted-foreground/50 bg-background" />
                   </div>
                 )}
 
@@ -153,14 +178,50 @@ export function HowItWorks() {
                     </h3>
 
                     {/* Description */}
-                    <p className="text-muted-foreground leading-relaxed">
+                    <p className="text-muted-foreground leading-relaxed mb-4">
                       {step.description}
                     </p>
+
+                    {/* Details list */}
+                    <ul className="space-y-2">
+                      {step.details.map((detail, i) => (
+                        <li
+                          key={i}
+                          className="flex items-start gap-2 text-sm text-muted-foreground"
+                        >
+                          <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                          {detail}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
               </motion.div>
             );
           })}
+        </motion.div>
+
+        {/* CTA */}
+        <motion.div
+          className="mt-16 text-center"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+        >
+          <Button
+            asChild
+            size="lg"
+            className="h-14 px-8 text-lg gap-2 shadow-lg shadow-primary/20"
+          >
+            <Link href="/signup">
+              Start Your First Interview
+              <ArrowRight className="h-5 w-5" />
+            </Link>
+          </Button>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Free to start • No credit card required
+          </p>
         </motion.div>
       </div>
     </section>
