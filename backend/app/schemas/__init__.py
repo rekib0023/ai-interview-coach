@@ -3,7 +3,7 @@ from .dashboard import (
     DashboardResponse,
     Difficulty,
     GoalsResponse,
-    InterviewSession,
+    InterviewSession as DashboardInterviewSession,
     Priority,
     QuickStatsResponse,
     RecentSessionsResponse,
@@ -12,6 +12,44 @@ from .dashboard import (
     StatItem,
     Trend,
     WeeklyGoal,
+)
+from .drill import (
+    Drill,
+    DrillCreate,
+    DrillGenerateRequest,
+    DrillGenerationResult,
+    DrillList,
+    DrillSubmitResponse,
+    DrillSummary,
+    DrillUpdate,
+    DrillWithHints,
+)
+from .feedback import (
+    CriterionScore,
+    FeedbackResult,
+    FeedbackRun,
+    FeedbackRunCreate,
+    FeedbackRunList,
+    FeedbackRunRequest,
+    FeedbackRunSummary,
+    FeedbackStatusResponse,
+)
+from .rubric import (
+    EvaluationRubric,
+    EvaluationRubricCreate,
+    EvaluationRubricList,
+    EvaluationRubricSummary,
+    EvaluationRubricUpdate,
+    RubricCriterion,
+    RubricLevel,
+)
+from .session import (
+    InterviewSession,
+    InterviewSessionCreate,
+    InterviewSessionList,
+    InterviewSessionSubmitResponse,
+    InterviewSessionSummary,
+    InterviewSessionUpdate,
 )
 from .user import (
     AuthResponse,
@@ -40,7 +78,7 @@ __all__ = [
     "Priority",
     "StatItem",
     "QuickStatsResponse",
-    "InterviewSession",
+    "DashboardInterviewSession",
     "RecentSessionsResponse",
     "SkillMetric",
     "SkillsResponse",
@@ -48,5 +86,39 @@ __all__ = [
     "GoalsResponse",
     "AiInsightResponse",
     "DashboardResponse",
+    # Session schemas
+    "InterviewSession",
+    "InterviewSessionCreate",
+    "InterviewSessionUpdate",
+    "InterviewSessionSubmitResponse",
+    "InterviewSessionList",
+    "InterviewSessionSummary",
+    # Rubric schemas
+    "RubricLevel",
+    "RubricCriterion",
+    "EvaluationRubric",
+    "EvaluationRubricCreate",
+    "EvaluationRubricUpdate",
+    "EvaluationRubricList",
+    "EvaluationRubricSummary",
+    # Feedback schemas
+    "CriterionScore",
+    "FeedbackRun",
+    "FeedbackRunCreate",
+    "FeedbackRunRequest",
+    "FeedbackRunList",
+    "FeedbackRunSummary",
+    "FeedbackResult",
+    "FeedbackStatusResponse",
+    # Drill schemas
+    "Drill",
+    "DrillCreate",
+    "DrillUpdate",
+    "DrillGenerateRequest",
+    "DrillSubmitResponse",
+    "DrillList",
+    "DrillSummary",
+    "DrillWithHints",
+    "DrillGenerationResult",
 ]
 

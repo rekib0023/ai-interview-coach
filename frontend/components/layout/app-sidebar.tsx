@@ -24,8 +24,10 @@ import {
   BookOpen,
   Clock,
   Command,
+  Dumbbell,
   LayoutDashboard,
   Settings2,
+  Target,
 } from "lucide-react";
 import * as React from "react";
 import { UpgradeCard } from "./upgrade-card";
@@ -42,6 +44,16 @@ const data = {
       url: "/dashboard",
       icon: LayoutDashboard,
       isActive: true,
+    },
+    {
+      title: "Practice",
+      url: "/practice",
+      icon: Target,
+    },
+    {
+      title: "Drills",
+      url: "/drills",
+      icon: Dumbbell,
     },
     {
       title: "History",
