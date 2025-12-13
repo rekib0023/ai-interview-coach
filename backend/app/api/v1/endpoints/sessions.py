@@ -161,7 +161,9 @@ async def submit_response(
     db: Session = Depends(deps.get_db),
 ) -> InterviewSession:
     """Submit a response to a session."""
-    logger.info(f"Submitting response for session {session_id} by user {current_user.id}")
+    logger.info(
+        f"Submitting response for session {session_id} by user {current_user.id}"
+    )
 
     db_session = session_crud.get_session_by_user(
         db=db, session_id=session_id, user_id=current_user.id

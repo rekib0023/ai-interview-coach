@@ -11,12 +11,12 @@ import { type DifficultyLevel, type SessionStatus } from "@/lib/session-api";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import {
-  ArrowRight,
-  Calendar,
-  Clock,
-  ListChecks,
-  Plus,
-  Target,
+    ArrowRight,
+    Calendar,
+    Clock,
+    ListChecks,
+    Plus,
+    Target,
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";

@@ -11,6 +11,7 @@ from app.db.base import Base
 
 class GoalPriority(str, PyEnum):
     """Goal priority levels."""
+
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
@@ -38,7 +39,9 @@ class WeeklyGoal(Base):
 
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    updated_at = Column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
 
     # Relationships
     user = relationship("User", backref="weekly_goals")

@@ -1,6 +1,5 @@
 """Feedback API endpoints for AI feedback on interview sessions."""
 
-import asyncio
 import logging
 from typing import Annotated, Optional
 
@@ -13,7 +12,6 @@ from app.api.v1.endpoints.auth import get_current_user
 from app.crud import feedback as feedback_crud
 from app.crud import session as session_crud
 from app.models.feedback import FeedbackStatus
-from app.models.interview_session import SessionStatus
 from app.models.user import User
 from app.schemas.feedback import (
     FeedbackResult,
@@ -85,7 +83,9 @@ async def request_feedback(
     request: Optional[FeedbackRunRequest] = None,
 ) -> JSONResponse:
     """Request feedback for a session."""
-    logger.info(f"Requesting feedback for session {session_id} by user {current_user.id}")
+    logger.info(
+        f"Requesting feedback for session {session_id} by user {current_user.id}"
+    )
 
     # Verify session ownership
     db_session = session_crud.get_session_by_user(

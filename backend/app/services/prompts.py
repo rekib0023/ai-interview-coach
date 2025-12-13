@@ -48,10 +48,12 @@ def get_feedback_user_prompt(
 
     rubric_section = ""
     if rubric_criteria:
-        criteria_text = "\n".join([
-            f"- {c['name']} (weight: {c['weight']}): {c['description']}"
-            for c in rubric_criteria
-        ])
+        criteria_text = "\n".join(
+            [
+                f"- {c['name']} (weight: {c['weight']}): {c['description']}"
+                for c in rubric_criteria
+            ]
+        )
         rubric_section = f"""
 Evaluation Rubric:
 {criteria_text}

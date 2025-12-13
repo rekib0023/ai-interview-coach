@@ -12,14 +12,17 @@ from app.models.feedback import FeedbackStatus
 # Request Schemas
 # ============================================================================
 
+
 class FeedbackRunCreate(BaseModel):
     """Schema for creating a new feedback run."""
+
     session_id: int
     rubric_id: Optional[int] = None
 
 
 class FeedbackRunRequest(BaseModel):
     """Schema for requesting feedback on a session."""
+
     rubric_id: Optional[int] = None
 
 
@@ -27,8 +30,10 @@ class FeedbackRunRequest(BaseModel):
 # Response Schemas
 # ============================================================================
 
+
 class CriterionScore(BaseModel):
     """Schema for individual criterion score."""
+
     criterion_name: str
     score: int = Field(..., ge=0, le=100)
     feedback: Optional[str] = None
@@ -36,6 +41,7 @@ class CriterionScore(BaseModel):
 
 class FeedbackRunBase(BaseModel):
     """Base schema for feedback run."""
+
     session_id: int
     rubric_id: Optional[int] = None
     status: FeedbackStatus
@@ -43,6 +49,7 @@ class FeedbackRunBase(BaseModel):
 
 class FeedbackRunInDB(FeedbackRunBase):
     """Schema for feedback run from database."""
+
     id: int
     model_name: Optional[str] = None
     model_version: Optional[str] = None
@@ -73,11 +80,13 @@ class FeedbackRunInDB(FeedbackRunBase):
 
 class FeedbackRun(FeedbackRunInDB):
     """Schema for feedback run API response."""
+
     pass
 
 
 class FeedbackRunSummary(BaseModel):
     """Lightweight summary of feedback run."""
+
     id: int
     session_id: int
     status: FeedbackStatus
@@ -91,6 +100,7 @@ class FeedbackRunSummary(BaseModel):
 
 class FeedbackRunList(BaseModel):
     """Schema for list of feedback runs."""
+
     feedback_runs: list[FeedbackRunSummary]
     total: int
 
@@ -99,8 +109,10 @@ class FeedbackRunList(BaseModel):
 # Result Schemas
 # ============================================================================
 
+
 class FeedbackResult(BaseModel):
     """Schema for complete feedback result."""
+
     id: int
     session_id: int
     status: FeedbackStatus
@@ -123,8 +135,10 @@ class FeedbackResult(BaseModel):
 # Polling Response
 # ============================================================================
 
+
 class FeedbackStatusResponse(BaseModel):
     """Schema for feedback status polling."""
+
     id: int
     status: FeedbackStatus
     progress_message: Optional[str] = None

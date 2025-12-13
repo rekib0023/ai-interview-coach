@@ -104,15 +104,26 @@ MOCK_SKILLS_STRENGTHS: list[SkillMetric] = [
 ]
 
 MOCK_GOALS: list[WeeklyGoal] = [
-    WeeklyGoal(id=1, label="Complete 5 interviews", current=3, total=5, priority=Priority.HIGH),
-    WeeklyGoal(id=2, label="Practice Dynamic Programming", current=2, total=3, priority=Priority.MEDIUM),
-    WeeklyGoal(id=3, label="Maintain 7-day streak", current=5, total=7, priority=Priority.LOW),
+    WeeklyGoal(
+        id=1, label="Complete 5 interviews", current=3, total=5, priority=Priority.HIGH
+    ),
+    WeeklyGoal(
+        id=2,
+        label="Practice Dynamic Programming",
+        current=2,
+        total=3,
+        priority=Priority.MEDIUM,
+    ),
+    WeeklyGoal(
+        id=3, label="Maintain 7-day streak", current=5, total=7, priority=Priority.LOW
+    ),
 ]
 
 
 # ============================================================================
 # Endpoints
 # ============================================================================
+
 
 @router.get(
     "/stats",

@@ -2,7 +2,6 @@
 
 import json
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 
 from app.services.llm import (
     LLMService,
@@ -70,14 +69,16 @@ class TestLLMService:
         """Test parsing valid feedback response."""
         service = LLMService(provider=MockLLMProvider())
 
-        valid_response = json.dumps({
-            "overall_score": 85,
-            "criterion_scores": {"accuracy": 90},
-            "strengths": ["Good explanation"],
-            "weaknesses": ["Missing details"],
-            "suggestions": ["Add more examples"],
-            "detailed_feedback": "## Summary\nGood work!",
-        })
+        valid_response = json.dumps(
+            {
+                "overall_score": 85,
+                "criterion_scores": {"accuracy": 90},
+                "strengths": ["Good explanation"],
+                "weaknesses": ["Missing details"],
+                "suggestions": ["Add more examples"],
+                "detailed_feedback": "## Summary\nGood work!",
+            }
+        )
 
         result = service._parse_feedback_response(valid_response)
 
@@ -105,10 +106,12 @@ class TestLLMService:
         """Test parsing feedback response missing overall_score."""
         service = LLMService(provider=MockLLMProvider())
 
-        invalid_response = json.dumps({
-            "strengths": ["Good"],
-            "weaknesses": ["Bad"],
-        })
+        invalid_response = json.dumps(
+            {
+                "strengths": ["Good"],
+                "weaknesses": ["Bad"],
+            }
+        )
 
         with pytest.raises(ValueError, match="Missing overall_score"):
             service._parse_feedback_response(invalid_response)
@@ -124,16 +127,18 @@ class TestLLMService:
         """Test parsing valid drills response."""
         service = LLMService(provider=MockLLMProvider())
 
-        valid_response = json.dumps({
-            "drills": [
-                {
-                    "title": "Test Drill",
-                    "prompt": "Practice this",
-                    "drill_type": "practice_question",
-                    "difficulty": "medium",
-                }
-            ]
-        })
+        valid_response = json.dumps(
+            {
+                "drills": [
+                    {
+                        "title": "Test Drill",
+                        "prompt": "Practice this",
+                        "drill_type": "practice_question",
+                        "difficulty": "medium",
+                    }
+                ]
+            }
+        )
 
         result = service._parse_drills_response(valid_response)
 
@@ -151,7 +156,10 @@ class TestLLMService:
         """Test drill type parsing."""
         service = LLMService(provider=MockLLMProvider())
 
-        assert service._parse_drill_type("practice_question") == DrillType.PRACTICE_QUESTION
+        assert (
+            service._parse_drill_type("practice_question")
+            == DrillType.PRACTICE_QUESTION
+        )
         assert service._parse_drill_type("code_exercise") == DrillType.CODE_EXERCISE
         assert service._parse_drill_type("concept_review") == DrillType.CONCEPT_REVIEW
         assert service._parse_drill_type("mock_scenario") == DrillType.MOCK_SCENARIO

@@ -59,7 +59,9 @@ class Settings(BaseSettings):
     # =========================================================================
     LLM_REQUEST_TIMEOUT: int = 60  # Max time for LLM API calls
     TRANSCRIPTION_TIMEOUT: int = 120  # Max time for transcription
-    FEEDBACK_GENERATION_TIMEOUT: int = 30  # Target latency for feedback (<5s text, <12s w/ transcription)
+    FEEDBACK_GENERATION_TIMEOUT: int = (
+        30  # Target latency for feedback (<5s text, <12s w/ transcription)
+    )
 
     # =========================================================================
     # Cost Caps (in USD)
@@ -93,8 +95,12 @@ class Settings(BaseSettings):
     # Quality Settings
     # =========================================================================
     MIN_RESPONSE_LENGTH: int = 50  # Minimum chars for valid response
-    FEEDBACK_TEMPERATURE: float = 0.5  # LLM temperature for feedback (lower = more consistent)
-    DRILL_TEMPERATURE: float = 0.7  # LLM temperature for drills (higher = more creative)
+    FEEDBACK_TEMPERATURE: float = (
+        0.5  # LLM temperature for feedback (lower = more consistent)
+    )
+    DRILL_TEMPERATURE: float = (
+        0.7  # LLM temperature for drills (higher = more creative)
+    )
 
     # =========================================================================
     # Admin Settings

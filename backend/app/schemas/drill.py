@@ -12,8 +12,10 @@ from app.models.drill import DrillDifficulty, DrillStatus, DrillType
 # Request Schemas
 # ============================================================================
 
+
 class DrillCreate(BaseModel):
     """Schema for creating a new drill."""
+
     feedback_run_id: int
     title: str = Field(..., min_length=1, max_length=255)
     prompt: str = Field(..., min_length=1)
@@ -28,12 +30,14 @@ class DrillCreate(BaseModel):
 
 class DrillGenerateRequest(BaseModel):
     """Schema for requesting drill generation."""
+
     count: int = Field(3, ge=1, le=5)
     difficulty_ramp: bool = False  # If true, generate drills with increasing difficulty
 
 
 class DrillUpdate(BaseModel):
     """Schema for updating a drill."""
+
     status: Optional[DrillStatus] = None
     user_response: Optional[str] = None
     score: Optional[int] = Field(None, ge=0, le=100)
@@ -41,6 +45,7 @@ class DrillUpdate(BaseModel):
 
 class DrillSubmitResponse(BaseModel):
     """Schema for submitting drill response."""
+
     user_response: str = Field(..., min_length=1)
 
 
@@ -48,8 +53,10 @@ class DrillSubmitResponse(BaseModel):
 # Response Schemas
 # ============================================================================
 
+
 class DrillBase(BaseModel):
     """Base schema for drill."""
+
     title: str
     prompt: str
     drill_type: DrillType
@@ -60,6 +67,7 @@ class DrillBase(BaseModel):
 
 class DrillInDB(DrillBase):
     """Schema for drill from database."""
+
     id: int
     feedback_run_id: int
     user_id: int
@@ -79,16 +87,19 @@ class DrillInDB(DrillBase):
 
 class Drill(DrillInDB):
     """Schema for drill API response."""
+
     pass
 
 
 class DrillWithHints(Drill):
     """Schema for drill with hints (only shown when requested)."""
+
     hints: Optional[str] = None
 
 
 class DrillSummary(BaseModel):
     """Lightweight summary of drill."""
+
     id: int
     title: str
     drill_type: DrillType
@@ -102,6 +113,7 @@ class DrillSummary(BaseModel):
 
 class DrillList(BaseModel):
     """Schema for list of drills."""
+
     drills: list[DrillSummary]
     total: int
 
@@ -110,8 +122,10 @@ class DrillList(BaseModel):
 # Generation Result
 # ============================================================================
 
+
 class DrillGenerationResult(BaseModel):
     """Schema for drill generation result."""
+
     drills: list[Drill]
     feedback_run_id: int
     count: int

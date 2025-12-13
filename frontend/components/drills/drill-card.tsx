@@ -28,11 +28,11 @@ interface DrillCardProps {
 function getDifficultyColor(difficulty: DrillDifficulty) {
   switch (difficulty) {
     case "easy":
-      return "bg-green-500/20 text-green-400 border-green-500/30";
+      return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
     case "medium":
-      return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+      return "bg-amber-500/10 text-amber-400 border-amber-500/20";
     case "hard":
-      return "bg-red-500/20 text-red-400 border-red-500/30";
+      return "bg-rose-500/10 text-rose-400 border-rose-500/20";
     default:
       return "bg-muted text-muted-foreground";
   }
@@ -41,13 +41,13 @@ function getDifficultyColor(difficulty: DrillDifficulty) {
 function getStatusColor(status: DrillStatus) {
   switch (status) {
     case "pending":
-      return "bg-blue-500/20 text-blue-400 border-blue-500/30";
+      return "bg-blue-500/10 text-blue-400 border-blue-500/20";
     case "in_progress":
-      return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+      return "bg-amber-500/10 text-amber-400 border-amber-500/20";
     case "completed":
-      return "bg-green-500/20 text-green-400 border-green-500/30";
+      return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
     case "skipped":
-      return "bg-gray-500/20 text-gray-400 border-gray-500/30";
+      return "bg-slate-500/10 text-slate-400 border-slate-500/20";
     default:
       return "bg-muted text-muted-foreground";
   }
@@ -71,15 +71,15 @@ function getDrillTypeIcon(type: DrillType) {
 function getStatusIcon(status: DrillStatus) {
   switch (status) {
     case "pending":
-      return <Play className="h-4 w-4" />;
+      return <Play className="h-3 w-3" />;
     case "in_progress":
-      return <Play className="h-4 w-4" />;
+      return <Play className="h-3 w-3" />;
     case "completed":
-      return <CheckCircle className="h-4 w-4" />;
+      return <CheckCircle className="h-3 w-3" />;
     case "skipped":
-      return <SkipForward className="h-4 w-4" />;
+      return <SkipForward className="h-3 w-3" />;
     default:
-      return <Play className="h-4 w-4" />;
+      return <Play className="h-3 w-3" />;
   }
 }
 
@@ -89,81 +89,99 @@ export function DrillCard({ drill }: DrillCardProps) {
   const isSkipped = drill.status === "skipped";
 
   return (
-    <Link href={`/drills/${drill.id}`}>
+    <Link href={`/drills/${drill.id}`} className="group block h-full">
       <div
         className={cn(
-          "group relative overflow-hidden rounded-lg border border-white/10 bg-white/5 p-4",
-          "transition-all duration-200",
-          "hover:border-white/20 hover:bg-white/10"
+          "relative overflow-hidden rounded-xl border border-white/5 bg-white/5 p-5 h-full flex flex-col",
+          "transition-all duration-300 ease-out",
+          "hover:border-primary/20 hover:bg-white/10 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1"
         )}
       >
         {/* Gradient overlay on hover */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-        <div className="relative z-10 space-y-3">
+        <div className="relative z-10 flex flex-col h-full gap-4">
           {/* Header */}
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <div className="p-2 rounded-lg bg-primary/20">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div
+                className={cn(
+                  "p-2.5 rounded-lg shrink-0 transition-colors duration-300",
+                  "bg-white/5 text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary"
+                )}
+              >
                 {getDrillTypeIcon(drill.drill_type)}
               </div>
-              <div>
-                <h3 className="font-medium line-clamp-1">{drill.title}</h3>
-                <p className="text-xs text-muted-foreground capitalize">
+              <div className="space-y-1">
+                <h3 className="font-semibold leading-tight group-hover:text-primary transition-colors duration-300">
+                  {drill.title}
+                </h3>
+                <p className="text-xs text-muted-foreground capitalize font-medium">
                   {drill.drill_type.replace(/_/g, " ")}
                 </p>
               </div>
             </div>
             {drill.score !== null && drill.score !== undefined && (
-              <div className="text-right">
-                <div className="text-lg font-bold text-primary">
+              <div className="text-right shrink-0 bg-white/5 px-2 py-1 rounded-md border border-white/5">
+                <div className="text-lg font-bold text-primary leading-none">
                   {drill.score}
                 </div>
-                <div className="text-xs text-muted-foreground">score</div>
               </div>
             )}
           </div>
 
-          {/* Badges */}
-          <div className="flex items-center gap-2">
-            <Badge
-              variant="outline"
-              className={cn("text-xs", getDifficultyColor(drill.difficulty))}
-            >
-              {drill.difficulty}
-            </Badge>
-            <Badge
-              variant="outline"
-              className={cn("text-xs", getStatusColor(drill.status))}
-            >
-              <span className="flex items-center gap-1">
-                {getStatusIcon(drill.status)}
-                {drill.status.replace("_", " ")}
-              </span>
-            </Badge>
-          </div>
+          <div className="flex-1" />
 
-          {/* Action */}
-          <div className="flex justify-end pt-2">
+          {/* Footer */}
+          <div className="flex items-end justify-between gap-4 pt-2 border-t border-white/5 mt-auto">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge
+                variant="outline"
+                className={cn(
+                  "text-[10px] px-2 py-0.5 h-5 font-medium border-0",
+                  getDifficultyColor(drill.difficulty)
+                )}
+              >
+                {drill.difficulty}
+              </Badge>
+              <Badge
+                variant="outline"
+                className={cn(
+                  "text-[10px] px-2 py-0.5 h-5 font-medium border-0",
+                  getStatusColor(drill.status)
+                )}
+              >
+                <span className="flex items-center gap-1.5">
+                  {getStatusIcon(drill.status)}
+                  {drill.status.replace("_", " ")}
+                </span>
+              </Badge>
+            </div>
+
             <Button
-              variant={isPending ? "default" : "outline"}
+              variant={isPending ? "default" : "ghost"}
               size="sm"
-              className="group-hover:bg-primary/90"
+              className={cn(
+                "h-8 px-3 text-xs transition-all duration-300",
+                isPending
+                  ? "bg-primary/90 hover:bg-primary shadow-lg shadow-primary/20"
+                  : "hover:bg-white/10"
+              )}
             >
               {isPending ? (
                 <>
                   Start
-                  <Play className="h-3.5 w-3.5" />
+                  <Play className="ml-1.5 h-3 w-3 fill-current" />
                 </>
               ) : isCompleted || isSkipped ? (
                 <>
-                  View
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  Review
+                  <ArrowRight className="ml-1.5 h-3 w-3" />
                 </>
               ) : (
                 <>
-                  Continue
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  Resume
+                  <ArrowRight className="ml-1.5 h-3 w-3" />
                 </>
               )}
             </Button>

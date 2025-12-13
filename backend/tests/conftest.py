@@ -1,21 +1,22 @@
 """Pytest fixtures for AI Interview Coach tests."""
 
 import pytest
-from datetime import datetime
 from typing import Generator
-from unittest.mock import MagicMock, patch
 
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import StaticPool
 
-from app.core.config import settings
 from app.db.base import Base
 from app.main import app
 from app.api import deps
 from app.models.user import User
-from app.models.interview_session import InterviewSession, SessionStatus, DifficultyLevel
+from app.models.interview_session import (
+    InterviewSession,
+    SessionStatus,
+    DifficultyLevel,
+)
 from app.models.feedback import FeedbackRun, FeedbackStatus
 from app.models.rubric import EvaluationRubric, RubricCategory
 from app.models.drill import Drill, DrillStatus, DrillType, DrillDifficulty
@@ -24,6 +25,7 @@ from app.models.drill import Drill, DrillStatus, DrillType, DrillDifficulty
 # ============================================================================
 # Database Fixtures
 # ============================================================================
+
 
 @pytest.fixture(scope="function")
 def db_engine():
@@ -41,7 +43,9 @@ def db_engine():
 @pytest.fixture(scope="function")
 def db_session(db_engine) -> Generator[Session, None, None]:
     """Create a test database session."""
-    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=db_engine)
+    TestingSessionLocal = sessionmaker(
+        autocommit=False, autoflush=False, bind=db_engine
+    )
     session = TestingSessionLocal()
     try:
         yield session
@@ -52,6 +56,7 @@ def db_session(db_engine) -> Generator[Session, None, None]:
 @pytest.fixture(scope="function")
 def client(db_session) -> Generator[TestClient, None, None]:
     """Create a test client with database override."""
+
     def override_get_db():
         try:
             yield db_session
@@ -69,6 +74,7 @@ def client(db_session) -> Generator[TestClient, None, None]:
 # ============================================================================
 # User Fixtures
 # ============================================================================
+
 
 @pytest.fixture
 def test_user(db_session) -> User:
@@ -109,6 +115,7 @@ def authenticated_client(client, test_user) -> Generator[TestClient, None, None]
 # Rubric Fixtures
 # ============================================================================
 
+
 @pytest.fixture
 def sample_rubric_criteria() -> list[dict]:
     """Sample rubric criteria for testing."""
@@ -118,44 +125,68 @@ def sample_rubric_criteria() -> list[dict]:
             "weight": 0.3,
             "description": "Correctness of technical concepts and solutions",
             "levels": [
-                {"score": 100, "label": "Excellent", "description": "All technical details are accurate"},
-                {"score": 75, "label": "Good", "description": "Minor inaccuracies present"},
-                {"score": 50, "label": "Fair", "description": "Some significant errors"},
+                {
+                    "score": 100,
+                    "label": "Excellent",
+                    "description": "All technical details are accurate",
+                },
+                {
+                    "score": 75,
+                    "label": "Good",
+                    "description": "Minor inaccuracies present",
+                },
+                {
+                    "score": 50,
+                    "label": "Fair",
+                    "description": "Some significant errors",
+                },
                 {"score": 25, "label": "Poor", "description": "Many errors present"},
-            ]
+            ],
         },
         {
             "name": "Communication",
             "weight": 0.25,
             "description": "Clarity and effectiveness of communication",
             "levels": [
-                {"score": 100, "label": "Excellent", "description": "Crystal clear communication"},
+                {
+                    "score": 100,
+                    "label": "Excellent",
+                    "description": "Crystal clear communication",
+                },
                 {"score": 75, "label": "Good", "description": "Generally clear"},
                 {"score": 50, "label": "Fair", "description": "Some confusion"},
                 {"score": 25, "label": "Poor", "description": "Hard to follow"},
-            ]
+            ],
         },
         {
             "name": "Problem Solving",
             "weight": 0.25,
             "description": "Approach to solving problems",
             "levels": [
-                {"score": 100, "label": "Excellent", "description": "Systematic and efficient"},
+                {
+                    "score": 100,
+                    "label": "Excellent",
+                    "description": "Systematic and efficient",
+                },
                 {"score": 75, "label": "Good", "description": "Good approach"},
                 {"score": 50, "label": "Fair", "description": "Needs improvement"},
                 {"score": 25, "label": "Poor", "description": "No clear approach"},
-            ]
+            ],
         },
         {
             "name": "Code Quality",
             "weight": 0.2,
             "description": "Quality and readability of code",
             "levels": [
-                {"score": 100, "label": "Excellent", "description": "Clean, readable code"},
+                {
+                    "score": 100,
+                    "label": "Excellent",
+                    "description": "Clean, readable code",
+                },
                 {"score": 75, "label": "Good", "description": "Generally good"},
                 {"score": 50, "label": "Fair", "description": "Some issues"},
                 {"score": 25, "label": "Poor", "description": "Messy code"},
-            ]
+            ],
         },
     ]
 
@@ -183,6 +214,7 @@ def test_rubric(db_session, sample_rubric_criteria) -> EvaluationRubric:
 # ============================================================================
 # Session Fixtures
 # ============================================================================
+
 
 @pytest.fixture
 def test_session(db_session, test_user) -> InterviewSession:
@@ -242,8 +274,11 @@ def test_session_with_response(db_session, test_user) -> InterviewSession:
 # Feedback Fixtures
 # ============================================================================
 
+
 @pytest.fixture
-def test_feedback_run(db_session, test_session_with_response, test_rubric) -> FeedbackRun:
+def test_feedback_run(
+    db_session, test_session_with_response, test_rubric
+) -> FeedbackRun:
     """Create a test feedback run."""
     feedback = FeedbackRun(
         id=1,
@@ -258,7 +293,9 @@ def test_feedback_run(db_session, test_session_with_response, test_rubric) -> Fe
 
 
 @pytest.fixture
-def completed_feedback_run(db_session, test_session_with_response, test_rubric) -> FeedbackRun:
+def completed_feedback_run(
+    db_session, test_session_with_response, test_rubric
+) -> FeedbackRun:
     """Create a completed feedback run."""
     feedback = FeedbackRun(
         id=2,
@@ -300,6 +337,7 @@ def completed_feedback_run(db_session, test_session_with_response, test_rubric) 
 # ============================================================================
 # Drill Fixtures
 # ============================================================================
+
 
 @pytest.fixture
 def test_drills(db_session, completed_feedback_run, test_user) -> list[Drill]:
@@ -348,6 +386,7 @@ def test_drills(db_session, completed_feedback_run, test_user) -> list[Drill]:
 # Mock Service Fixtures
 # ============================================================================
 
+
 @pytest.fixture
 def mock_llm_service():
     """Create a mock LLM service."""
@@ -360,7 +399,10 @@ def mock_llm_service():
 @pytest.fixture
 def mock_transcription_service():
     """Create a mock transcription service."""
-    from app.services.transcription import MockTranscriptionProvider, TranscriptionService
+    from app.services.transcription import (
+        MockTranscriptionProvider,
+        TranscriptionService,
+    )
 
     service = TranscriptionService(provider=MockTranscriptionProvider())
     return service

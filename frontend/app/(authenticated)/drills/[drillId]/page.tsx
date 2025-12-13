@@ -1,10 +1,7 @@
 "use client";
 
-import { DashboardCard } from "@/components/dashboard/dashboard-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/auth-context";
 import {
   useCompleteDrill,
@@ -23,14 +20,13 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft,
   CheckCircle,
-  Clock,
   Dumbbell,
   Eye,
+  EyeOff,
   Lightbulb,
   Play,
   Send,
-  SkipForward,
-  Target,
+  Target
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -44,11 +40,11 @@ const fadeInUp = {
 function getDifficultyColor(difficulty: DrillDifficulty) {
   switch (difficulty) {
     case "easy":
-      return "bg-green-500/20 text-green-400 border-green-500/30";
+      return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
     case "medium":
-      return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+      return "bg-amber-500/10 text-amber-400 border-amber-500/20";
     case "hard":
-      return "bg-red-500/20 text-red-400 border-red-500/30";
+      return "bg-rose-500/10 text-rose-400 border-rose-500/20";
     default:
       return "bg-muted text-muted-foreground";
   }
@@ -57,13 +53,13 @@ function getDifficultyColor(difficulty: DrillDifficulty) {
 function getStatusColor(status: DrillStatus) {
   switch (status) {
     case "pending":
-      return "bg-blue-500/20 text-blue-400 border-blue-500/30";
+      return "bg-blue-500/10 text-blue-400 border-blue-500/20";
     case "in_progress":
-      return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+      return "bg-amber-500/10 text-amber-400 border-amber-500/20";
     case "completed":
-      return "bg-green-500/20 text-green-400 border-green-500/30";
+      return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
     case "skipped":
-      return "bg-gray-500/20 text-gray-400 border-gray-500/30";
+      return "bg-slate-500/10 text-slate-400 border-slate-500/20";
     default:
       return "bg-muted text-muted-foreground";
   }
@@ -139,10 +135,12 @@ export default function DrillDetailPage() {
 
   if (error || !drill) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <p className="text-destructive mb-4">{error || "Drill not found"}</p>
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <p className="text-destructive mb-6 text-lg">
+          {error || "Drill not found"}
+        </p>
         <Link href="/drills">
-          <Button variant="outline">
+          <Button variant="outline" className="gap-2">
             <ArrowLeft className="h-4 w-4" />
             Back to Drills
           </Button>
@@ -162,216 +160,292 @@ export default function DrillDetailPage() {
       initial="hidden"
       animate="visible"
       variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
-      className="space-y-6"
+      className="max-w-4xl mx-auto space-y-8 pb-10"
     >
-      {/* Header */}
-      <motion.div variants={fadeInUp} className="flex items-center gap-4">
-        <Link href="/drills">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
+      {/* Header Navigation */}
+      <motion.div
+        variants={fadeInUp}
+        className="flex items-center gap-2 text-sm text-muted-foreground mb-4"
+      >
+        <Link
+          href="/drills"
+          className="hover:text-primary transition-colors flex items-center gap-1"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Drills
         </Link>
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-2xl font-bold tracking-tight">{drill.title}</h1>
-            <Badge
-              variant="outline"
-              className={cn("text-xs", getDifficultyColor(drill.difficulty))}
-            >
-              {drill.difficulty}
-            </Badge>
-            <Badge
-              variant="outline"
-              className={cn("text-xs", getStatusColor(drill.status))}
-            >
-              {drill.status.replace("_", " ")}
-            </Badge>
-          </div>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Dumbbell className="h-3.5 w-3.5" />
-              {getDrillTypeLabel(drill.drill_type)}
-            </span>
-            {drill.target_skill && (
-              <span className="flex items-center gap-1">
-                <Target className="h-3.5 w-3.5" />
-                {drill.target_skill}
-              </span>
-            )}
-          </div>
-        </div>
-        {drill.score !== null && drill.score !== undefined && (
-          <div className="text-right">
-            <div className="text-3xl font-bold text-primary">{drill.score}</div>
-            <div className="text-xs text-muted-foreground">Score</div>
-          </div>
-        )}
+        <span>/</span>
+        <span className="text-foreground font-medium truncate">
+          {drill.title}
+        </span>
       </motion.div>
 
-      {/* Target Weakness */}
-      {drill.target_weakness && (
-        <motion.div variants={fadeInUp}>
-          <DashboardCard
-            title="Focus Area"
-            description="This drill targets"
-            icon={<Target className="h-4 w-4 text-yellow-400" />}
-          >
-            <p className="text-sm">{drill.target_weakness}</p>
-          </DashboardCard>
-        </motion.div>
-      )}
+      {/* Main Header Card */}
+      <motion.div
+        variants={fadeInUp}
+        className="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-2xl p-6 md:p-8 relative overflow-hidden"
+      >
+        <div className="absolute top-0 right-0 p-32 bg-primary/5 blur-3xl rounded-full -mr-16 -mt-16 pointer-events-none" />
 
-      {/* Drill Prompt */}
-      <motion.div variants={fadeInUp}>
-        <DashboardCard
-          title="Exercise"
-          description="Complete the following"
-          icon={<Dumbbell className="h-4 w-4 text-primary" />}
-          gradient="primary"
-        >
-          <div className="prose prose-invert max-w-none">
-            <p className="text-lg leading-relaxed whitespace-pre-wrap">
-              {drill.prompt}
-            </p>
-          </div>
-        </DashboardCard>
-      </motion.div>
-
-      {/* Hints */}
-      {drill.hints && (
-        <motion.div variants={fadeInUp}>
-          <DashboardCard
-            title="Hints"
-            description={showHints ? "Here are some hints" : "Need help?"}
-            icon={<Lightbulb className="h-4 w-4 text-yellow-400" />}
-            action={
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowHints(!showHints)}
-              >
-                <Eye className="h-4 w-4" />
-                {showHints ? "Hide" : "Show"}
-              </Button>
-            }
-          >
-            {showHints ? (
-              <div className="prose prose-invert prose-sm max-w-none">
-                <p className="whitespace-pre-wrap">{drill.hints}</p>
+        <div className="relative z-10">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+            <div className="space-y-4 flex-1">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-3">
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "rounded-full px-3 py-0.5 border-0 font-medium",
+                      getDifficultyColor(drill.difficulty)
+                    )}
+                  >
+                    {drill.difficulty}
+                  </Badge>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "rounded-full px-3 py-0.5 border-0 font-medium",
+                      getStatusColor(drill.status)
+                    )}
+                  >
+                    {drill.status.replace("_", " ")}
+                  </Badge>
+                </div>
+                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
+                  {drill.title}
+                </h1>
               </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                Click "Show" to reveal hints. Try to solve it yourself first!
-              </p>
+
+              <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+                <span className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
+                  <Dumbbell className="h-4 w-4 text-primary" />
+                  {getDrillTypeLabel(drill.drill_type)}
+                </span>
+                {drill.target_skill && (
+                  <span className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
+                    <Target className="h-4 w-4 text-accent" />
+                    {drill.target_skill}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {drill.score !== null && drill.score !== undefined && (
+              <div className="flex flex-col items-center justify-center bg-white/5 rounded-2xl p-4 border border-white/10 min-w-[100px]">
+                <div className="text-4xl font-bold text-primary">
+                  {drill.score}
+                </div>
+                <div className="text-xs uppercase tracking-wider text-muted-foreground font-medium mt-1">
+                  Score
+                </div>
+              </div>
             )}
-          </DashboardCard>
-        </motion.div>
-      )}
+          </div>
 
-      {/* Response Section */}
-      <motion.div variants={fadeInUp}>
-        <DashboardCard
-          title="Your Response"
-          description={
-            isCompleted || isSkippedStatus
-              ? "Your submitted answer"
-              : isPending
-              ? "Start the drill to respond"
-              : "Enter your response"
-          }
-          icon={<CheckCircle className="h-4 w-4 text-primary" />}
-          gradient="accent"
-        >
-          {isPending ? (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <div className="mb-4 rounded-full bg-primary/20 p-4">
-                <Play className="h-8 w-8 text-primary" />
-              </div>
-              <p className="text-muted-foreground mb-4">
-                Ready to start this drill?
-              </p>
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={handleSkip}
-                  disabled={isSkipping}
-                >
-                  <SkipForward className="h-4 w-4" />
-                  Skip
-                </Button>
-                <Button onClick={handleStart} disabled={isStarting}>
-                  <Play className="h-4 w-4" />
-                  Start Drill
-                </Button>
+          {/* Target Weakness Banner */}
+          {drill.target_weakness && (
+            <div className="mt-8 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl flex items-start gap-3">
+              <Target className="h-5 w-5 text-yellow-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs font-semibold text-yellow-400 uppercase tracking-wide mb-1">
+                  Focus Area
+                </p>
+                <p className="text-sm text-yellow-100/90">
+                  {drill.target_weakness}
+                </p>
               </div>
             </div>
-          ) : canRespond ? (
-            <div className="space-y-4">
-              <textarea
-                className="w-full min-h-[200px] rounded-lg border border-white/10 bg-white/5 p-4 text-sm placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
-                placeholder="Type your response here..."
-                value={response}
-                onChange={(e) => setResponse(e.target.value)}
-              />
-              <div className="flex justify-between">
-                <Button
-                  variant="ghost"
-                  onClick={handleSkip}
-                  disabled={isSkipping}
-                >
-                  <SkipForward className="h-4 w-4" />
-                  Skip Drill
-                </Button>
-                <Button
-                  onClick={handleSubmit}
-                  disabled={isSubmitting || isCompleting || !response.trim()}
-                >
-                  <Send className="h-4 w-4" />
-                  Submit Response
-                </Button>
-              </div>
-            </div>
-          ) : drill.user_response ? (
-            <div className="p-4 rounded-lg bg-white/5 border border-white/10">
-              <p className="whitespace-pre-wrap">{drill.user_response}</p>
-            </div>
-          ) : isSkippedStatus ? (
-            <p className="text-center text-muted-foreground py-4">
-              This drill was skipped.
-            </p>
-          ) : (
-            <p className="text-center text-muted-foreground py-4">
-              No response submitted yet.
-            </p>
           )}
-        </DashboardCard>
+        </div>
       </motion.div>
 
-      {/* Back to Drills */}
-      <motion.div variants={fadeInUp} className="flex justify-start">
-        <Link href="/drills">
-          <Button variant="outline">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Drills
-          </Button>
-        </Link>
-      </motion.div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column: Prompt & Hints */}
+        <div className="lg:col-span-2 space-y-6">
+          <motion.div variants={fadeInUp}>
+            <div className="bg-card/50 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden">
+              <div className="p-4 border-b border-white/10 bg-white/5 flex items-center gap-2">
+                <Dumbbell className="h-4 w-4 text-primary" />
+                <h3 className="font-semibold">Exercise Prompt</h3>
+              </div>
+              <div className="p-6 md:p-8">
+                <div className="prose prose-invert max-w-none">
+                  <p className="text-lg leading-relaxed whitespace-pre-wrap text-foreground/90 font-light">
+                    {drill.prompt}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Hints */}
+          {drill.hints && (
+            <motion.div variants={fadeInUp}>
+              <div className="border border-white/10 rounded-xl overflow-hidden bg-card/30">
+                <button
+                  onClick={() => setShowHints(!showHints)}
+                  className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <Lightbulb
+                      className={cn(
+                        "h-4 w-4",
+                        showHints ? "text-yellow-400" : "text-muted-foreground"
+                      )}
+                    />
+                    <span className="font-semibold">Hints</span>
+                  </div>
+                  {showHints ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </button>
+
+                {showHints && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    className="border-t border-white/10 bg-yellow-500/5"
+                  >
+                    <div className="p-6 prose prose-invert prose-sm max-w-none">
+                      <p className="whitespace-pre-wrap text-yellow-200/90">
+                        {drill.hints}
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </div>
+
+        {/* Right Column: Response Area */}
+        <div className="lg:col-span-1">
+          <motion.div variants={fadeInUp} className="sticky top-6">
+            <div
+              className={cn(
+                "rounded-xl border border-white/10 overflow-hidden flex flex-col h-full min-h-[400px]",
+                isPending
+                  ? "bg-gradient-to-b from-primary/10 to-transparent"
+                  : "bg-card/50"
+              )}
+            >
+              <div className="p-4 border-b border-white/10 bg-white/5 flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-primary" />
+                <h3 className="font-semibold">Your Response</h3>
+              </div>
+
+              <div className="flex-1 p-6 flex flex-col">
+                {isPending ? (
+                  <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
+                      <div className="relative bg-primary/20 p-4 rounded-full ring-1 ring-primary/40">
+                        <Play className="h-8 w-8 text-primary fill-current" />
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-semibold mb-2">
+                        Ready to Start?
+                      </h4>
+                      <p className="text-sm text-muted-foreground max-w-[200px] mx-auto">
+                        Begin the drill to unlock the response area and timer.
+                      </p>
+                    </div>
+                    <div className="flex flex-col w-full gap-3">
+                      <Button
+                        onClick={handleStart}
+                        disabled={isStarting}
+                        size="lg"
+                        className="w-full font-semibold shadow-lg shadow-primary/20"
+                      >
+                        Start Drill
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={handleSkip}
+                        disabled={isSkipping}
+                        size="sm"
+                        className="w-full text-muted-foreground hover:text-foreground"
+                      >
+                        Skip for now
+                      </Button>
+                    </div>
+                  </div>
+                ) : canRespond ? (
+                  <div className="flex-1 flex flex-col gap-4">
+                    <textarea
+                      className="flex-1 w-full min-h-[200px] rounded-lg border border-white/10 bg-white/5 p-4 text-sm placeholder:text-muted-foreground focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50 resize-none transition-all"
+                      placeholder="Type your response here..."
+                      value={response}
+                      onChange={(e) => setResponse(e.target.value)}
+                      autoFocus
+                    />
+                    <div className="flex flex-col gap-3 mt-auto">
+                      <Button
+                        onClick={handleSubmit}
+                        disabled={
+                          isSubmitting || isCompleting || !response.trim()
+                        }
+                        className="w-full"
+                        size="lg"
+                      >
+                        <Send className="h-4 w-4 mr-2" />
+                        Submit Response
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={handleSkip}
+                        disabled={isSkipping}
+                        size="sm"
+                        className="w-full text-muted-foreground"
+                      >
+                        Skip Drill
+                      </Button>
+                    </div>
+                  </div>
+                ) : drill.user_response ? (
+                  <div className="flex-1 flex flex-col">
+                    <div className="p-4 rounded-lg bg-white/5 border border-white/10 text-sm whitespace-pre-wrap text-muted-foreground italic mb-4">
+                      "{drill.user_response}"
+                    </div>
+                    {drill.score !== null && (
+                      <div className="mt-auto pt-4 border-t border-white/10 text-center">
+                        <span className="text-sm text-muted-foreground">
+                          Drill completed
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex-1 flex items-center justify-center text-muted-foreground italic text-sm">
+                    {isSkippedStatus ? "Drill skipped" : "No response"}
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
     </motion.div>
   );
 }
 
 function DrillDetailSkeleton() {
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Skeleton className="h-10 w-10 rounded-lg" />
-        <div className="flex-1 space-y-2">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-4 w-48" />
+    <div className="max-w-4xl mx-auto space-y-8">
+      <div className="h-8 w-48 bg-white/5 rounded animate-pulse" />
+      <div className="h-64 bg-white/5 rounded-2xl animate-pulse" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-6">
+          <div className="h-48 bg-white/5 rounded-xl animate-pulse" />
+          <div className="h-16 bg-white/5 rounded-xl animate-pulse" />
+        </div>
+        <div className="lg:col-span-1">
+          <div className="h-[400px] bg-white/5 rounded-xl animate-pulse" />
         </div>
       </div>
-      <Skeleton className="h-48 rounded-lg" />
-      <Skeleton className="h-64 rounded-lg" />
     </div>
   );
 }

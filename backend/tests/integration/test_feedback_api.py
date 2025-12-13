@@ -1,8 +1,7 @@
 """Integration tests for feedback API endpoints."""
 
-import pytest
 from fastapi import status
-from unittest.mock import patch, AsyncMock
+from unittest.mock import patch
 
 
 class TestFeedbackAPI:
@@ -36,17 +35,13 @@ class TestFeedbackAPI:
 
     def test_request_feedback_not_found(self, authenticated_client, db_session):
         """Test requesting feedback for non-existent session."""
-        response = authenticated_client.post(
-            "/api/v1/feedback/sessions/99999/feedback"
-        )
+        response = authenticated_client.post("/api/v1/feedback/sessions/99999/feedback")
 
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_get_feedback(self, authenticated_client, test_feedback_run):
         """Test getting feedback details."""
-        response = authenticated_client.get(
-            f"/api/v1/feedback/{test_feedback_run.id}"
-        )
+        response = authenticated_client.get(f"/api/v1/feedback/{test_feedback_run.id}")
 
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
@@ -115,7 +110,9 @@ class TestFeedbackAPI:
 class TestFeedbackRetry:
     """Tests for feedback retry functionality."""
 
-    def test_retry_failed_feedback(self, authenticated_client, db_session, test_session_with_response, test_rubric):
+    def test_retry_failed_feedback(
+        self, authenticated_client, db_session, test_session_with_response, test_rubric
+    ):
         """Test retrying failed feedback."""
         from app.models.feedback import FeedbackRun, FeedbackStatus
 
@@ -141,9 +138,7 @@ class TestFeedbackRetry:
 
         assert data["status"] == "pending"
 
-    def test_retry_non_failed_feedback(
-        self, authenticated_client, test_feedback_run
-    ):
+    def test_retry_non_failed_feedback(self, authenticated_client, test_feedback_run):
         """Test that retrying non-failed feedback fails."""
         response = authenticated_client.post(
             f"/api/v1/feedback/{test_feedback_run.id}/retry"

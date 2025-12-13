@@ -11,6 +11,7 @@ from app.db.base import Base
 
 class RubricCategory(str, PyEnum):
     """Rubric category types."""
+
     SYSTEM_DESIGN = "system_design"
     BEHAVIORAL = "behavioral"
     CODING = "coding"
@@ -42,7 +43,9 @@ class EvaluationRubric(Base):
 
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    updated_at = Column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
 
     # Relationships
     feedback_runs = relationship("FeedbackRun", back_populates="rubric")

@@ -17,15 +17,11 @@ def get_drill(db: Session, drill_id: int) -> Optional[Drill]:
 def get_drill_by_user(db: Session, drill_id: int, user_id: int) -> Optional[Drill]:
     """Get a drill by ID with ownership check."""
     return (
-        db.query(Drill)
-        .filter(Drill.id == drill_id, Drill.user_id == user_id)
-        .first()
+        db.query(Drill).filter(Drill.id == drill_id, Drill.user_id == user_id).first()
     )
 
 
-def get_drills_by_feedback_run(
-    db: Session, feedback_run_id: int
-) -> list[Drill]:
+def get_drills_by_feedback_run(db: Session, feedback_run_id: int) -> list[Drill]:
     """Get all drills for a feedback run."""
     return (
         db.query(Drill)
@@ -48,12 +44,7 @@ def get_drills_by_user(
     if status:
         query = query.filter(Drill.status == status)
 
-    return (
-        query.order_by(Drill.created_at.desc())
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
+    return query.order_by(Drill.created_at.desc()).offset(skip).limit(limit).all()
 
 
 def count_drills_by_user(
@@ -133,9 +124,7 @@ def create_drills_batch(
     return db_drills
 
 
-def update_drill(
-    db: Session, db_drill: Drill, drill_in: DrillUpdate
-) -> Drill:
+def update_drill(db: Session, db_drill: Drill, drill_in: DrillUpdate) -> Drill:
     """Update a drill."""
     update_data = drill_in.model_dump(exclude_unset=True)
 
@@ -179,9 +168,7 @@ def submit_drill_response(
     return db_drill
 
 
-def complete_drill(
-    db: Session, db_drill: Drill, score: Optional[int] = None
-) -> Drill:
+def complete_drill(db: Session, db_drill: Drill, score: Optional[int] = None) -> Drill:
     """Mark a drill as completed."""
     db_drill.status = DrillStatus.COMPLETED
     db_drill.completed_at = datetime.utcnow()

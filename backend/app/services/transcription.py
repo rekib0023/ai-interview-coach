@@ -33,7 +33,9 @@ class TranscriptionProvider(ABC):
         pass
 
     @abstractmethod
-    async def transcribe_bytes(self, audio_data: bytes, format: str) -> TranscriptionResult:
+    async def transcribe_bytes(
+        self, audio_data: bytes, format: str
+    ) -> TranscriptionResult:
         """Transcribe audio from bytes to text."""
         pass
 
@@ -48,22 +50,24 @@ class MockTranscriptionProvider(TranscriptionProvider):
 
         return TranscriptionResult(
             text="This is a mock transcription of the audio response. "
-                 "The candidate discussed their approach to problem solving "
-                 "and demonstrated understanding of key concepts.",
+            "The candidate discussed their approach to problem solving "
+            "and demonstrated understanding of key concepts.",
             confidence=0.95,
             duration_ms=1500,
             provider="mock",
         )
 
-    async def transcribe_bytes(self, audio_data: bytes, format: str) -> TranscriptionResult:
+    async def transcribe_bytes(
+        self, audio_data: bytes, format: str
+    ) -> TranscriptionResult:
         """Mock transcription from bytes."""
         logger.info(f"Mock transcribing {len(audio_data)} bytes of {format} audio")
         await self._simulate_delay()
 
         return TranscriptionResult(
             text="This is a mock transcription of the audio response. "
-                 "The candidate discussed their approach to problem solving "
-                 "and demonstrated understanding of key concepts.",
+            "The candidate discussed their approach to problem solving "
+            "and demonstrated understanding of key concepts.",
             confidence=0.95,
             duration_ms=1500,
             provider="mock",
@@ -72,6 +76,7 @@ class MockTranscriptionProvider(TranscriptionProvider):
     async def _simulate_delay(self):
         """Simulate processing delay."""
         import asyncio
+
         await asyncio.sleep(0.5)
 
 
@@ -103,7 +108,9 @@ class OpenAIWhisperProvider(TranscriptionProvider):
             logger.error(f"Error transcribing audio from URL: {e}")
             raise
 
-    async def transcribe_bytes(self, audio_data: bytes, format: str) -> TranscriptionResult:
+    async def transcribe_bytes(
+        self, audio_data: bytes, format: str
+    ) -> TranscriptionResult:
         """Transcribe audio bytes using OpenAI Whisper."""
         import httpx
 

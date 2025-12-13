@@ -28,9 +28,7 @@ def get_feedback_run_by_user(
     )
 
 
-def get_feedback_runs_by_session(
-    db: Session, session_id: int
-) -> list[FeedbackRun]:
+def get_feedback_runs_by_session(db: Session, session_id: int) -> list[FeedbackRun]:
     """Get all feedback runs for a session."""
     return (
         db.query(FeedbackRun)
@@ -59,12 +57,7 @@ def get_feedback_runs_by_user(
     if status:
         query = query.filter(FeedbackRun.status == status)
 
-    return (
-        query.order_by(FeedbackRun.created_at.desc())
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
+    return query.order_by(FeedbackRun.created_at.desc()).offset(skip).limit(limit).all()
 
 
 def count_feedback_runs_by_user(
@@ -85,9 +78,7 @@ def count_feedback_runs_by_user(
     return query.count()
 
 
-def create_feedback_run(
-    db: Session, feedback_in: FeedbackRunCreate
-) -> FeedbackRun:
+def create_feedback_run(db: Session, feedback_in: FeedbackRunCreate) -> FeedbackRun:
     """Create a new feedback run."""
     db_feedback = FeedbackRun(
         session_id=feedback_in.session_id,

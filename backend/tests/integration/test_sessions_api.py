@@ -1,6 +1,5 @@
 """Integration tests for sessions API endpoints."""
 
-import pytest
 from fastapi import status
 
 
@@ -66,9 +65,7 @@ class TestSessionsAPI:
 
     def test_list_sessions_pagination(self, authenticated_client, test_session):
         """Test session listing with pagination."""
-        response = authenticated_client.get(
-            "/api/v1/sessions?page=1&page_size=10"
-        )
+        response = authenticated_client.get("/api/v1/sessions?page=1&page_size=10")
 
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
@@ -78,9 +75,7 @@ class TestSessionsAPI:
 
     def test_get_session(self, authenticated_client, test_session):
         """Test getting a specific session."""
-        response = authenticated_client.get(
-            f"/api/v1/sessions/{test_session.id}"
-        )
+        response = authenticated_client.get(f"/api/v1/sessions/{test_session.id}")
 
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
@@ -144,14 +139,10 @@ class TestSessionsAPI:
 
     def test_delete_session(self, authenticated_client, test_session):
         """Test deleting a session."""
-        response = authenticated_client.delete(
-            f"/api/v1/sessions/{test_session.id}"
-        )
+        response = authenticated_client.delete(f"/api/v1/sessions/{test_session.id}")
 
         assert response.status_code == status.HTTP_204_NO_CONTENT
 
         # Verify it's deleted
-        get_response = authenticated_client.get(
-            f"/api/v1/sessions/{test_session.id}"
-        )
+        get_response = authenticated_client.get(f"/api/v1/sessions/{test_session.id}")
         assert get_response.status_code == status.HTTP_404_NOT_FOUND

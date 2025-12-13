@@ -1,6 +1,5 @@
 """Dashboard schemas for API requests and responses."""
 
-from datetime import datetime
 from enum import Enum
 from typing import Optional
 
@@ -11,8 +10,10 @@ from pydantic import BaseModel, Field
 # Enums
 # ============================================================================
 
+
 class Difficulty(str, Enum):
     """Interview difficulty levels."""
+
     EASY = "Easy"
     MEDIUM = "Medium"
     HARD = "Hard"
@@ -20,6 +21,7 @@ class Difficulty(str, Enum):
 
 class Trend(str, Enum):
     """Trend direction for stats."""
+
     UP = "up"
     DOWN = "down"
     NEUTRAL = "neutral"
@@ -27,6 +29,7 @@ class Trend(str, Enum):
 
 class Priority(str, Enum):
     """Goal priority levels."""
+
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
@@ -36,8 +39,10 @@ class Priority(str, Enum):
 # Quick Stats Models
 # ============================================================================
 
+
 class StatItem(BaseModel):
     """Individual stat item."""
+
     title: str
     value: str
     subtitle: Optional[str] = None
@@ -48,14 +53,26 @@ class StatItem(BaseModel):
 
 class QuickStatsResponse(BaseModel):
     """Response for /dashboard/stats endpoint."""
+
     stats: list[StatItem]
 
     class Config:
         json_schema_extra = {
             "example": {
                 "stats": [
-                    {"title": "Overall Score", "value": "78%", "change": "+5%", "trend": "up", "icon_type": "trophy"},
-                    {"title": "Problems Solved", "value": "42", "subtitle": "Top 15% of users", "icon_type": "check"},
+                    {
+                        "title": "Overall Score",
+                        "value": "78%",
+                        "change": "+5%",
+                        "trend": "up",
+                        "icon_type": "trophy",
+                    },
+                    {
+                        "title": "Problems Solved",
+                        "value": "42",
+                        "subtitle": "Top 15% of users",
+                        "icon_type": "check",
+                    },
                 ]
             }
         }
@@ -65,8 +82,10 @@ class QuickStatsResponse(BaseModel):
 # Recent Sessions Models
 # ============================================================================
 
+
 class InterviewSession(BaseModel):
     """Recent interview session data."""
+
     id: int
     topic: str
     date: str = Field(description="Human-readable date string")
@@ -78,6 +97,7 @@ class InterviewSession(BaseModel):
 
 class RecentSessionsResponse(BaseModel):
     """Response for /dashboard/recent-sessions endpoint."""
+
     sessions: list[InterviewSession]
     total_count: int
 
@@ -86,8 +106,10 @@ class RecentSessionsResponse(BaseModel):
 # Skills Models
 # ============================================================================
 
+
 class SkillMetric(BaseModel):
     """Individual skill metric."""
+
     name: str
     progress: int = Field(ge=0, le=100, description="Progress percentage")
     trend: Optional[int] = Field(None, description="Trend change in percentage points")
@@ -95,6 +117,7 @@ class SkillMetric(BaseModel):
 
 class SkillsResponse(BaseModel):
     """Response for /dashboard/skills endpoint."""
+
     areas_to_improve: list[SkillMetric]
     strengths: list[SkillMetric]
 
@@ -103,8 +126,10 @@ class SkillsResponse(BaseModel):
 # Weekly Goals Models
 # ============================================================================
 
+
 class WeeklyGoal(BaseModel):
     """Individual weekly goal."""
+
     id: int
     label: str
     current: int = Field(ge=0)
@@ -114,6 +139,7 @@ class WeeklyGoal(BaseModel):
 
 class GoalsResponse(BaseModel):
     """Response for /dashboard/goals endpoint."""
+
     goals: list[WeeklyGoal]
     completed_count: int
     total_count: int
@@ -123,8 +149,10 @@ class GoalsResponse(BaseModel):
 # AI Insight Models
 # ============================================================================
 
+
 class AiInsightResponse(BaseModel):
     """Response for /dashboard/ai-insight endpoint."""
+
     message: str
     highlight_topic: str = Field(description="Topic to highlight in the message")
     suggested_topic: str = Field(description="Suggested next topic to practice")
@@ -135,8 +163,10 @@ class AiInsightResponse(BaseModel):
 # Combined Dashboard Response (optional - for single API call)
 # ============================================================================
 
+
 class DashboardResponse(BaseModel):
     """Combined dashboard data response."""
+
     stats: QuickStatsResponse
     recent_sessions: RecentSessionsResponse
     skills: SkillsResponse

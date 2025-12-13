@@ -1,16 +1,6 @@
 "use client";
 
 import { NavMain } from "@/components/layout/nav-main";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import {
   Sidebar,
   SidebarContent,
@@ -46,7 +36,7 @@ const data = {
       isActive: true,
     },
     {
-      title: "Practice",
+      title: "Interviews",
       url: "/practice",
       icon: Target,
     },

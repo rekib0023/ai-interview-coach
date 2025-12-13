@@ -1,7 +1,5 @@
 """Unit tests for prompt builders."""
 
-import pytest
-
 from app.services.prompts import (
     FEEDBACK_PROMPT_VERSION,
     DRILL_PROMPT_VERSION,

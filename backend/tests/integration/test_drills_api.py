@@ -1,6 +1,5 @@
 """Integration tests for drills API endpoints."""
 
-import pytest
 from fastapi import status
 from unittest.mock import patch
 
@@ -73,9 +72,7 @@ class TestDrillsAPI:
         assert "total" in data
         assert data["total"] >= 2
 
-    def test_list_drills_with_status_filter(
-        self, authenticated_client, test_drills
-    ):
+    def test_list_drills_with_status_filter(self, authenticated_client, test_drills):
         """Test listing drills with status filter."""
         response = authenticated_client.get("/api/v1/drills?status=pending")
 

@@ -121,4 +121,3 @@ __all__ = [
     "DrillWithHints",
     "DrillGenerationResult",
 ]
-
