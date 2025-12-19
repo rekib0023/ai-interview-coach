@@ -1,10 +1,10 @@
-"""Prompt templates for LLM-based feedback and drill generation."""
+"""Prompt templates for LLM-based feedback and practice generation."""
 
 from typing import Optional
 
 # Version tracking for prompt templates
 FEEDBACK_PROMPT_VERSION = "1.0.0"
-DRILL_PROMPT_VERSION = "1.0.0"
+PRACTICE_PROMPT_VERSION = "1.0.0"
 
 
 def get_feedback_system_prompt() -> str:
@@ -83,8 +83,8 @@ Provide your evaluation in the following JSON format:
 Ensure your response is valid JSON only, with no additional text."""
 
 
-def get_drill_system_prompt() -> str:
-    """Get the system prompt for drill generation."""
+def get_practice_system_prompt() -> str:
+    """Get the system prompt for practice generation."""
     return """You are an expert interview coach creating follow-up practice exercises.
 Your role is to generate targeted practice questions that address specific weaknesses identified in interview feedback.
 
@@ -98,26 +98,26 @@ Guidelines:
 Always respond in the specified JSON format."""
 
 
-def get_drill_generation_prompt(
+def get_practice_generation_prompt(
     weaknesses: list[str],
     topic: str,
     count: int = 3,
     difficulty_ramp: bool = False,
     skill_targets: Optional[list[str]] = None,
 ) -> str:
-    """Generate the prompt for drill generation."""
+    """Generate the prompt for practice generation."""
     weaknesses_text = "\n".join([f"- {w}" for w in weaknesses])
 
     difficulty_instruction = ""
     if difficulty_ramp:
         difficulty_instruction = """
 For difficulty progression:
-- First drill: Easy - foundational concept
-- Middle drills: Medium - application of concept
-- Final drill: Hard - complex scenario or edge cases
+- First practice: Easy - foundational concept
+- Middle practices: Medium - application of concept
+- Final practice: Hard - complex scenario or edge cases
 """
     else:
-        difficulty_instruction = "All drills should be medium difficulty."
+        difficulty_instruction = "All practices should be medium difficulty."
 
     skills_context = ""
     if skill_targets:
@@ -130,13 +130,13 @@ Topic: {topic}{skills_context}
 Identified Weaknesses:
 {weaknesses_text}
 {difficulty_instruction}
-Generate {count} drill exercises in the following JSON format:
+Generate {count} practice exercises in the following JSON format:
 {{
-    "drills": [
+    "practices": [
         {{
             "title": "<concise title>",
             "prompt": "<the practice question or exercise>",
-            "drill_type": "practice_question|code_exercise|concept_review|mock_scenario",
+            "practice_type": "practice_question|code_exercise|concept_review|mock_scenario",
             "difficulty": "easy|medium|hard",
             "target_weakness": "<which weakness this addresses>",
             "target_skill": "<specific skill being practiced>",

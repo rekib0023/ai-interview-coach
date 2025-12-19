@@ -7,10 +7,9 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, s
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
+from app import crud
 from app.api import deps
-from app.api.v1.endpoints.auth import get_current_user
-from app.crud import feedback as feedback_crud
-from app.crud import session as session_crud
+from app.api.deps import get_current_user
 from app.models.feedback import FeedbackStatus
 from app.models.user import User
 from app.schemas.feedback import (
@@ -35,18 +34,18 @@ async def process_feedback_async(
     from app.services.llm import LLMService
 
     try:
-        db_feedback = feedback_crud.get_feedback_run(db=db, feedback_id=feedback_run_id)
+        db_feedback = crud.feedback.get(db=db, id=feedback_run_id)
         if not db_feedback:
             logger.error(f"Feedback run {feedback_run_id} not found")
             return
 
-        # Get the session
-        db_session = session_crud.get_session(db=db, session_id=db_feedback.session_id)
-        if not db_session:
-            feedback_crud.fail_feedback_run(
+        # Get the assessment
+        db_assessment = crud.assessment.get(db=db, id=db_feedback.assessment_id)
+        if not db_assessment:
+            crud.feedback.fail(
                 db=db,
                 db_feedback=db_feedback,
-                error_message="Session not found",
+                error_message="Assessment not found",
             )
             return
 
@@ -55,14 +54,14 @@ async def process_feedback_async(
         await llm_service.generate_feedback(
             db=db,
             feedback_run=db_feedback,
-            session=db_session,
+            assessment=db_assessment,
         )
 
     except Exception as e:
         logger.error(f"Error processing feedback {feedback_run_id}: {e}")
-        db_feedback = feedback_crud.get_feedback_run(db=db, feedback_id=feedback_run_id)
+        db_feedback = crud.feedback.get(db=db, id=feedback_run_id)
         if db_feedback:
-            feedback_crud.fail_feedback_run(
+            crud.feedback.fail(
                 db=db,
                 db_feedback=db_feedback,
                 error_message=str(e),
@@ -70,13 +69,13 @@ async def process_feedback_async(
 
 
 @router.post(
-    "/sessions/{session_id}/feedback",
+    "/assessments/{assessment_id}/feedback",
     status_code=status.HTTP_202_ACCEPTED,
     summary="Request feedback for session",
     description="Request AI-generated feedback for an interview session. Returns 202 with polling endpoint.",
 )
 async def request_feedback(
-    session_id: int,
+    assessment_id: int,
     current_user: Annotated[User, Depends(get_current_user)],
     db: Session = Depends(deps.get_db),
     background_tasks: BackgroundTasks = BackgroundTasks(),
@@ -84,35 +83,35 @@ async def request_feedback(
 ) -> JSONResponse:
     """Request feedback for a session."""
     logger.info(
-        f"Requesting feedback for session {session_id} by user {current_user.id}"
+        f"Requesting feedback for assessment {assessment_id} by user {current_user.id}"
     )
 
-    # Verify session ownership
-    db_session = session_crud.get_session_by_user(
-        db=db, session_id=session_id, user_id=current_user.id
+    # Verify assessment ownership
+    db_assessment = crud.assessment.get_by_user(
+        db=db, id=assessment_id, user_id=current_user.id
     )
 
-    if not db_session:
+    if not db_assessment:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Session not found",
+            detail="Assessment not found",
         )
 
-    # Validate session has a response
-    if not db_session.response_text and not db_session.response_audio_url:
+    # Validate assessment has a response
+    if not db_assessment.response_text and not db_assessment.response_audio_url:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Session has no response to evaluate. Submit a response first.",
+            detail="Assessment has no response to evaluate. Submit a response first.",
         )
 
     # Create feedback run
     from app.schemas.feedback import FeedbackRunCreate
 
     feedback_in = FeedbackRunCreate(
-        session_id=session_id,
+        assessment_id=assessment_id,
         rubric_id=request.rubric_id if request else None,
     )
-    db_feedback = feedback_crud.create_feedback_run(db=db, feedback_in=feedback_in)
+    db_feedback = crud.feedback.create(db=db, obj_in=feedback_in)
 
     # Start background processing
     background_tasks.add_task(
@@ -148,7 +147,7 @@ async def get_feedback(
     """Get feedback run details."""
     logger.info(f"Getting feedback {feedback_id} for user {current_user.id}")
 
-    db_feedback = feedback_crud.get_feedback_run_by_user(
+    db_feedback = crud.feedback.get_by_user(
         db=db, feedback_id=feedback_id, user_id=current_user.id
     )
 
@@ -173,7 +172,7 @@ async def get_feedback_status(
     db: Session = Depends(deps.get_db),
 ) -> FeedbackStatusResponse:
     """Poll feedback status."""
-    db_feedback = feedback_crud.get_feedback_run_by_user(
+    db_feedback = crud.feedback.get_by_user(
         db=db, feedback_id=feedback_id, user_id=current_user.id
     )
 
@@ -220,7 +219,7 @@ async def get_feedback_result(
     """Get feedback result."""
     logger.info(f"Getting feedback result {feedback_id} for user {current_user.id}")
 
-    db_feedback = feedback_crud.get_feedback_run_by_user(
+    db_feedback = crud.feedback.get_by_user(
         db=db, feedback_id=feedback_id, user_id=current_user.id
     )
 
@@ -245,7 +244,7 @@ async def get_feedback_result(
 
     return FeedbackResult(
         id=db_feedback.id,
-        session_id=db_feedback.session_id,
+        assessment_id=db_feedback.assessment_id,
         status=db_feedback.status,
         overall_score=db_feedback.overall_score,
         criterion_scores=db_feedback.criterion_scores,
@@ -276,21 +275,21 @@ async def list_feedback_runs(
     """List all feedback runs for the current user."""
     logger.info(f"Listing feedback runs for user {current_user.id}")
 
-    feedback_runs = feedback_crud.get_feedback_runs_by_user(
+    feedback_runs = crud.feedback.get_multi_by_user(
         db=db,
         user_id=current_user.id,
         skip=skip,
         limit=limit,
         status=status_filter,
     )
-    total = feedback_crud.count_feedback_runs_by_user(
+    total = crud.feedback.count_by_user(
         db=db, user_id=current_user.id, status=status_filter
     )
 
     summaries = [
         FeedbackRunSummary(
             id=f.id,
-            session_id=f.session_id,
+            assessment_id=f.assessment_id,
             status=f.status,
             overall_score=f.overall_score,
             created_at=f.created_at,
@@ -320,7 +319,7 @@ async def retry_feedback(
     """Retry a failed feedback run."""
     logger.info(f"Retrying feedback {feedback_id} for user {current_user.id}")
 
-    db_feedback = feedback_crud.get_feedback_run_by_user(
+    db_feedback = crud.feedback.get_by_user(
         db=db, feedback_id=feedback_id, user_id=current_user.id
     )
 
@@ -343,7 +342,7 @@ async def retry_feedback(
         )
 
     # Reset and restart
-    db_feedback = feedback_crud.retry_feedback_run(db=db, db_feedback=db_feedback)
+    db_feedback = crud.feedback.retry(db=db, db_feedback=db_feedback)
 
     # Start background processing
     background_tasks.add_task(

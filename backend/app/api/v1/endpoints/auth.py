@@ -1,10 +1,9 @@
 from datetime import timedelta
 from typing import Any
 
-from fastapi import APIRouter, Cookie, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from jose import JWTError, jwt
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app import crud, schemas
@@ -12,41 +11,8 @@ from app.api import deps
 from app.core import security
 from app.core.config import settings
 from app.core.cookies import clear_auth_cookie, set_auth_cookie
-from app.models.user import User
 
 router = APIRouter()
-
-# OAuth2 scheme for token authentication
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login")
-
-
-def get_current_user(
-    db: Session = Depends(deps.get_db),
-    access_token: str = Cookie(None, alias="access_token"),
-):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-
-    if not access_token:
-        raise credentials_exception
-
-    try:
-        payload = jwt.decode(
-            access_token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
-        )
-        user_id: str = payload.get("sub")
-        if user_id is None:
-            raise credentials_exception
-    except JWTError:
-        raise credentials_exception
-
-    user = db.query(User).filter(User.id == int(user_id)).first()
-    if user is None:
-        raise credentials_exception
-    return user
 
 
 @router.post("/login", response_model=schemas.AuthResponse)
@@ -56,7 +22,7 @@ def login(
     """
     Login with email and password
     """
-    user = crud.user.get_user_by_email(db, email=form_data.username)
+    user = crud.user.get_by_email(db, email=form_data.username)
     if not user or not security.verify_password(
         form_data.password, user.hashed_password
     ):
@@ -99,7 +65,7 @@ def create_user_signup(
     """
     Create new user and automatically log them in.
     """
-    user = crud.user.get_user_by_email(db, email=user_in.email)
+    user = crud.user.get_by_email(db, email=user_in.email)
     if user:
         raise HTTPException(
             status_code=400,
@@ -107,7 +73,7 @@ def create_user_signup(
         )
 
     # Create the user
-    user = crud.user.create_user(db=db, user=user_in)
+    user = crud.user.create(db=db, obj_in=user_in)
 
     # Generate access token for automatic login
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -134,7 +100,7 @@ def create_user_signup(
 
 
 @router.get("/me", response_model=schemas.User)
-def read_users_me(current_user=Depends(get_current_user)):
+def read_users_me(current_user=Depends(deps.get_current_user)):
     """
     Get current user profile
     """

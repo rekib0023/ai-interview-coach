@@ -1,4 +1,4 @@
-"""LLM service for feedback and drill generation."""
+"""LLM service for feedback and practice generation."""
 
 import json
 import logging
@@ -9,19 +9,19 @@ from typing import Any, Optional
 
 from sqlalchemy.orm import Session
 
-from app.crud import drill as drill_crud
 from app.crud import feedback as feedback_crud
-from app.models.drill import DrillDifficulty, DrillType
+from app.crud import practice as practice_crud
+from app.models.assessment import Assessment
 from app.models.feedback import FeedbackRun
-from app.models.interview_session import InterviewSession
-from app.schemas.drill import DrillCreate
+from app.models.practice import PracticeDifficulty, PracticeType
+from app.schemas.practice import PracticeCreate
 from app.services.prompts import (
     FEEDBACK_PROMPT_VERSION,
     generate_prompt_id,
-    get_drill_generation_prompt,
-    get_drill_system_prompt,
     get_feedback_system_prompt,
     get_feedback_user_prompt,
+    get_practice_generation_prompt,
+    get_practice_system_prompt,
 )
 from app.services.transcription import TranscriptionService
 
@@ -70,7 +70,7 @@ class MockLLMProvider(LLMProvider):
 
         await asyncio.sleep(0.5)  # Simulate API latency
 
-        # Check if this is a feedback or drill request
+        # Check if this is a feedback or practice request
         if "evaluate" in user_prompt.lower() and "overall_score" in user_prompt.lower():
             content = json.dumps(
                 {
@@ -102,11 +102,11 @@ class MockLLMProvider(LLMProvider):
         else:
             content = json.dumps(
                 {
-                    "drills": [
+                    "practices": [
                         {
                             "title": "Time Complexity Analysis Practice",
                             "prompt": "Analyze the time complexity of the following sorting algorithm and explain your reasoning step by step.",
-                            "drill_type": "practice_question",
+                            "practice_type": "practice_question",
                             "difficulty": "medium",
                             "target_weakness": "Time complexity analysis was incomplete",
                             "target_skill": "Algorithm Analysis",
@@ -116,7 +116,7 @@ class MockLLMProvider(LLMProvider):
                         {
                             "title": "Edge Case Identification",
                             "prompt": "List all edge cases you should consider when implementing a binary search algorithm.",
-                            "drill_type": "concept_review",
+                            "practice_type": "concept_review",
                             "difficulty": "easy",
                             "target_weakness": "Could provide more detail on edge cases",
                             "target_skill": "Problem Analysis",
@@ -126,7 +126,7 @@ class MockLLMProvider(LLMProvider):
                         {
                             "title": "Alternative Approaches Discussion",
                             "prompt": "Describe three different approaches to solve a two-sum problem and discuss the trade-offs of each.",
-                            "drill_type": "mock_scenario",
+                            "practice_type": "mock_scenario",
                             "difficulty": "hard",
                             "target_weakness": "Did not discuss alternative approaches",
                             "target_skill": "Problem Solving",
@@ -299,7 +299,7 @@ class AnthropicProvider(LLMProvider):
 
 
 class LLMService:
-    """Service for LLM-based feedback and drill generation."""
+    """Service for LLM-based feedback and practice generation."""
 
     def __init__(self, provider: Optional[LLMProvider] = None):
         self._provider = provider
@@ -340,10 +340,10 @@ class LLMService:
         self,
         db: Session,
         feedback_run: FeedbackRun,
-        session: InterviewSession,
+        session: Assessment,
     ) -> FeedbackRun:
-        """Generate feedback for an interview session."""
-        logger.info(f"Generating feedback for session {session.id}")
+        """Generate feedback for an assessment."""
+        logger.info(f"Generating feedback for assessment {session.id}")
 
         # Mark as processing
         feedback_run = feedback_crud.start_feedback_run(db=db, db_feedback=feedback_run)
@@ -418,7 +418,7 @@ class LLMService:
             )
 
             logger.info(
-                f"Feedback generated for session {session.id}: "
+                f"Feedback generated for assessment {session.id}: "
                 f"score={feedback_data['overall_score']}, "
                 f"latency={llm_response.latency_ms}ms, "
                 f"cost=${llm_response.cost_usd:.4f}"
@@ -435,7 +435,7 @@ class LLMService:
             )
             raise
 
-    async def generate_drills(
+    async def generate_practices(
         self,
         db: Session,
         feedback_run: FeedbackRun,
@@ -443,27 +443,27 @@ class LLMService:
         count: int = 3,
         difficulty_ramp: bool = False,
     ) -> list:
-        """Generate drill exercises based on feedback."""
-        logger.info(f"Generating {count} drills for feedback {feedback_run.id}")
+        """Generate practice exercises based on feedback."""
+        logger.info(f"Generating {count} practices for feedback {feedback_run.id}")
 
         try:
             # Get weaknesses from feedback
             weaknesses = feedback_run.weaknesses or []
             if not weaknesses:
-                logger.warning("No weaknesses identified, generating general drills")
+                logger.warning("No weaknesses identified, generating general practices")
                 weaknesses = ["General practice needed"]
 
-            # Get session info
-            session = feedback_run.session
+            # Get assessment info
+            assessment = feedback_run.assessment
 
             # Generate prompt
-            system_prompt = get_drill_system_prompt()
-            user_prompt = get_drill_generation_prompt(
+            system_prompt = get_practice_system_prompt()
+            user_prompt = get_practice_generation_prompt(
                 weaknesses=weaknesses,
-                topic=session.topic,
+                topic=assessment.topic,
                 count=count,
                 difficulty_ramp=difficulty_ramp,
-                skill_targets=session.skill_targets,
+                skill_targets=assessment.skill_targets,
             )
 
             # Call LLM
@@ -475,47 +475,47 @@ class LLMService:
             )
 
             # Parse response
-            drills_data = self._parse_drills_response(llm_response.content)
+            practices_data = self._parse_practices_response(llm_response.content)
 
-            # Create drill records
-            drill_creates = []
-            for i, drill_data in enumerate(drills_data["drills"]):
-                drill_type = self._parse_drill_type(
-                    drill_data.get("drill_type", "practice_question")
+            # Create practice records
+            practice_creates = []
+            for i, practice_data in enumerate(practices_data["practices"]):
+                practice_type = self._parse_practice_type(
+                    practice_data.get("practice_type", "practice_question")
                 )
-                difficulty = self._parse_drill_difficulty(
-                    drill_data.get("difficulty", "medium")
+                difficulty = self._parse_practice_difficulty(
+                    practice_data.get("difficulty", "medium")
                 )
 
-                drill_create = DrillCreate(
+                practice_create = PracticeCreate(
                     feedback_run_id=feedback_run.id,
-                    title=drill_data["title"],
-                    prompt=drill_data["prompt"],
-                    drill_type=drill_type,
+                    title=practice_data["title"],
+                    prompt=practice_data["prompt"],
+                    practice_type=practice_type,
                     difficulty=difficulty,
-                    target_weakness=drill_data.get("target_weakness"),
-                    target_skill=drill_data.get("target_skill"),
-                    expected_answer=drill_data.get("expected_answer"),
-                    hints=drill_data.get("hints"),
+                    target_weakness=practice_data.get("target_weakness"),
+                    target_skill=practice_data.get("target_skill"),
+                    expected_answer=practice_data.get("expected_answer"),
+                    hints=practice_data.get("hints"),
                     sequence_order=i,
                 )
-                drill_creates.append(drill_create)
+                practice_creates.append(practice_create)
 
-            # Batch create drills
-            drills = drill_crud.create_drills_batch(
-                db=db, user_id=user_id, drills_in=drill_creates
+            # Batch create practices
+            practices = practice_crud.create_practices_batch(
+                db=db, user_id=user_id, practices_in=practice_creates
             )
 
             logger.info(
-                f"Generated {len(drills)} drills for feedback {feedback_run.id}, "
+                f"Generated {len(practices)} practices for feedback {feedback_run.id}, "
                 f"latency={llm_response.latency_ms}ms, "
                 f"cost=${llm_response.cost_usd:.4f}"
             )
 
-            return drills
+            return practices
 
         except Exception as e:
-            logger.error(f"Error generating drills: {e}")
+            logger.error(f"Error generating practices: {e}")
             raise
 
     def _parse_feedback_response(self, content: str) -> dict[str, Any]:
@@ -543,8 +543,8 @@ class LLMService:
             logger.error(f"Response content: {content[:500]}...")
             raise ValueError(f"Invalid JSON in LLM response: {e}")
 
-    def _parse_drills_response(self, content: str) -> dict[str, Any]:
-        """Parse drills response from LLM."""
+    def _parse_practices_response(self, content: str) -> dict[str, Any]:
+        """Parse practices response from LLM."""
         try:
             content = content.strip()
 
@@ -555,8 +555,8 @@ class LLMService:
 
             data = json.loads(content)
 
-            if "drills" not in data:
-                raise ValueError("Missing drills in response")
+            if "practices" not in data:
+                raise ValueError("Missing practices in response")
 
             return data
 
@@ -564,21 +564,24 @@ class LLMService:
             logger.error(f"Failed to parse drills response: {e}")
             raise ValueError(f"Invalid JSON in LLM response: {e}")
 
-    def _parse_drill_type(self, drill_type_str: str) -> DrillType:
-        """Parse drill type string to enum."""
+    def _parse_practice_type(self, practice_type_str: str) -> PracticeType:
+        """Parse practice type string to enum."""
         mapping = {
-            "practice_question": DrillType.PRACTICE_QUESTION,
-            "code_exercise": DrillType.CODE_EXERCISE,
-            "concept_review": DrillType.CONCEPT_REVIEW,
-            "mock_scenario": DrillType.MOCK_SCENARIO,
+            "practice_question": PracticeType.PRACTICE_QUESTION,
+            "code_exercise": PracticeType.CODE_EXERCISE,
+            "concept_review": PracticeType.CONCEPT_REVIEW,
+            "mock_scenario": PracticeType.MOCK_SCENARIO,
         }
-        return mapping.get(drill_type_str.lower(), DrillType.PRACTICE_QUESTION)
+        return mapping.get(practice_type_str.lower(), PracticeType.PRACTICE_QUESTION)
 
-    def _parse_drill_difficulty(self, difficulty_str: str) -> DrillDifficulty:
-        """Parse drill difficulty string to enum."""
+    def _parse_practice_difficulty(self, difficulty_str: str) -> PracticeDifficulty:
+        """Parse practice difficulty string to enum."""
         mapping = {
-            "easy": DrillDifficulty.EASY,
-            "medium": DrillDifficulty.MEDIUM,
-            "hard": DrillDifficulty.HARD,
+            "easy": PracticeDifficulty.EASY,
+            "medium": PracticeDifficulty.MEDIUM,
+            "hard": PracticeDifficulty.HARD,
         }
-        return mapping.get(difficulty_str.lower(), DrillDifficulty.MEDIUM)
+        return mapping.get(difficulty_str.lower(), PracticeDifficulty.MEDIUM)
+
+
+llm_service = LLMService()

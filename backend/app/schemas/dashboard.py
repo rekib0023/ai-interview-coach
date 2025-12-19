@@ -5,7 +5,6 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-
 # ============================================================================
 # Enums
 # ============================================================================
@@ -83,8 +82,8 @@ class QuickStatsResponse(BaseModel):
 # ============================================================================
 
 
-class InterviewSession(BaseModel):
-    """Recent interview session data."""
+class Assessment(BaseModel):
+    """Recent assessment session data."""
 
     id: int
     topic: str
@@ -98,7 +97,7 @@ class InterviewSession(BaseModel):
 class RecentSessionsResponse(BaseModel):
     """Response for /dashboard/recent-sessions endpoint."""
 
-    sessions: list[InterviewSession]
+    sessions: list[Assessment]
     total_count: int
 
 

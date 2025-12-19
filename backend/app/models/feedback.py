@@ -35,8 +35,8 @@ class FeedbackRun(Base):
     __tablename__ = "feedback_run"
 
     id = Column(Integer, primary_key=True, index=True)
-    session_id = Column(
-        Integer, ForeignKey("interview_session.id"), nullable=False, index=True
+    assessment_id = Column(
+        Integer, ForeignKey("assessment.id"), nullable=False, index=True
     )
     rubric_id = Column(
         Integer, ForeignKey("evaluation_rubric.id"), nullable=True, index=True
@@ -89,6 +89,6 @@ class FeedbackRun(Base):
     completed_at = Column(DateTime, nullable=True)
 
     # Relationships
-    session = relationship("InterviewSession", back_populates="feedback_runs")
+    assessment = relationship("Assessment", back_populates="feedback_runs")
     rubric = relationship("EvaluationRubric", back_populates="feedback_runs")
-    drills = relationship("Drill", back_populates="feedback_run")
+    practices = relationship("Practice", back_populates="feedback_run")

@@ -8,6 +8,7 @@ dependencies = [
     "alembic>=1.17.2",
     "authlib>=1.6.5",
     "bcrypt>=5.0.0",
+    "docker>=7.0.0",
     "fastapi>=0.123.0",
     "google-auth>=2.43.0",
     "httpx>=0.28.1",

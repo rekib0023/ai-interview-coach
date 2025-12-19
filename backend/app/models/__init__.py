@@ -1,14 +1,23 @@
-from .drill import Drill, DrillDifficulty, DrillStatus, DrillType
+from .assessment import Assessment, AssessmentStatus, DifficultyLevel
+from .code_submission import CodeLanguage, CodeSubmission
+from .drawing import Drawing
 from .feedback import FeedbackRun, FeedbackStatus
 from .goal import GoalPriority, WeeklyGoal
-from .interview_session import DifficultyLevel, InterviewSession, SessionStatus
+from .message import ChatSender, Message
+from .practice import (
+    Practice,
+    PracticeDifficulty,
+    PracticeStatus,
+    PracticeType,
+)
 from .rubric import EvaluationRubric, RubricCategory
 from .skill import Skill, UserSkill
 from .user import User
 
 __all__ = [
     "User",
-    "InterviewSession",
+    "Assessment",
+    "AssessmentStatus",
     "DifficultyLevel",
     "SessionStatus",
     "Skill",
@@ -19,8 +28,13 @@ __all__ = [
     "RubricCategory",
     "FeedbackRun",
     "FeedbackStatus",
-    "Drill",
-    "DrillDifficulty",
-    "DrillStatus",
-    "DrillType",
+    "Practice",
+    "PracticeDifficulty",
+    "PracticeStatus",
+    "PracticeType",
+    "Message",
+    "ChatSender",
+    "CodeSubmission",
+    "CodeLanguage",
+    "Drawing",
 ]

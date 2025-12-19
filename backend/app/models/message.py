@@ -22,11 +22,11 @@ class Message(Base):
     id = Column(Integer, primary_key=True, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    interview_id = Column(
-        Integer, ForeignKey("interview_session.id"), nullable=False, index=True
+    assessment_id = Column(
+        Integer, ForeignKey("assessment.id"), nullable=False, index=True
     )
     sender = Column(Enum(ChatSender), nullable=False)
     content = Column(String, nullable=False)
 
     # Relationships
-    interview = relationship("InterviewSession", backref="messages")
+    assessment = relationship("Assessment", backref="messages")

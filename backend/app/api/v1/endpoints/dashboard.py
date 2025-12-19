@@ -5,13 +5,13 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.api.v1.endpoints.auth import get_current_user
+from app.api import deps
 from app.models.user import User
 from app.schemas.dashboard import (
     AiInsightResponse,
+    Assessment,
     Difficulty,
     GoalsResponse,
-    InterviewSession,
     Priority,
     QuickStatsResponse,
     RecentSessionsResponse,
@@ -60,8 +60,8 @@ MOCK_STATS: list[StatItem] = [
     ),
 ]
 
-MOCK_SESSIONS: list[InterviewSession] = [
-    InterviewSession(
+MOCK_ASSESSMENTS: list[Assessment] = [
+    Assessment(
         id=1,
         topic="React Hooks & State Management",
         date="Today, 10:23 AM",
@@ -70,7 +70,7 @@ MOCK_SESSIONS: list[InterviewSession] = [
         duration="45 min",
         trend=Trend.UP,
     ),
-    InterviewSession(
+    Assessment(
         id=2,
         topic="Binary Search Trees",
         date="Yesterday, 3:15 PM",
@@ -79,7 +79,7 @@ MOCK_SESSIONS: list[InterviewSession] = [
         duration="52 min",
         trend=Trend.DOWN,
     ),
-    InterviewSession(
+    Assessment(
         id=3,
         topic="System Design - URL Shortener",
         date="2 days ago",
@@ -132,7 +132,7 @@ MOCK_GOALS: list[WeeklyGoal] = [
     description="Returns user's quick statistics including overall score, problems solved, streak, and time invested.",
 )
 async def get_dashboard_stats(
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(deps.get_current_user)],
 ) -> QuickStatsResponse:
     """Get quick stats for the dashboard."""
     logger.info(f"Fetching dashboard stats for user {current_user.id}")
@@ -155,7 +155,7 @@ async def get_dashboard_stats(
     description="Returns the user's recent interview sessions with scores and trends.",
 )
 async def get_recent_sessions(
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(deps.get_current_user)],
     limit: int = 5,
 ) -> RecentSessionsResponse:
     """Get recent interview sessions."""
@@ -163,10 +163,10 @@ async def get_recent_sessions(
 
     try:
         # TODO: Replace with actual database queries
-        sessions = MOCK_SESSIONS[:limit]
+        sessions = MOCK_ASSESSMENTS[:limit]
         return RecentSessionsResponse(
             sessions=sessions,
-            total_count=len(MOCK_SESSIONS),
+            total_count=len(MOCK_ASSESSMENTS),
         )
     except Exception as e:
         logger.error(f"Error fetching recent sessions: {e}")
@@ -183,7 +183,7 @@ async def get_recent_sessions(
     description="Returns user's skill progress including areas to improve and strengths.",
 )
 async def get_skills_progress(
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(deps.get_current_user)],
 ) -> SkillsResponse:
     """Get skills progress data."""
     logger.info(f"Fetching skills progress for user {current_user.id}")
@@ -209,7 +209,7 @@ async def get_skills_progress(
     description="Returns the user's weekly goals with progress.",
 )
 async def get_weekly_goals(
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(deps.get_current_user)],
 ) -> GoalsResponse:
     """Get weekly goals."""
     logger.info(f"Fetching weekly goals for user {current_user.id}")
@@ -237,7 +237,7 @@ async def get_weekly_goals(
     description="Returns an AI-generated insight and recommendation for the user.",
 )
 async def get_ai_insight(
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(deps.get_current_user)],
 ) -> AiInsightResponse:
     """Get AI-generated insight."""
     logger.info(f"Generating AI insight for user {current_user.id}")

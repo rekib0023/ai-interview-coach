@@ -33,16 +33,15 @@ const data = {
       title: "Dashboard",
       url: "/dashboard",
       icon: LayoutDashboard,
-      isActive: true,
     },
     {
-      title: "Interviews",
-      url: "/practice",
+      title: "Assessment",
+      url: "/assessment",
       icon: Target,
     },
     {
-      title: "Drills",
-      url: "/drills",
+      title: "Practice",
+      url: "/practice",
       icon: Dumbbell,
     },
     {

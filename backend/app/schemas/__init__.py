@@ -1,9 +1,16 @@
+from .assessment import (
+    Assessment,
+    AssessmentCreate,
+    AssessmentList,
+    AssessmentSubmitResponse,
+    AssessmentSummary,
+    AssessmentUpdate,
+)
 from .dashboard import (
     AiInsightResponse,
     DashboardResponse,
     Difficulty,
     GoalsResponse,
-    InterviewSession as DashboardInterviewSession,
     Priority,
     QuickStatsResponse,
     RecentSessionsResponse,
@@ -13,16 +20,8 @@ from .dashboard import (
     Trend,
     WeeklyGoal,
 )
-from .drill import (
-    Drill,
-    DrillCreate,
-    DrillGenerateRequest,
-    DrillGenerationResult,
-    DrillList,
-    DrillSubmitResponse,
-    DrillSummary,
-    DrillUpdate,
-    DrillWithHints,
+from .dashboard import (
+    Assessment as DashboardAssessment,
 )
 from .feedback import (
     CriterionScore,
@@ -34,6 +33,17 @@ from .feedback import (
     FeedbackRunSummary,
     FeedbackStatusResponse,
 )
+from .practice import (
+    Practice,
+    PracticeCreate,
+    PracticeGenerateRequest,
+    PracticeGenerationResult,
+    PracticeList,
+    PracticeSubmitResponse,
+    PracticeSummary,
+    PracticeUpdate,
+    PracticeWithHints,
+)
 from .rubric import (
     EvaluationRubric,
     EvaluationRubricCreate,
@@ -42,14 +52,6 @@ from .rubric import (
     EvaluationRubricUpdate,
     RubricCriterion,
     RubricLevel,
-)
-from .session import (
-    InterviewSession,
-    InterviewSessionCreate,
-    InterviewSessionList,
-    InterviewSessionSubmitResponse,
-    InterviewSessionSummary,
-    InterviewSessionUpdate,
 )
 from .user import (
     AuthResponse,
@@ -78,7 +80,7 @@ __all__ = [
     "Priority",
     "StatItem",
     "QuickStatsResponse",
-    "DashboardInterviewSession",
+    "DashboardAssessment",
     "RecentSessionsResponse",
     "SkillMetric",
     "SkillsResponse",
@@ -87,12 +89,12 @@ __all__ = [
     "AiInsightResponse",
     "DashboardResponse",
     # Session schemas
-    "InterviewSession",
-    "InterviewSessionCreate",
-    "InterviewSessionUpdate",
-    "InterviewSessionSubmitResponse",
-    "InterviewSessionList",
-    "InterviewSessionSummary",
+    "Assessment",
+    "AssessmentCreate",
+    "AssessmentUpdate",
+    "AssessmentSubmitResponse",
+    "AssessmentList",
+    "AssessmentSummary",
     # Rubric schemas
     "RubricLevel",
     "RubricCriterion",
@@ -111,13 +113,13 @@ __all__ = [
     "FeedbackResult",
     "FeedbackStatusResponse",
     # Drill schemas
-    "Drill",
-    "DrillCreate",
-    "DrillUpdate",
-    "DrillGenerateRequest",
-    "DrillSubmitResponse",
-    "DrillList",
-    "DrillSummary",
-    "DrillWithHints",
-    "DrillGenerationResult",
+    "Practice",
+    "PracticeCreate",
+    "PracticeUpdate",
+    "PracticeGenerateRequest",
+    "PracticeSubmitResponse",
+    "PracticeList",
+    "PracticeSummary",
+    "PracticeWithHints",
+    "PracticeGenerationResult",
 ]

@@ -147,7 +147,7 @@ async def oauth_callback(
         )
 
     # Check if user exists by email
-    user = crud.user.get_user_by_email(db, email=email)
+    user = crud.user.get_by_email(db, email=email)
     if not user:
         # Check if user with this provider_id already exists (prevents duplicate accounts)
         existing_user = (

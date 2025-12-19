@@ -33,7 +33,7 @@ export interface CriterionScore {
 
 export interface FeedbackRun {
     id: number;
-    session_id: number;
+    assessment_id: number;
     rubric_id?: number;
     status: FeedbackStatus;
     model_name?: string;
@@ -62,7 +62,7 @@ export interface FeedbackRun {
 
 export interface FeedbackRunSummary {
     id: number;
-    session_id: number;
+    assessment_id: number;
     status: FeedbackStatus;
     overall_score?: number;
     created_at: string;
@@ -76,7 +76,7 @@ export interface FeedbackRunList {
 
 export interface FeedbackResult {
     id: number;
-    session_id: number;
+    assessment_id: number;
     status: FeedbackStatus;
     overall_score?: number;
     criterion_scores?: Record<string, number>;
@@ -151,10 +151,10 @@ export const feedbackApi = {
      * Returns 202 Accepted with poll URL.
      */
     async requestFeedback(
-        sessionId: number,
+        assessmentId: number,
         rubricId?: number
     ): Promise<FeedbackAcceptedResponse> {
-        const url = `${API_BASE_URL}/api/v1/feedback/sessions/${sessionId}/feedback`;
+        const url = `${API_BASE_URL}/api/v1/feedback/assessments/${assessmentId}/feedback`;
         const body = rubricId ? JSON.stringify({ rubric_id: rubricId }) : undefined;
 
         const response = await fetch(url, {

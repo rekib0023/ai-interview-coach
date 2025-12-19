@@ -175,7 +175,7 @@ interface UseRequestFeedbackReturn {
     reset: () => void;
 }
 
-export function useRequestFeedback(sessionId: number): UseRequestFeedbackReturn {
+export function useRequestFeedback(assessmentId: number): UseRequestFeedbackReturn {
     const [feedbackId, setFeedbackId] = useState<number | null>(null);
     const [status, setStatus] = useState<FeedbackStatusResponse | null>(null);
     const [result, setResult] = useState<FeedbackResult | null>(null);
@@ -261,7 +261,7 @@ export function useRequestFeedback(sessionId: number): UseRequestFeedbackReturn 
 
             try {
                 setIsRequesting(true);
-                const response = await feedbackApi.requestFeedback(sessionId, rubricId);
+                const response = await feedbackApi.requestFeedback(assessmentId, rubricId);
                 setFeedbackId(response.id);
                 setStatus({ id: response.id, status: response.status });
 
@@ -278,7 +278,7 @@ export function useRequestFeedback(sessionId: number): UseRequestFeedbackReturn 
                 throw err;
             }
         },
-        [sessionId, cleanup, pollStatus]
+        [assessmentId, cleanup, pollStatus]
     );
 
     // Cleanup on unmount
