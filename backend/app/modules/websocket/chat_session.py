@@ -192,7 +192,7 @@ class ChatSession:
             )
 
     async def _send_initial_messages(self, db: Session) -> None:
-        """Send welcome message and initial question for new session."""
+        """Stream welcome message and initial question for new session."""
         assessment = self.assessment_service.get_assessment(
             db=db, assessment_id=self.assessment_id, user_id=self.user_id
         )
@@ -200,46 +200,32 @@ class ChatSession:
         if not assessment:
             raise AssessmentAccessError("Assessment not found")
 
-        if not assessment:
-            raise AssessmentAccessError("Assessment not found")
+        # Stream initial response (Intro + First Question)
+        full_content = ""
+        await self._send_stream_start()
 
-        # Generate initial session (Intro + First Question)
-        initial_response = await interviewer_service.generate_initial_session(
-            assessment
-        )
+        try:
+            async for chunk in interviewer_service.generate_initial_session_stream(
+                assessment
+            ):
+                full_content += chunk
+                await self._send_stream_chunk(chunk)
 
-        # Send Intro
-        if initial_response.interviewer_intro:
-            intro_db_msg = await interviewer_service.save_message(
-                db,
-                self.assessment_id,
-                ChatSender.AI,
-                initial_response.interviewer_intro,
-            )
-            await self._send_message(
-                msg_type=MessageType.AI_MESSAGE,
-                content=initial_response.interviewer_intro,
-                message_id=intro_db_msg.id,
-                timestamp=intro_db_msg.created_at,
+            await self._send_stream_end()
+
+            # Save the complete message to database
+            await interviewer_service.save_message(
+                db, self.assessment_id, ChatSender.AI, full_content
             )
 
-        # Send First Question
-        if initial_response.interview_question:
-            # Add a small delay/typing effect if possible, but here we just send sequentially
-            question_db_msg = await interviewer_service.save_message(
-                db,
-                self.assessment_id,
-                ChatSender.AI,
-                initial_response.interview_question,
-            )
-            await self._send_message(
-                msg_type=MessageType.AI_MESSAGE,
-                content=initial_response.interview_question,
-                message_id=question_db_msg.id,
-                timestamp=question_db_msg.created_at,
+            logger.info(
+                f"Streamed initial messages for assessment {self.assessment_id}"
             )
 
-        logger.info(f"Sent initial messages for assessment {self.assessment_id}")
+        except Exception as e:
+            await self._send_stream_end(error=True)
+            logger.error(f"Failed to stream initial messages: {e}")
+            raise
 
     async def _message_loop(self) -> None:
         """Main loop for processing incoming WebSocket messages."""
@@ -292,7 +278,7 @@ class ChatSession:
 
     async def _handle_user_message(self, content: str) -> None:
         """
-        Process user's chat message and generate AI response.
+        Process user's chat message and stream AI response.
 
         Args:
             content: User's message content
@@ -319,8 +305,9 @@ class ChatSession:
                 )
                 return
 
-            # Send typing indicator
-            await self._send_typing_indicator(True)
+            # Stream AI response
+            await self._send_stream_start()
+            full_content = ""
 
             try:
                 # Get conversation history
@@ -328,39 +315,35 @@ class ChatSession:
                     db, self.assessment_id
                 )
 
-                # Generate AI response
-                ai_response_model = await interviewer_service.generate_ai_response(
+                # Stream AI response chunks
+                async for chunk in interviewer_service.generate_ai_response_stream(
                     assessment, content, conversation_history
+                ):
+                    full_content += chunk
+                    await self._send_stream_chunk(chunk)
+
+                await self._send_stream_end()
+
+                # Check for COMPLETED status in the response
+                if "`COMPLETED`" in full_content:
+                    assessment.status = AssessmentStatus.COMPLETED
+                    db.commit()
+                    logger.info(f"Assessment {self.assessment_id} completed")
+                    await self._send_status_update(
+                        {"status": "completed", "message": "Interview completed"}
+                    )
+
+                # Save complete AI response to database
+                await interviewer_service.save_message(
+                    db, self.assessment_id, ChatSender.AI, full_content
                 )
 
-                # Build display message from structured response
-                display_content = self._build_display_message(ai_response_model)
-
-                # Handle interview status updates
-                await self._process_interview_status(db, assessment, ai_response_model)
-
-                # Save and send AI response
-                ai_msg = await interviewer_service.save_message(
-                    db, self.assessment_id, ChatSender.AI, display_content
-                )
-
-                await self._send_message(
-                    msg_type=MessageType.AI_MESSAGE,
-                    content=display_content,
-                    message_id=ai_msg.id,
-                    timestamp=ai_msg.created_at,
-                    metadata=self._extract_response_metadata(ai_response_model),
-                )
-
-                logger.info(
-                    f"Generated AI response for assessment {self.assessment_id}"
-                )
+                logger.info(f"Streamed AI response for assessment {self.assessment_id}")
 
             except Exception as e:
-                logger.error(f"Failed to generate AI response: {e}", exc_info=True)
+                await self._send_stream_end(error=True)
+                logger.error(f"Failed to stream AI response: {e}", exc_info=True)
                 await self._send_error("Failed to generate response. Please try again.")
-            finally:
-                await self._send_typing_indicator(False)
 
     def _build_display_message(self, ai_response_model) -> str:
         """
@@ -638,6 +621,43 @@ class ChatSession:
                 {
                     "type": MessageType.STATUS.value,
                     "data": status_data,
+                    "timestamp": datetime.utcnow().isoformat(),
+                }
+            ),
+        )
+
+    async def _send_stream_start(self) -> None:
+        """Signal the start of a streaming response."""
+        await manager.send_personal_message(
+            self.websocket,
+            json.dumps(
+                {
+                    "type": MessageType.STREAM_START.value,
+                    "timestamp": datetime.utcnow().isoformat(),
+                }
+            ),
+        )
+
+    async def _send_stream_chunk(self, content: str) -> None:
+        """Send a single chunk of streaming content."""
+        await manager.send_personal_message(
+            self.websocket,
+            json.dumps(
+                {
+                    "type": MessageType.STREAM_CHUNK.value,
+                    "content": content,
+                }
+            ),
+        )
+
+    async def _send_stream_end(self, error: bool = False) -> None:
+        """Signal the end of a streaming response."""
+        await manager.send_personal_message(
+            self.websocket,
+            json.dumps(
+                {
+                    "type": MessageType.STREAM_END.value,
+                    "error": error,
                     "timestamp": datetime.utcnow().isoformat(),
                 }
             ),

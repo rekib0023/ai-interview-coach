@@ -1,10 +1,22 @@
+"""
+LLM Service with streaming and memory management.
+
+This module provides the main interface for LLM interactions with:
+- Standard generation
+- Streaming generation
+- Memory-aware generation
+- Structured output support
+"""
+
 import logging
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, AsyncIterator, Optional
 
-from app.modules.llm.providers import (
-    GoogleGeminiProvider,
+from app.modules.llm.providers import GoogleGeminiProvider
+from app.modules.llm.schemas import (
+    ConversationMemory,
     LLMResponse,
+    StreamChunk,
 )
 
 logger = logging.getLogger(__name__)
@@ -20,7 +32,14 @@ class LLMProviderType(Enum):
 
 
 class LLMService:
-    """Service for LLM interactions with intelligent provider management."""
+    """
+    Service for LLM interactions with streaming and memory support.
+
+    Provides a unified interface for:
+    - Standard synchronous generation
+    - Streaming generation for real-time delivery
+    - Memory-aware generation with conversation context
+    """
 
     def __init__(self, provider: Optional[GoogleGeminiProvider] = None):
         self._provider = provider
@@ -40,10 +59,8 @@ class LLMService:
 
         from app.core.config import settings
 
-        # Force Google Gemini as the only provider
         try:
             self._provider = self._create_google_provider(settings)
-
             self._initialized = True
             logger.info(
                 f"Initialized LLM provider: Google Gemini with model: {self._provider.model}"
@@ -61,6 +78,10 @@ class LLMService:
 
         model = settings.LLM_MODEL or "gemini-2.0-flash-exp"
         return GoogleGeminiProvider(api_key=settings.GOOGLE_API_KEY, model=model)
+
+    # =========================================================================
+    # Standard Generation
+    # =========================================================================
 
     async def generate(
         self,
@@ -120,12 +141,10 @@ class LLMService:
         """
         Generate a structured JSON response with schema validation.
 
-        This is particularly useful for Google Gemini's native structured output support.
-
         Args:
             system_prompt: System-level instructions
             user_prompt: User's input prompt
-            response_schema: JSON schema or Pydantic model for the expected response structure
+            response_schema: Pydantic model for the expected response structure
             temperature: Sampling temperature
             max_tokens: Maximum tokens to generate
             **kwargs: Provider-specific parameters
@@ -133,9 +152,7 @@ class LLMService:
         Returns:
             LLMResponse with structured JSON content
         """
-        # Add schema to kwargs for Gemini
-        if isinstance(self.provider, GoogleGeminiProvider):
-            kwargs["response_schema"] = response_schema
+        kwargs["response_schema"] = response_schema
 
         return await self.generate(
             system_prompt=system_prompt,
@@ -146,139 +163,197 @@ class LLMService:
             **kwargs,
         )
 
-    async def generate_with_thinking(
-        self,
-        system_prompt: str,
-        user_prompt: str,
-        thinking_level: str = "MEDIUM",
-        temperature: float = 0.7,
-        max_tokens: int = 2000,
-        **kwargs,
-    ) -> LLMResponse:
-        """
-        Generate a response with thinking process (for Gemini models).
+    # =========================================================================
+    # Streaming Generation
+    # =========================================================================
 
-        Args:
-            system_prompt: System-level instructions
-            user_prompt: User's input prompt
-            thinking_level: Thinking depth ("LOW", "MEDIUM", "HIGH")
-            temperature: Sampling temperature
-            max_tokens: Maximum tokens to generate
-            **kwargs: Additional parameters
-
-        Returns:
-            LLMResponse with thinking process in metadata
-        """
-        if isinstance(self.provider, GoogleGeminiProvider):
-            kwargs["thinking_level"] = thinking_level
-        else:
-            logger.warning(
-                f"Thinking mode not supported for {type(self.provider).__name__}"
-            )
-
-        return await self.generate(
-            system_prompt=system_prompt,
-            user_prompt=user_prompt,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            **kwargs,
-        )
-
-    async def generate_with_search(
+    async def generate_stream(
         self,
         system_prompt: str,
         user_prompt: str,
         temperature: float = 0.7,
         max_tokens: int = 2000,
         **kwargs,
-    ) -> LLMResponse:
+    ) -> AsyncIterator[StreamChunk]:
         """
-        Generate a response with web search capability (for Gemini models).
+        Stream response chunks for real-time delivery.
+
+        Yields StreamChunk objects as they arrive from the LLM.
 
         Args:
             system_prompt: System-level instructions
             user_prompt: User's input prompt
             temperature: Sampling temperature
             max_tokens: Maximum tokens to generate
-            **kwargs: Additional parameters
+            **kwargs: Provider-specific parameters
 
-        Returns:
-            LLMResponse with web search results incorporated
+        Yields:
+            StreamChunk objects with incremental content
         """
-        if isinstance(self.provider, GoogleGeminiProvider):
-            kwargs["enable_web_search"] = True
-        else:
-            logger.warning(
-                f"Web search not supported for {type(self.provider).__name__}"
-            )
-
-        return await self.generate(
-            system_prompt=system_prompt,
-            user_prompt=user_prompt,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            **kwargs,
-        )
-
-    def get_model_info(self) -> Dict[str, Any]:
-        """Get information about the current model."""
-        config = self.provider.get_model_config()
-        return {
-            "provider": type(self.provider).__name__,
-            "model": config.name,
-            "context_window": config.context_window,
-            "max_output_tokens": config.max_output_tokens,
-            "input_price_per_million": config.input_price_per_million,
-            "output_price_per_million": config.output_price_per_million,
-            "capabilities": [cap.value for cap in config.capabilities],
-        }
-
-    async def batch_generate(
-        self,
-        prompts: List[Dict[str, str]],
-        temperature: float = 0.7,
-        max_tokens: int = 2000,
-        **kwargs,
-    ) -> List[LLMResponse]:
-        """
-        Generate responses for multiple prompts in batch.
-
-        Args:
-            prompts: List of dicts with 'system_prompt' and 'user_prompt' keys
-            temperature: Sampling temperature
-            max_tokens: Maximum tokens per generation
-            **kwargs: Additional parameters
-
-        Returns:
-            List of LLMResponse objects
-        """
-        import asyncio
-
-        tasks = [
-            self.generate(
-                system_prompt=prompt["system_prompt"],
-                user_prompt=prompt["user_prompt"],
+        try:
+            async for chunk in self.provider.generate_stream(
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
                 temperature=temperature,
                 max_tokens=max_tokens,
                 **kwargs,
-            )
-            for prompt in prompts
-        ]
+            ):
+                yield chunk
 
-        return await asyncio.gather(*tasks)
+        except Exception as e:
+            logger.error(f"LLM streaming error: {e}")
+            raise
 
-    def estimate_cost(self, input_tokens: int, output_tokens: int) -> float:
+    async def generate_stream_text(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        temperature: float = 0.7,
+        max_tokens: int = 2000,
+        **kwargs,
+    ) -> AsyncIterator[str]:
         """
-        Estimate cost for a given token usage.
+        Stream raw text chunks for simple streaming scenarios.
+
+        This is a convenience wrapper that yields just the text content.
 
         Args:
-            input_tokens: Number of input tokens
-            output_tokens: Number of output tokens
+            system_prompt: System-level instructions
+            user_prompt: User's input prompt
+            temperature: Sampling temperature
+            max_tokens: Maximum tokens to generate
+
+        Yields:
+            String chunks of generated text
+        """
+        async for chunk in self.generate_stream(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            **kwargs,
+        ):
+            if chunk.content:
+                yield chunk.content
+
+    # =========================================================================
+    # Memory-Aware Generation
+    # =========================================================================
+
+    async def generate_with_memory(
+        self,
+        memory: ConversationMemory,
+        user_message: str,
+        temperature: float = 0.7,
+        max_tokens: int = 2000,
+        json_mode: bool = False,
+        response_schema: Any = None,
+        **kwargs,
+    ) -> LLMResponse:
+        """
+        Generate a response using full conversation context.
+
+        The memory object contains the conversation history and system
+        instruction. The user_message is added to history automatically.
+
+        Args:
+            memory: ConversationMemory with history
+            user_message: Latest user message
+            temperature: Sampling temperature
+            max_tokens: Maximum tokens to generate
+            json_mode: Whether to enforce JSON output
+            response_schema: Pydantic model for structured output
+            **kwargs: Provider-specific parameters
 
         Returns:
-            Estimated cost in USD
+            LLMResponse with generated content
         """
-        return self.provider.calculate_cost(input_tokens, output_tokens)
+        try:
+            response = await self.provider.generate_with_memory(
+                memory=memory,
+                user_message=user_message,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                json_mode=json_mode,
+                response_schema=response_schema,
+                **kwargs,
+            )
+
+            logger.info(
+                f"Memory-aware generation completed: "
+                f"history_length={len(memory)}, "
+                f"{response.input_tokens} input tokens, "
+                f"{response.output_tokens} output tokens"
+            )
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Memory-aware generation error: {e}")
+            raise
+
+    async def generate_stream_with_memory(
+        self,
+        memory: ConversationMemory,
+        user_message: str,
+        temperature: float = 0.7,
+        max_tokens: int = 2000,
+        **kwargs,
+    ) -> AsyncIterator[StreamChunk]:
+        """
+        Stream response chunks using conversation history for context.
+
+        Args:
+            memory: ConversationMemory with history
+            user_message: Latest user message
+            temperature: Sampling temperature
+            max_tokens: Maximum tokens to generate
+
+        Yields:
+            StreamChunk objects with incremental content
+        """
+        try:
+            async for chunk in self.provider.generate_stream_with_memory(
+                memory=memory,
+                user_message=user_message,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                **kwargs,
+            ):
+                yield chunk
+
+        except Exception as e:
+            logger.error(f"Memory-aware streaming error: {e}")
+            raise
+
+    # =========================================================================
+    # Utility Methods
+    # =========================================================================
+
+    def create_memory(
+        self,
+        system_instruction: Optional[str] = None,
+        max_messages: int = 50,
+        conversation_id: Optional[str] = None,
+    ) -> ConversationMemory:
+        """
+        Create a new ConversationMemory instance.
+
+        Convenience factory method for creating memory objects.
+
+        Args:
+            system_instruction: System-level instructions for the conversation
+            max_messages: Maximum messages to retain in memory
+            conversation_id: Optional ID for tracking
+
+        Returns:
+            New ConversationMemory instance
+        """
+        return ConversationMemory(
+            system_instruction=system_instruction,
+            max_messages=max_messages,
+            conversation_id=conversation_id,
+        )
 
 
 # Global service instance

@@ -1,51 +1,131 @@
+"""
+WebSocket Interviewer Service with streaming Markdown responses.
+
+Provides AI interviewer functionality using the LLM service with:
+- Conversation memory management
+- Pure Markdown streaming (no JSON parsing)
+"""
+
 import logging
-from typing import List, Optional
+from typing import AsyncIterator, List, Optional
 
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_llm_service
 from app.modules.assessments.models import Assessment
 from app.modules.llm.prompts import get_interview_system_prompt
-from app.modules.llm.schemas import InterviewResponse
+from app.modules.llm.schemas import ConversationMemory
 from app.modules.websocket.models import ChatSender, Message
 
 logger = logging.getLogger(__name__)
 
 
 class InterviewerService:
-    async def generate_initial_session(
-        self, assessment: Assessment
-    ) -> InterviewResponse:
-        """Generate the initial interaction (welcome + first question) using LLM."""
+    """
+    Service for AI interviewer with streaming Markdown responses.
+    """
+
+    def _build_memory_from_history(
+        self,
+        history: List[Message],
+        system_instruction: str,
+        assessment_id: int,
+    ) -> ConversationMemory:
+        """
+        Build a ConversationMemory from database message history.
+
+        Args:
+            history: List of Message objects from database
+            system_instruction: System prompt for the interview
+            assessment_id: Assessment ID for tracking
+
+        Returns:
+            ConversationMemory populated with history
+        """
+        memory = ConversationMemory(
+            system_instruction=system_instruction,
+            max_messages=50,
+            conversation_id=f"assessment-{assessment_id}",
+        )
+
+        for msg in history:
+            if msg.sender == ChatSender.AI:
+                memory.add_model_message(msg.content)
+            else:
+                memory.add_user_message(msg.content)
+
+        return memory
+
+    async def generate_initial_session_stream(
+        self,
+        assessment: Assessment,
+    ) -> AsyncIterator[str]:
+        """
+        Stream the initial interview intro and first question.
+
+        Yields Markdown text chunks for immediate frontend display.
+        """
         llm_service = get_llm_service()
 
-        system_prompt = (
-            "You are an expert technical interviewer. "
-            f"You are conducting a {assessment.difficulty.value} difficulty interview on {assessment.topic}. "
-            "Your goal is to start the interview session. "
-            "1. Provide a warm, professional introduction (interviewer_intro). "
-            "2. Ask the first technical question (interview_question) to assess their knowledge. "
-            "Focus on the specified skill targets if any."
+        system_prompt = get_interview_system_prompt(
+            topic=assessment.topic,
+            role=assessment.role or "Software Engineer",
+            difficulty=assessment.difficulty.value,
+            focus_skills=assessment.skill_targets or [],
+        )
+
+        user_prompt = (
+            "Start the interview. Introduce yourself and ask the first question."
+        )
+
+        async for chunk in llm_service.generate_stream(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            temperature=0.7,
+            max_tokens=1000,
+        ):
+            if chunk.content:
+                yield chunk.content
+
+    async def generate_initial_session(
+        self,
+        assessment: Assessment,
+    ) -> str:
+        """
+        Generate the initial interview message (non-streaming fallback).
+
+        Returns the complete Markdown response.
+        """
+        llm_service = get_llm_service()
+
+        system_prompt = get_interview_system_prompt(
+            topic=assessment.topic,
+            role=assessment.role or "Software Engineer",
+            difficulty=assessment.difficulty.value,
+            focus_skills=assessment.skill_targets or [],
         )
 
         try:
-            response = await llm_service.generate_structured(
+            response = await llm_service.generate(
                 system_prompt=system_prompt,
-                user_prompt="start interview",
-                response_schema=InterviewResponse,
+                user_prompt="Start the interview. Introduce yourself and ask the first question.",
                 temperature=0.7,
+                max_tokens=1000,
             )
-            import json
-
-            data = json.loads(response.content)
-            return InterviewResponse.model_validate(data)
+            return response.content
         except Exception as e:
             logger.error(f"Failed to generate initial session: {e}")
-            # Fallback
-            return InterviewResponse(
-                interviewer_intro=f"Welcome to your interview on {assessment.topic}. I'm your AI interviewer.",
-                interview_question="Could you please briefly describe your background and experience with this requirement?",
-            )
+            return f"""### Welcome
+
+Hello! I'm your AI interviewer today. Welcome to your **{assessment.topic}** interview.
+
+### Next Question
+
+Could you please start by briefly describing your background and experience relevant to this role?
+
+### Status
+`IN_PROGRESS`
+"""
 
     async def save_message(
         self,
@@ -65,55 +145,88 @@ class InterviewerService:
         db.refresh(message)
         return message
 
+    async def generate_ai_response_stream(
+        self,
+        assessment: Assessment,
+        user_message: str,
+        history: List[Message],
+    ) -> AsyncIterator[str]:
+        """
+        Stream AI response chunks for real-time WebSocket delivery.
+
+        This is the main streaming method. Yields Markdown text chunks
+        that can be sent directly to the frontend.
+
+        Args:
+            assessment: Current assessment
+            user_message: Latest user message
+            history: Chat history from database
+
+        Yields:
+            Markdown text chunks as they stream from the LLM
+        """
+        llm_service = get_llm_service()
+
+        system_prompt = get_interview_system_prompt(
+            topic=assessment.topic,
+            role=assessment.role or "Software Engineer",
+            difficulty=assessment.difficulty.value,
+            focus_skills=assessment.skill_targets or [],
+        )
+
+        memory = self._build_memory_from_history(
+            history=history,
+            system_instruction=system_prompt,
+            assessment_id=assessment.id,
+        )
+
+        async for chunk in llm_service.generate_stream_with_memory(
+            memory=memory,
+            user_message=user_message,
+            temperature=0.7,
+            max_tokens=1000,
+        ):
+            if chunk.content:
+                yield chunk.content
+
     async def generate_ai_response(
         self,
         assessment: Assessment,
         user_message: str,
         history: List[Message],
-    ) -> InterviewResponse:
-        """Generate a response from the AI interviewer using structured output."""
+    ) -> str:
+        """
+        Generate complete AI response (non-streaming fallback).
+
+        Returns the complete Markdown response for cases where
+        streaming is not needed (e.g., saving to database).
+        """
         llm_service = get_llm_service()
 
-        # Format history for prompt
-        # We might need to map 'assistant' roles to 'model' for Gemini if we were passing history directly,
-        # but here we are just putting it in the user prompt for context.
-        context = self._format_history(history)
-        context_str = "\n".join([f"{msg['role']}: {msg['content']}" for msg in context])
-
-        # Construct system prompt
         system_prompt = get_interview_system_prompt(
             topic=assessment.topic,
-            role=assessment.role or "Software Engineer",  # Fallback if role is missing
+            role=assessment.role or "Software Engineer",
             difficulty=assessment.difficulty.value,
             focus_skills=assessment.skill_targets or [],
         )
 
-        full_user_prompt = (
-            f"Context history:\n{context_str}\n\nUser's latest response: {user_message}"
+        memory = self._build_memory_from_history(
+            history=history,
+            system_instruction=system_prompt,
+            assessment_id=assessment.id,
         )
-
-        # Generate structured response
-        llm_response = await llm_service.generate_structured(
-            system_prompt=system_prompt,
-            user_prompt=full_user_prompt,
-            response_schema=InterviewResponse,
-            temperature=0.7,
-            max_tokens=1000,
-        )
-
-        # Parse the JSON content into Pydantic model
-        # valid json is guaranteed by generate_structured (mostly)
-        import json
 
         try:
-            data = json.loads(llm_response.content)
-            return InterviewResponse.model_validate(data)
-        except Exception as e:
-            logger.error(
-                f"Failed to parse LLM response: {e}, content: {llm_response.content}"
+            response = await llm_service.generate_with_memory(
+                memory=memory,
+                user_message=user_message,
+                temperature=0.7,
+                max_tokens=1000,
             )
-            # Fallback for now - logic to be robust
-            raise ValueError("Failed to generate valid interview response")
+            return response.content
+        except Exception as e:
+            logger.error(f"Failed to generate AI response: {e}")
+            raise ValueError("Failed to generate interview response")
 
     def get_chat_history(self, db: Session, assessment_id: int) -> List[Message]:
         """Get chat history for an assessment."""
@@ -135,14 +248,6 @@ class InterviewerService:
             .order_by(Message.created_at.desc())
             .first()
         )
-
-    def _format_history(self, history: List[Message]) -> list:
-        """Format history for LLM consumption."""
-        formatted = []
-        for msg in history:
-            role = "assistant" if msg.sender == ChatSender.AI else "user"
-            formatted.append({"role": role, "content": msg.content})
-        return formatted
 
 
 interviewer_service = InterviewerService()

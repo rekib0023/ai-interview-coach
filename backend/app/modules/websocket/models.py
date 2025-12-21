@@ -31,6 +31,10 @@ class MessageType(str, enum.Enum):
     STATUS = "status"
     TYPING = "typing"
     SYSTEM = "system"
+    # Streaming types
+    STREAM_START = "stream_start"
+    STREAM_CHUNK = "stream_chunk"
+    STREAM_END = "stream_end"
 
 
 class CommandAction(str, enum.Enum):
