@@ -29,6 +29,20 @@ class FeedbackStatus(str, PyEnum):
     FAILED = "failed"
 
 
+class EvaluationRubric(Base):
+    """Model for evaluation rubrics."""
+
+    __tablename__ = "evaluation_rubric"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    version = Column(String, nullable=False)
+    criteria = Column(JSON, nullable=False)
+
+    # Relationships
+    feedback_runs = relationship("FeedbackRun", back_populates="rubric")
+
+
 class FeedbackRun(Base):
     """Model for storing AI feedback results."""
 

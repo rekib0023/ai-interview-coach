@@ -64,12 +64,19 @@ async def list_assessments(
     """Get all assessments for the current user."""
     logger.info(f"Listing assessments for user {current_user.id}")
 
-    return assessment_service.list_assessments(
+    assessments, total = assessment_service.list_assessments(
         db=db,
         user_id=current_user.id,
+        skip=(page - 1) * page_size,
+        limit=page_size,
+        status=status_filter,
+    )
+
+    return AssessmentList(
+        assessments=assessments,
+        total=total,
         page=page,
         page_size=page_size,
-        status=status_filter,
     )
 
 

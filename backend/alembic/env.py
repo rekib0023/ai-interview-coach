@@ -2,18 +2,23 @@ import os
 import sys
 from logging.config import fileConfig
 
-from alembic import context
 from sqlalchemy import engine_from_config, pool
+
+from alembic import context
 
 # Add the project root directory to python path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 # Import the app config and models
+# Import the app config and models
 from app.core.config import settings
-from app.db.base import Base
-
-# Import models package to register all models with Base
-from app import models  # noqa: F401
+from app.modules.assessments.models import Assessment  # noqa: F401
+from app.modules.code_execution.models import CodeSubmission  # noqa: F401
+from app.modules.feedback.models import FeedbackRun  # noqa: F401
+from app.modules.practices.models import Practice  # noqa: F401
+from app.modules.users.models import User  # noqa: F401
+from app.modules.websocket.models import Message  # noqa: F401
+from app.shared.base_model import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

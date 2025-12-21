@@ -40,14 +40,10 @@ class Settings(BaseSettings):
     # =========================================================================
     # LLM Provider Settings
     # =========================================================================
-    LLM_PROVIDER: Literal["openai", "anthropic", "mock"] = "mock"
-    LLM_MODEL: str | None = None  # e.g., "gpt-4o-mini", "claude-3-5-sonnet-20241022"
 
-    # OpenAI
-    OPENAI_API_KEY: str | None = None
-
-    # Anthropic
-    ANTHROPIC_API_KEY: str | None = None
+    # Google Gemini
+    GOOGLE_API_KEY: str | None = None
+    LLM_MODEL: str | None = "gemini-3-flash-preview"
 
     # =========================================================================
     # Transcription Provider Settings
