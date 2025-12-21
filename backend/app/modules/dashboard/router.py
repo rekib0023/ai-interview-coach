@@ -5,7 +5,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, get_dashboard_service
 from app.modules.users.models import User
 
 from .schemas import (
@@ -15,7 +15,7 @@ from .schemas import (
     RecentAssessmentsResponse,
     SkillsResponse,
 )
-from .service import dashboard_service
+from .service import DashboardService
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +30,7 @@ router = APIRouter()
 )
 async def get_dashboard_stats(
     current_user: Annotated[User, Depends(get_current_user)],
+    dashboard_service: Annotated[DashboardService, Depends(get_dashboard_service)],
 ) -> QuickStatsResponse:
     """Get quick stats for the dashboard."""
     logger.info(f"Fetching dashboard stats for user {current_user.id}")
@@ -52,6 +53,7 @@ async def get_dashboard_stats(
 )
 async def get_recent_assessments(
     current_user: Annotated[User, Depends(get_current_user)],
+    dashboard_service: Annotated[DashboardService, Depends(get_dashboard_service)],
     limit: int = 5,
 ) -> RecentAssessmentsResponse:
     """Get recent interview assessments."""
@@ -79,6 +81,7 @@ async def get_recent_assessments(
 )
 async def get_skills_progress(
     current_user: Annotated[User, Depends(get_current_user)],
+    dashboard_service: Annotated[DashboardService, Depends(get_dashboard_service)],
 ) -> SkillsResponse:
     """Get skills progress data."""
     logger.info(f"Fetching skills progress for user {current_user.id}")
@@ -101,6 +104,7 @@ async def get_skills_progress(
 )
 async def get_weekly_goals(
     current_user: Annotated[User, Depends(get_current_user)],
+    dashboard_service: Annotated[DashboardService, Depends(get_dashboard_service)],
 ) -> GoalsResponse:
     """Get weekly goals."""
     logger.info(f"Fetching weekly goals for user {current_user.id}")
@@ -123,6 +127,7 @@ async def get_weekly_goals(
 )
 async def get_ai_insight(
     current_user: Annotated[User, Depends(get_current_user)],
+    dashboard_service: Annotated[DashboardService, Depends(get_dashboard_service)],
 ) -> AiInsightResponse:
     """Get AI-generated insight."""
     logger.info(f"Generating AI insight for user {current_user.id}")

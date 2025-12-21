@@ -163,6 +163,3 @@ class DashboardService:
             suggested_topic="Dynamic Programming",
             action_label="Practice Now",
         )
-
-
-dashboard_service = DashboardService()

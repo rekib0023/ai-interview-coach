@@ -14,7 +14,7 @@ from .schemas import (
 from .schemas import (
     User as UserSchema,
 )
-from .service import UserService, user_service
+from .service import UserService
 
 __all__ = [
     "User",
@@ -27,6 +27,5 @@ __all__ = [
     "AuthResponse",
     "LogoutResponse",
     "user_crud",
-    "user_service",
     "UserService",
 ]

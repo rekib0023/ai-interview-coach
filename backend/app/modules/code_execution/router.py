@@ -7,12 +7,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.core.dependencies import get_current_user, get_db
+from app.core.dependencies import get_code_execution_service, get_current_user, get_db
 from app.modules.assessments.models import Assessment, AssessmentStatus
 from app.modules.users.models import User
 
-from .models import CodeLanguage, CodeSubmission
-from .service import code_execution_service
+from .models import CodeLanguage
+from .service import CodeExecutionService
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +49,7 @@ async def execute_code(
     assessment_id: int,
     request: CodeExecutionRequest,
     current_user: Annotated[User, Depends(get_current_user)],
+    code_service: Annotated[CodeExecutionService, Depends(get_code_execution_service)],
     db: Session = Depends(get_db),
 ) -> CodeExecutionResponse:
     """Execute code in a Docker container."""
@@ -88,37 +89,23 @@ async def execute_code(
             detail="Code exceeds maximum length of 10,000 characters",
         )
 
-    # Execute code
+    # Execute code and save submission via service
     try:
-        result = await code_execution_service.execute_code(
+        submission = await code_service.execute_and_save(
+            db=db,
             code=request.code,
             language=request.language,
-        )
-
-        # Save submission to database
-        submission = CodeSubmission(
             assessment_id=assessment_id,
-            language=request.language,
-            code_text=request.code,
-            result_output=result["stdout"],
-            error_output=result["stderr"],
-            execution_time_ms=result["execution_time_ms"],
-            memory_used_mb=result["memory_used_mb"],
-            exit_code=result["exit_code"],
-            timed_out=result["timed_out"],
         )
-        db.add(submission)
-        db.commit()
-        db.refresh(submission)
 
         return CodeExecutionResponse(
             submission_id=submission.id,
-            stdout=result["stdout"],
-            stderr=result["stderr"],
-            exit_code=result["exit_code"],
-            execution_time_ms=result["execution_time_ms"],
-            memory_used_mb=result["memory_used_mb"],
-            timed_out=result["timed_out"],
+            stdout=submission.result_output,
+            stderr=submission.error_output,
+            exit_code=submission.exit_code,
+            execution_time_ms=submission.execution_time_ms,
+            memory_used_mb=submission.memory_used_mb,
+            timed_out=submission.timed_out,
         )
 
     except Exception as e:
@@ -133,10 +120,14 @@ async def execute_code(
     "/assessments/{assessment_id}/code",
     summary="Get code submissions",
     description="Get all code submissions for an assessment.",
+    response_model=list[
+        dict
+    ],  # Update this to a proper Pydantic schema if available, or just keeping simpler for now
 )
 async def get_code_submissions(
     assessment_id: int,
     current_user: Annotated[User, Depends(get_current_user)],
+    code_service: Annotated[CodeExecutionService, Depends(get_code_execution_service)],
     db: Session = Depends(get_db),
 ):
     """Get all code submissions for an assessment."""
@@ -156,12 +147,7 @@ async def get_code_submissions(
             detail="Assessment not found",
         )
 
-    submissions = (
-        db.query(CodeSubmission)
-        .filter(CodeSubmission.assessment_id == assessment_id)
-        .order_by(CodeSubmission.created_at)
-        .all()
-    )
+    submissions = code_service.get_submissions(db=db, assessment_id=assessment_id)
 
     return [
         {

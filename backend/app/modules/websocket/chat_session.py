@@ -5,13 +5,13 @@ from typing import Optional
 from fastapi import WebSocket, WebSocketDisconnect, status
 from sqlalchemy.orm import Session
 
+from app.core.database import SessionLocal
 from app.core.security import verify_token
 from app.core.websocket import manager
-from app.db.session import SessionLocal
-from app.models.assessment import Assessment, AssessmentStatus
-from app.models.message import ChatSender, Message
-from app.models.user import User
-from app.services.interviewer_service import interviewer_service
+from app.modules.assessments.models import Assessment, AssessmentStatus
+from app.modules.users.models import User
+from app.modules.websocket.models import ChatSender, Message
+from app.modules.websocket.service import interviewer_service
 
 logger = logging.getLogger(__name__)
 

@@ -12,7 +12,7 @@ from .schemas import (
     AssessmentSubmitResponse,
     AssessmentUpdate,
 )
-from .service import AssessmentService, assessment_service
+from .service import AssessmentService
 
 __all__ = [
     "Assessment",
@@ -24,7 +24,6 @@ __all__ = [
     "AssessmentSubmitResponse",
     "AssessmentUpdate",
     "assessment_crud",
-    "assessment_service",
     "AssessmentService",
     "assessments_router",
 ]

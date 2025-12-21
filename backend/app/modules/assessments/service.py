@@ -128,7 +128,3 @@ class AssessmentService:
         """Delete an assessment."""
         self.get_assessment(db=db, assessment_id=assessment_id, user_id=user_id)
         return self.crud.remove(db=db, id=assessment_id)
-
-
-# Singleton instance
-assessment_service = AssessmentService()

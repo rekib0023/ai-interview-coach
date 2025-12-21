@@ -7,7 +7,6 @@ from pydantic import BaseModel, Field
 
 from .models import FeedbackStatus
 
-
 # ============================================================================
 # Request Schemas
 # ============================================================================
@@ -143,3 +142,12 @@ class FeedbackStatusResponse(BaseModel):
     status: FeedbackStatus
     progress_message: Optional[str] = None
     estimated_completion_seconds: Optional[int] = None
+
+
+class FeedbackRequestResponse(BaseModel):
+    """Schema for feedback generation request response."""
+
+    id: int
+    status: FeedbackStatus
+    message: str
+    poll_url: str

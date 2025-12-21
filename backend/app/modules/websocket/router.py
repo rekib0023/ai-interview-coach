@@ -24,7 +24,7 @@ async def websocket_endpoint(
     - System commands: {"type": "command", "action": "hint" | "repeat" | ...}
     - AI responses: {"type": "ai_message", "content": "..."}
     """
-    from app.api.v1.endpoints.ws.chat_session import ChatSession
+    from app.modules.websocket.chat_session import ChatSession
 
     session = ChatSession(websocket, assessment_id, access_token)
     await session.run()

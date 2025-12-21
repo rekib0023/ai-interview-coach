@@ -4,16 +4,15 @@ import logging
 from typing import Annotated, Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
-from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_current_user, get_db
-from app.modules.assessments.crud import assessment
 from app.modules.users.models import User
 
-from .crud import feedback
+from app.core.dependencies import get_feedback_service
 from .models import FeedbackStatus
 from .schemas import (
+    FeedbackRequestResponse,
     FeedbackResult,
     FeedbackRun,
     FeedbackRunList,
@@ -21,7 +20,7 @@ from .schemas import (
     FeedbackRunSummary,
     FeedbackStatusResponse,
 )
-from .service import feedback_service
+from .service import FeedbackService
 
 logger = logging.getLogger(__name__)
 
@@ -31,47 +30,30 @@ router = APIRouter()
 @router.post(
     "/assessments/{assessment_id}/feedback",
     status_code=status.HTTP_202_ACCEPTED,
+    response_model=FeedbackRequestResponse,
     summary="Request feedback for session",
     description="Request AI-generated feedback for an interview session. Returns 202 with polling endpoint.",
 )
 async def request_feedback(
     assessment_id: int,
     current_user: Annotated[User, Depends(get_current_user)],
+    feedback_service: Annotated[FeedbackService, Depends(get_feedback_service)],
     db: Session = Depends(get_db),
     background_tasks: BackgroundTasks = BackgroundTasks(),
     request: Optional[FeedbackRunRequest] = None,
-) -> JSONResponse:
+) -> FeedbackRequestResponse:
     """Request feedback for a session."""
     logger.info(
         f"Requesting feedback for assessment {assessment_id} by user {current_user.id}"
     )
 
-    # Verify assessment ownership
-    db_assessment = assessment.get_by_user(
-        db=db, id=assessment_id, user_id=current_user.id
-    )
-
-    if not db_assessment:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Assessment not found",
-        )
-
-    # Validate assessment has a response
-    if not db_assessment.response_text and not db_assessment.response_audio_url:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Assessment has no response to evaluate. Submit a response first.",
-        )
-
-    # Create feedback run
-    from app.schemas.feedback import FeedbackRunCreate
-
-    feedback_in = FeedbackRunCreate(
+    # Create feedback run via service
+    db_feedback = feedback_service.create_feedback_run(
+        db=db,
         assessment_id=assessment_id,
+        user_id=current_user.id,
         rubric_id=request.rubric_id if request else None,
     )
-    db_feedback = feedback.create(db=db, obj_in=feedback_in)
 
     # Start background processing
     background_tasks.add_task(
@@ -81,15 +63,11 @@ async def request_feedback(
     )
 
     # Return 202 with location for polling
-    return JSONResponse(
-        status_code=status.HTTP_202_ACCEPTED,
-        content={
-            "id": db_feedback.id,
-            "status": db_feedback.status.value,
-            "message": "Feedback generation started",
-            "poll_url": f"/api/v1/feedback/{db_feedback.id}",
-        },
-        headers={"Location": f"/api/v1/feedback/{db_feedback.id}"},
+    return FeedbackRequestResponse(
+        id=db_feedback.id,
+        status=db_feedback.status,
+        message="Feedback generation started",
+        poll_url=f"/api/v1/feedback/{db_feedback.id}",
     )
 
 
@@ -102,22 +80,15 @@ async def request_feedback(
 async def get_feedback(
     feedback_id: int,
     current_user: Annotated[User, Depends(get_current_user)],
+    feedback_service: Annotated[FeedbackService, Depends(get_feedback_service)],
     db: Session = Depends(get_db),
 ) -> FeedbackRun:
     """Get feedback run details."""
     logger.info(f"Getting feedback {feedback_id} for user {current_user.id}")
 
-    db_feedback = feedback.get_by_user(
+    return feedback_service.get_feedback_run(
         db=db, feedback_id=feedback_id, user_id=current_user.id
     )
-
-    if not db_feedback:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Feedback run not found",
-        )
-
-    return db_feedback
 
 
 @router.get(
@@ -129,18 +100,13 @@ async def get_feedback(
 async def get_feedback_status(
     feedback_id: int,
     current_user: Annotated[User, Depends(get_current_user)],
+    feedback_service: Annotated[FeedbackService, Depends(get_feedback_service)],
     db: Session = Depends(get_db),
 ) -> FeedbackStatusResponse:
     """Poll feedback status."""
-    db_feedback = feedback.get_by_user(
+    db_feedback = feedback_service.get_feedback_run(
         db=db, feedback_id=feedback_id, user_id=current_user.id
     )
-
-    if not db_feedback:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Feedback run not found",
-        )
 
     # Calculate estimated completion time based on status
     estimated_seconds = None
@@ -174,20 +140,15 @@ async def get_feedback_status(
 async def get_feedback_result(
     feedback_id: int,
     current_user: Annotated[User, Depends(get_current_user)],
+    feedback_service: Annotated[FeedbackService, Depends(get_feedback_service)],
     db: Session = Depends(get_db),
 ) -> FeedbackResult:
     """Get feedback result."""
     logger.info(f"Getting feedback result {feedback_id} for user {current_user.id}")
 
-    db_feedback = feedback.get_by_user(
+    db_feedback = feedback_service.get_feedback_run(
         db=db, feedback_id=feedback_id, user_id=current_user.id
     )
-
-    if not db_feedback:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Feedback run not found",
-        )
 
     if db_feedback.status != FeedbackStatus.COMPLETED:
         raise HTTPException(
@@ -227,6 +188,7 @@ async def get_feedback_result(
 )
 async def list_feedback_runs(
     current_user: Annotated[User, Depends(get_current_user)],
+    feedback_service: Annotated[FeedbackService, Depends(get_feedback_service)],
     db: Session = Depends(get_db),
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
@@ -235,19 +197,21 @@ async def list_feedback_runs(
     """List all feedback runs for the current user."""
     logger.info(f"Listing feedback runs for user {current_user.id}")
 
-    feedback_runs = feedback.get_multi_by_user(
+    feedback_runs = feedback_service.list_feedback_runs(
         db=db,
         user_id=current_user.id,
         skip=skip,
         limit=limit,
         status=status_filter,
     )
-    total = feedback.count_by_user(db=db, user_id=current_user.id, status=status_filter)
+    total = feedback_service.count_feedback_runs(
+        db=db, user_id=current_user.id, status=status_filter
+    )
 
     summaries = [
         FeedbackRunSummary(
             id=f.id,
-            assessment_id=f.assessment_id,
+            session_id=f.assessment_id,  # Mapping assessment_id to session_id for schema
             status=f.status,
             overall_score=f.overall_score,
             created_at=f.created_at,
@@ -271,36 +235,17 @@ async def list_feedback_runs(
 async def retry_feedback(
     feedback_id: int,
     current_user: Annotated[User, Depends(get_current_user)],
+    feedback_service: Annotated[FeedbackService, Depends(get_feedback_service)],
     db: Session = Depends(get_db),
     background_tasks: BackgroundTasks = BackgroundTasks(),
 ) -> FeedbackStatusResponse:
     """Retry a failed feedback run."""
     logger.info(f"Retrying feedback {feedback_id} for user {current_user.id}")
 
-    db_feedback = feedback.get_by_user(
+    # Retry via service (handles validation)
+    db_feedback = feedback_service.retry_feedback_run(
         db=db, feedback_id=feedback_id, user_id=current_user.id
     )
-
-    if not db_feedback:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Feedback run not found",
-        )
-
-    if db_feedback.status != FeedbackStatus.FAILED:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Can only retry failed feedback runs",
-        )
-
-    if db_feedback.retry_count >= 3:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Maximum retry attempts reached",
-        )
-
-    # Reset and restart
-    db_feedback = feedback.retry(db=db, db_feedback=db_feedback)
 
     # Start background processing
     background_tasks.add_task(

@@ -1,5 +1,6 @@
 """Common dependencies for API endpoints."""
 
+from functools import lru_cache
 from typing import Generator
 
 from fastapi import Cookie, Depends, HTTPException, status
@@ -49,3 +50,59 @@ def get_current_user(
     if user is None:
         raise credentials_exception
     return user
+
+
+@lru_cache()
+def get_user_service():
+    from app.modules.users.service import UserService
+
+    return UserService()
+
+
+@lru_cache()
+def get_assessment_service():
+    from app.modules.assessments.service import AssessmentService
+
+    return AssessmentService()
+
+
+@lru_cache()
+def get_code_execution_service():
+    from app.modules.code_execution.service import CodeExecutionService
+
+    return CodeExecutionService()
+
+
+@lru_cache()
+def get_dashboard_service():
+    from app.modules.dashboard.service import DashboardService
+
+    return DashboardService()
+
+
+@lru_cache()
+def get_feedback_service():
+    from app.modules.feedback.service import FeedbackService
+
+    return FeedbackService()
+
+
+@lru_cache()
+def get_llm_service():
+    from app.modules.llm.service import LLMService
+
+    return LLMService()
+
+
+@lru_cache()
+def get_practice_service():
+    from app.modules.practices.service import PracticeService
+
+    return PracticeService()
+
+
+@lru_cache()
+def get_interviewer_service():
+    from app.modules.websocket.service import InterviewerService
+
+    return InterviewerService()

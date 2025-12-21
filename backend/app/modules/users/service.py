@@ -65,7 +65,3 @@ class UserService:
             )
 
         return self.crud.update(db=db, db_obj=user, obj_in=update_data)
-
-
-# Singleton instance
-user_service = UserService()

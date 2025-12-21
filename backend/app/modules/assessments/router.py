@@ -6,10 +6,10 @@ from typing import Annotated, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.core.dependencies import get_current_user, get_db
+from app.core.dependencies import get_assessment_service, get_current_user, get_db
+from app.modules.assessments.service import AssessmentService
 from app.modules.users.models import User
 
-from .crud import assessment as assessment_crud
 from .models import AssessmentStatus
 from .schemas import (
     Assessment,
@@ -34,6 +34,7 @@ router = APIRouter()
 async def create_assessment(
     assessment_in: AssessmentCreate,
     current_user: Annotated[User, Depends(get_current_user)],
+    assessment_service: Annotated[AssessmentService, Depends(get_assessment_service)],
     db: Session = Depends(get_db),
 ) -> Assessment:
     """Create a new assessment session."""
@@ -41,11 +42,9 @@ async def create_assessment(
         f"Creating assessment for user {current_user.id}: {assessment_in.topic}"
     )
 
-    db_assessment = assessment_crud.create_with_owner(
-        db=db, user_id=current_user.id, obj_in=assessment_in
+    return assessment_service.create_assessment(
+        db=db, user_id=current_user.id, assessment_in=assessment_in
     )
-
-    return db_assessment
 
 
 @router.get(
@@ -56,6 +55,7 @@ async def create_assessment(
 )
 async def list_assessments(
     current_user: Annotated[User, Depends(get_current_user)],
+    assessment_service: Annotated[AssessmentService, Depends(get_assessment_service)],
     db: Session = Depends(get_db),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
@@ -64,23 +64,12 @@ async def list_assessments(
     """Get all assessments for the current user."""
     logger.info(f"Listing assessments for user {current_user.id}")
 
-    skip = (page - 1) * page_size
-    assessments = assessment_crud.get_multi_by_user(
+    return assessment_service.list_assessments(
         db=db,
         user_id=current_user.id,
-        skip=skip,
-        limit=page_size,
-        status=status_filter,
-    )
-    total = assessment_crud.count_by_user(
-        db=db, user_id=current_user.id, status=status_filter
-    )
-
-    return AssessmentList(
-        assessments=assessments,
-        total=total,
         page=page,
         page_size=page_size,
+        status=status_filter,
     )
 
 
@@ -93,19 +82,14 @@ async def list_assessments(
 async def get_assessment(
     assessment_id: int,
     current_user: Annotated[User, Depends(get_current_user)],
+    assessment_service: Annotated[AssessmentService, Depends(get_assessment_service)],
     db: Session = Depends(get_db),
 ) -> Assessment:
     """Get a specific assessment."""
     logger.info(f"Getting assessment {assessment_id} for user {current_user.id}")
-    db_assessment = assessment_crud.get_by_user(
-        db=db, id=assessment_id, user_id=current_user.id
+    return assessment_service.get_assessment(
+        db=db, assessment_id=assessment_id, user_id=current_user.id
     )
-    if not db_assessment:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Assessment not found",
-        )
-    return db_assessment
 
 
 @router.patch(
@@ -118,24 +102,29 @@ async def update_assessment(
     assessment_id: int,
     assessment_in: AssessmentUpdate,
     current_user: Annotated[User, Depends(get_current_user)],
+    assessment_service: Annotated[AssessmentService, Depends(get_assessment_service)],
     db: Session = Depends(get_db),
 ) -> Assessment:
     """Update an assessment."""
     logger.info(f"Updating assessment {assessment_id} for user {current_user.id}")
 
-    db_assessment = assessment_crud.get_by_user(
-        db=db, id=assessment_id, user_id=current_user.id
+    assessment = assessment_service.get_assessment(
+        db=db, assessment_id=assessment_id, user_id=current_user.id
     )
-    if not db_assessment:
+
+    if not assessment:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Assessment not found",
         )
 
-    db_assessment = assessment_crud.update(
-        db=db, db_obj=db_assessment, obj_in=assessment_in
+    assessment = assessment_service.update_assessment(
+        db=db,
+        assessment_id=assessment_id,
+        user_id=current_user.id,
+        assessment_in=assessment_in,
     )
-    return db_assessment
+    return assessment
 
 
 @router.post(
@@ -148,6 +137,7 @@ async def submit_response(
     assessment_id: int,
     response_in: AssessmentSubmitResponse,
     current_user: Annotated[User, Depends(get_current_user)],
+    assessment_service: Annotated[AssessmentService, Depends(get_assessment_service)],
     db: Session = Depends(get_db),
 ) -> Assessment:
     """Submit a response to an assessment."""
@@ -155,19 +145,12 @@ async def submit_response(
         f"Submitting response for assessment {assessment_id} by user {current_user.id}"
     )
 
-    db_assessment = assessment_crud.get_by_user(
-        db=db, id=assessment_id, user_id=current_user.id
+    return assessment_service.submit_response(
+        db=db,
+        assessment_id=assessment_id,
+        user_id=current_user.id,
+        response=response_in,
     )
-    if not db_assessment:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Assessment not found",
-        )
-
-    db_assessment = assessment_crud.submit_response(
-        db=db, db_assessment=db_assessment, response=response_in
-    )
-    return db_assessment
 
 
 @router.post(
@@ -179,25 +162,16 @@ async def submit_response(
 async def complete_assessment(
     assessment_id: int,
     current_user: Annotated[User, Depends(get_current_user)],
+    assessment_service: Annotated[AssessmentService, Depends(get_assessment_service)],
     db: Session = Depends(get_db),
     score: Optional[int] = Query(None, ge=0, le=100),
 ) -> Assessment:
-    """Mark an assessment as completed."""
+    """Mark an assessment as complete."""
     logger.info(f"Completing assessment {assessment_id} for user {current_user.id}")
 
-    db_assessment = assessment_crud.get_by_user(
-        db=db, id=assessment_id, user_id=current_user.id
+    return assessment_service.complete_assessment(
+        db=db, assessment_id=assessment_id, user_id=current_user.id, score=score
     )
-    if not db_assessment:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Assessment not found",
-        )
-
-    db_assessment = assessment_crud.complete(
-        db=db, db_assessment=db_assessment, score=score
-    )
-    return db_assessment
 
 
 @router.delete(
@@ -209,18 +183,12 @@ async def complete_assessment(
 async def delete_assessment(
     assessment_id: int,
     current_user: Annotated[User, Depends(get_current_user)],
+    assessment_service: Annotated[AssessmentService, Depends(get_assessment_service)],
     db: Session = Depends(get_db),
 ) -> None:
     """Delete an assessment."""
     logger.info(f"Deleting assessment {assessment_id} for user {current_user.id}")
 
-    db_assessment = assessment_crud.get_by_user(
-        db=db, id=assessment_id, user_id=current_user.id
+    await assessment_service.delete_assessment(
+        db=db, assessment_id=assessment_id, user_id=current_user.id
     )
-    if not db_assessment:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Assessment not found",
-        )
-
-    assessment_crud.remove(db=db, id=assessment_id)
