@@ -1,8 +1,8 @@
 """Users module exports."""
 
-from app.modules.users.crud import user as user_crud
-from app.modules.users.models import User
-from app.modules.users.schemas import (
+from .crud import user as user_crud
+from .models import User
+from .schemas import (
     AuthResponse,
     LogoutResponse,
     Token,
@@ -11,10 +11,10 @@ from app.modules.users.schemas import (
     UserInDB,
     UserUpdate,
 )
-from app.modules.users.schemas import (
+from .schemas import (
     User as UserSchema,
 )
-from app.modules.users.service import UserService, user_service
+from .service import UserService, user_service
 
 __all__ = [
     "User",

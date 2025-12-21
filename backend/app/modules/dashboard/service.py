@@ -1,7 +1,7 @@
 import logging
 from typing import List
 
-from app.schemas.dashboard import (
+from .schemas import (
     AiInsightResponse,
     Assessment,
     Difficulty,

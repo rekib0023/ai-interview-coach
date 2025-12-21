@@ -5,9 +5,10 @@ from typing import Optional
 from sqlalchemy.orm import Session
 
 from app.core.security import get_password_hash, verify_password
-from app.modules.users.crud import user as user_crud
-from app.modules.users.schemas import UserCreate, UserUpdate
 from app.shared.exceptions import NotFoundError, ValidationError
+
+from .crud import user as user_crud
+from .schemas import UserCreate, UserUpdate
 
 
 class UserService:

@@ -5,9 +5,10 @@ from typing import Any, Dict, Optional, Union
 from sqlalchemy.orm import Session
 
 from app.core.security import get_password_hash
-from app.modules.users.models import User
-from app.modules.users.schemas import UserCreate, UserUpdate
 from app.shared.base_crud import CRUDBase
+
+from .models import User
+from .schemas import UserCreate, UserUpdate
 
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
