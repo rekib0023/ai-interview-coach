@@ -10,6 +10,7 @@ import {
 } from "./enhanced-chat-message";
 import { ChatInput } from "./chat-input";
 import { Progress } from "@/components/ui/progress";
+import { useEffect, useRef } from "react";
 
 interface WorkspaceTabsProps {
   assessmentId: number;
@@ -55,8 +56,20 @@ export function WorkspaceTabs({
   isConnected = false,
   testResults,
 }: WorkspaceTabsProps) {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      scrollToBottom();
+    }
+  }, [messages]);
+
   return (
-    <Tabs defaultValue="chat" className="flex flex-col h-full bg-background">
+    <Tabs defaultValue="chat" className="flex flex-col h-full overflow-hidden bg-background">
       <div className="flex-none px-4 pt-3 border-b">
         <TabsList className="grid w-full max-w-lg grid-cols-4">
           <TabsTrigger value="chat" className="flex items-center gap-2">
@@ -78,8 +91,8 @@ export function WorkspaceTabs({
         </TabsList>
       </div>
 
-      <div className="flex-1 min-h-0 flex flex-col">
-        <TabsContent value="chat" className="flex-1 flex flex-col mt-0 h-full">
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+        <TabsContent value="chat" className="flex-1 flex flex-col mt-0 h-full min-h-0 overflow-hidden">
           <div className="flex-1 overflow-y-auto px-4">
             <div className="py-4 space-y-4">
               {messages.length > 0 ? (
@@ -92,6 +105,7 @@ export function WorkspaceTabs({
                   <p>Starting assessment...</p>
                 </div>
               )}
+              <div ref={messagesEndRef} />
             </div>
           </div>
           <div className="flex-none border-t bg-background px-4 py-3">
@@ -105,7 +119,7 @@ export function WorkspaceTabs({
           </div>
         </TabsContent>
 
-        <TabsContent value="code" className="flex-1 mt-0 h-full">
+        <TabsContent value="code" className="flex-1 mt-0 h-full min-h-0 overflow-hidden">
           <div className="h-full p-4">
             <CodeEditor
               code={code}
@@ -127,7 +141,7 @@ export function WorkspaceTabs({
 
         <TabsContent
           value="results"
-          className="flex-1 mt-0 h-full overflow-auto"
+          className="flex-1 mt-0 h-full overflow-y-auto"
         >
           <div className="p-4">
             {testResults && testResults.total ? (

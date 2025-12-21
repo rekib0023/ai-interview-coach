@@ -35,8 +35,8 @@ export interface Assessment {
     trend: Trend;
 }
 
-export interface RecentSessionsResponse {
-    sessions: Assessment[];
+export interface RecentAssessmentsResponse {
+    assessments: Assessment[];
     total_count: number;
 }
 
@@ -126,9 +126,9 @@ export const dashboardApi = {
     /**
      * Get recent assessments.
      */
-    async getRecentAssessments(limit = 5): Promise<RecentSessionsResponse> {
-        return dashboardRequest<RecentSessionsResponse>(
-            `/recent-sessions?limit=${limit}`
+    async getRecentAssessments(limit = 5): Promise<RecentAssessmentsResponse> {
+        return dashboardRequest<RecentAssessmentsResponse>(
+            `/recent-assessments?limit=${limit}`
         );
     },
 

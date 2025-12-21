@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/auth-context";
 import {
   transformGoals,
-  transformSessions,
+  transformAssessments,
   transformSkills,
   useDashboardData,
   useGreeting,
@@ -41,7 +41,7 @@ export default function DashboardPage() {
   }
 
   // Transform data using helpers
-  const recentInterviews = transformSessions(data.sessions);
+  const recentInterviews = transformAssessments(data.assessments);
   const { areasToImprove, strengths } = transformSkills(data.skills);
   const weeklyGoals = transformGoals(data.goals);
 

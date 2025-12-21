@@ -23,39 +23,11 @@ from app.schemas.practice import (
     PracticeSummary,
     PracticeWithHints,
 )
+from app.services.practice_service import practice_service
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-
-
-async def generate_practices_async(
-    db: Session,
-    feedback_run_id: int,
-    user_id: int,
-    count: int,
-    difficulty_ramp: bool,
-) -> None:
-    """Background task to generate practices asynchronously."""
-    from app.services.llm import LLMService
-
-    try:
-        db_feedback = feedback_crud.get_feedback_run(db=db, feedback_id=feedback_run_id)
-        if not db_feedback:
-            logger.error(f"Feedback run {feedback_run_id} not found")
-            return
-
-        llm_service = LLMService()
-        await llm_service.generate_practices(
-            db=db,
-            feedback_run=db_feedback,
-            user_id=user_id,
-            count=count,
-            difficulty_ramp=difficulty_ramp,
-        )
-
-    except Exception as e:
-        logger.error(f"Error generating practices for feedback {feedback_run_id}: {e}")
 
 
 @router.post(
@@ -108,7 +80,7 @@ async def generate_practices(
 
     # Start background processing
     background_tasks.add_task(
-        generate_practices_async,
+        practice_service.generate_practices_from_feedback,
         db=db,
         feedback_run_id=feedback_id,
         user_id=current_user.id,

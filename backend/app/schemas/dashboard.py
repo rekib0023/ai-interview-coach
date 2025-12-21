@@ -94,10 +94,10 @@ class Assessment(BaseModel):
     trend: Trend
 
 
-class RecentSessionsResponse(BaseModel):
-    """Response for /dashboard/recent-sessions endpoint."""
+class RecentAssessmentsResponse(BaseModel):
+    """Response for /dashboard/recent-assessments endpoint."""
 
-    sessions: list[Assessment]
+    assessments: list[Assessment]
     total_count: int
 
 
@@ -167,7 +167,7 @@ class DashboardResponse(BaseModel):
     """Combined dashboard data response."""
 
     stats: QuickStatsResponse
-    recent_sessions: RecentSessionsResponse
+    recent_assessments: RecentAssessmentsResponse
     skills: SkillsResponse
     goals: GoalsResponse
     ai_insight: AiInsightResponse

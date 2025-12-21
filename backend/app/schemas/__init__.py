@@ -13,7 +13,7 @@ from .dashboard import (
     GoalsResponse,
     Priority,
     QuickStatsResponse,
-    RecentSessionsResponse,
+    RecentAssessmentsResponse,
     SkillMetric,
     SkillsResponse,
     StatItem,
@@ -44,15 +44,6 @@ from .practice import (
     PracticeUpdate,
     PracticeWithHints,
 )
-from .rubric import (
-    EvaluationRubric,
-    EvaluationRubricCreate,
-    EvaluationRubricList,
-    EvaluationRubricSummary,
-    EvaluationRubricUpdate,
-    RubricCriterion,
-    RubricLevel,
-)
 from .user import (
     AuthResponse,
     LogoutResponse,
@@ -81,7 +72,7 @@ __all__ = [
     "StatItem",
     "QuickStatsResponse",
     "DashboardAssessment",
-    "RecentSessionsResponse",
+    "RecentAssessmentsResponse",
     "SkillMetric",
     "SkillsResponse",
     "WeeklyGoal",

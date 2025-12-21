@@ -38,5 +38,17 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             update_data["hashed_password"] = hashed_password
         return super().update(db, db_obj=db_obj, obj_in=update_data)
 
+    def get_by_provider_id(
+        self, db: Session, *, provider: str, provider_id: str
+    ) -> Optional[User]:
+        return (
+            db.query(User)
+            .filter(User.provider == provider, User.provider_id == provider_id)
+            .first()
+        )
+
+    def is_active(self, db: Session, *, user: User) -> bool:
+        return user.is_active
+
 
 user = CRUDUser(User)

@@ -23,7 +23,6 @@ from app.services.prompts import (
     get_practice_generation_prompt,
     get_practice_system_prompt,
 )
-from app.services.transcription import TranscriptionService
 
 logger = logging.getLogger(__name__)
 
@@ -303,7 +302,6 @@ class LLMService:
 
     def __init__(self, provider: Optional[LLMProvider] = None):
         self._provider = provider
-        self._transcription_service = TranscriptionService()
 
     @property
     def provider(self) -> LLMProvider:
@@ -349,20 +347,8 @@ class LLMService:
         feedback_run = feedback_crud.start_feedback_run(db=db, db_feedback=feedback_run)
 
         try:
-            # Get response text (transcribe if needed)
+            # Get response text
             response_text = session.response_text
-            if not response_text and session.response_audio_url:
-                logger.info("Transcribing audio response")
-                result = await self._transcription_service.transcribe_audio(
-                    session.response_audio_url
-                )
-                response_text = result.text
-
-                # Save transcript to session
-                session.transcript = response_text
-                session.transcript_status = "completed"
-                db.commit()
-
             if not response_text:
                 raise ValueError("No response text available for feedback")
 

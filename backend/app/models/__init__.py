@@ -10,7 +10,6 @@ from .practice import (
     PracticeStatus,
     PracticeType,
 )
-from .rubric import EvaluationRubric, RubricCategory
 from .skill import Skill, UserSkill
 from .user import User
 
@@ -24,8 +23,6 @@ __all__ = [
     "UserSkill",
     "WeeklyGoal",
     "GoalPriority",
-    "EvaluationRubric",
-    "RubricCategory",
     "FeedbackRun",
     "FeedbackStatus",
     "Practice",

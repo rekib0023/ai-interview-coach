@@ -6,20 +6,20 @@ from sqlalchemy.orm import Session
 
 from app.common.exceptions import NotFoundError, ValidationError
 from app.core.security import get_password_hash, verify_password
-from app.repositories.user import user_repository
+from app.crud.user import user as user_crud
 from app.schemas.user import UserCreate, UserUpdate
 
 
 class UserService:
     """Service for user operations."""
 
-    def __init__(self, repository=None):
-        self.repository = repository or user_repository
+    def __init__(self, crud=None):
+        self.crud = crud or user_crud
 
     def create_user(self, db: Session, *, user_in: UserCreate):
         """Create a new user."""
         # Business logic: Check if user already exists
-        existing_user = self.repository.get_by_email(db=db, email=user_in.email)
+        existing_user = self.crud.get_by_email(db=db, email=user_in.email)
         if existing_user:
             raise ValidationError(f"User with email {user_in.email} already exists")
 
@@ -29,18 +29,18 @@ class UserService:
         user_data["is_active"] = True
         user_data["is_superuser"] = False
 
-        return self.repository.create(db=db, obj_in=UserCreate(**user_data))
+        return self.crud.create(db=db, obj_in=UserCreate(**user_data))
 
     def get_user(self, db: Session, *, user_id: int):
         """Get a user by ID."""
-        user = self.repository.get(db=db, id=user_id)
+        user = self.crud.get(db=db, id=user_id)
         if not user:
             raise NotFoundError(f"User {user_id} not found")
         return user
 
     def get_user_by_email(self, db: Session, *, email: str) -> Optional:
         """Get a user by email."""
-        return self.repository.get_by_email(db=db, email=email)
+        return self.crud.get_by_email(db=db, email=email)
 
     def authenticate_user(self, db: Session, *, email: str, password: str):
         """Authenticate a user."""
@@ -63,7 +63,7 @@ class UserService:
                 update_data.pop("password")
             )
 
-        return self.repository.update(db=db, db_obj=user, obj_in=update_data)
+        return self.crud.update(db=db, db_obj=user, obj_in=update_data)
 
 
 # Singleton instance

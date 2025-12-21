@@ -60,7 +60,6 @@ export default function SessionDetailPage() {
 
   const [messages, setMessages] = useState<EnhancedMessage[]>([]);
   const [isEndingSession, setIsEndingSession] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [code, setCode] = useState("// Write your solution here\n");
   const [language, setLanguage] = useState<CodeLanguage>("python");
@@ -99,19 +98,28 @@ export default function SessionDetailPage() {
       const data = JSON.parse(message);
 
       if (data.type === "ai_message" || data.type === "user_message") {
-        const msg: EnhancedMessage = {
-          id: data.message_id?.toString() || `msg-${Date.now()}`,
-          role: data.type === "ai_message" ? "ai" : "user",
-          content: data.content,
-          timestamp: data.timestamp ? new Date(data.timestamp) : new Date(),
-          message_id: data.message_id,
-        };
-        setMessages((prev) => [...prev, msg]);
+        const messageId = data.message_id?.toString() || `msg-${Date.now()}`;
+
+        setMessages((prev) => {
+          // Prevent duplicates
+          if (prev.some(m => m.id === messageId)) return prev;
+
+          const msg: EnhancedMessage = {
+            id: messageId,
+            role: data.type === "ai_message" ? "ai" : "user",
+            content: data.content,
+            timestamp: data.timestamp ? new Date(data.timestamp) : new Date(),
+            message_id: data.message_id,
+          };
+          return [...prev, msg];
+        });
       } else if (data.type === "error") {
         console.error("WebSocket error:", data.content);
       }
     } catch (e) {
       // Fallback: treat as plain text (legacy support)
+      // Only add if we don't have a recent message with same content to avoid some dupes
+      // though true de-dupe requires IDs
       const aiMsg: EnhancedMessage = {
         id: `ai-${Date.now()}`,
         role: "ai",
@@ -214,14 +222,7 @@ export default function SessionDetailPage() {
     }
   };
 
-  // Auto-scroll to bottom when new messages arrive
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, []);
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, scrollToBottom]);
 
   // Prevent navigation
   useEffect(() => {
@@ -344,7 +345,7 @@ export default function SessionDetailPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex flex-col h-[calc(100vh-8rem)] bg-background overflow-hidden rounded-lg border">
       {/* Header */}
       <header className="flex-none border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6 py-3">
         <div className="flex items-center justify-between">
@@ -370,13 +371,14 @@ export default function SessionDetailPage() {
           <div className="flex items-center gap-4">
             {isAssessmentActive && (
               <>
-                <div className="flex items-center gap-2 text-sm">
+                <div className="flex items-center gap-2 text-sm mr-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
                   <span className="font-mono font-semibold">
                     {formatTimer()}
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
+
+                <div className="flex items-center gap-2 mr-4">
                   {isConnected ? (
                     <Wifi className="h-4 w-4 text-green-500" />
                   ) : (
@@ -390,6 +392,38 @@ export default function SessionDetailPage() {
                   >
                     {isConnected ? "Connected" : "Disconnected"}
                   </span>
+                </div>
+
+                <div className="h-6 w-px bg-border mx-2" />
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-2"
+                    onClick={handleSave}
+                  >
+                    <Save className="h-4 w-4" />
+                    <span className="hidden sm:inline">Save</span>
+                  </Button>
+
+                  <Button variant="default" size="sm" className="gap-2">
+                    <Send className="h-4 w-4" />
+                    <span className="hidden sm:inline">Submit Solution</span>
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={handleEndAssessment}
+                    disabled={isEndingSession}
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span className="hidden sm:inline">
+                      {isEndingSession ? "Ending..." : "End"}
+                    </span>
+                  </Button>
                 </div>
               </>
             )}
@@ -439,57 +473,6 @@ export default function SessionDetailPage() {
           />
         </ResizablePanel>
       </ResizablePanelGroup>
-
-      {/* Footer */}
-      <footer className="flex-none border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" className="gap-2">
-              <FileText className="h-4 w-4" />
-              Notes
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-2"
-              onClick={handleSave}
-            >
-              <Save className="h-4 w-4" />
-              Save
-            </Button>
-          </div>
-          <div className="flex items-center gap-3">
-            {isAssessmentActive && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2"
-                onClick={handleRequestHint}
-                disabled={hintCount >= 3}
-              >
-                <Lightbulb className="h-4 w-4" />
-                Request Hint ({hintCount}/3)
-              </Button>
-            )}
-            <Button variant="default" size="sm" className="gap-2">
-              <Send className="h-4 w-4" />
-              Submit Solution
-            </Button>
-            {isAssessmentActive && (
-              <Button
-                variant="destructive"
-                size="sm"
-                className="gap-2"
-                onClick={handleEndAssessment}
-                disabled={isEndingSession}
-              >
-                <LogOut className="h-4 w-4" />
-                {isEndingSession ? "Ending..." : "End Assessment"}
-              </Button>
-            )}
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
