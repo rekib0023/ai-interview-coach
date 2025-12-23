@@ -22,24 +22,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # Redis Cache
-  redis:
-    image: redis:7-alpine
-    container_name: ai_interview_redis
-    restart: unless-stopped
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    networks:
-      - ai_interview_network
-    healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   # FastAPI Backend
   backend:
     build:
@@ -50,9 +32,6 @@ services:
     environment:
       # Database
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-ai_interview_coach}
-
-      # Redis
-      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
 
       # JWT
       SECRET_KEY: ${SECRET_KEY}
@@ -68,7 +47,7 @@ services:
       OAUTH_REDIRECT_URI: ${OAUTH_REDIRECT_URI:-http://localhost:8000}
 
       # OpenAI
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
 
       # App Config
       ENVIRONMENT: ${ENVIRONMENT:-development}
@@ -85,17 +64,16 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_healthy
     networks:
       - ai_interview_network
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: /venv/bin/fastapi run app/main.py --host 0.0.0.0 --port 8000
 
   # Next.js Frontend
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      target: deps
     container_name: ai_interview_frontend
     restart: unless-stopped
     environment:
@@ -113,46 +91,8 @@ services:
       - ai_interview_network
     command: npm run dev
 
-  # PgAdmin (Optional - for database management)
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: ai_interview_pgadmin
-    restart: unless-stopped
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
-      PGADMIN_CONFIG_SERVER_MODE: "False"
-    ports:
-      - "5050:80"
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    depends_on:
-      - postgres
-    networks:
-      - ai_interview_network
-    profiles:
-      - tools # Only starts if you run: docker-compose --profile tools up
-
-  # Redis Commander (Optional - for Redis management)
-  redis-commander:
-    image: rediscommander/redis-commander:latest
-    container_name: ai_interview_redis_commander
-    restart: unless-stopped
-    environment:
-      - REDIS_HOSTS=local:redis:6379:0:${REDIS_PASSWORD}
-    ports:
-      - "8081:8081"
-    depends_on:
-      - redis
-    networks:
-      - ai_interview_network
-    profiles:
-      - tools # Only starts if you run: docker-compose --profile tools up
-
 volumes:
   postgres_data:
-    driver: local
-  redis_data:
     driver: local
   pgadmin_data:
     driver: local

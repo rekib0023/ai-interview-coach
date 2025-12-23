@@ -113,6 +113,49 @@ export default function SessionDetailPage() {
           };
           return [...prev, msg];
         });
+      } else if (data.type === "stream_start") {
+        // Start streaming: create a new AI message with empty content
+        const streamId = `stream-${Date.now()}`;
+        setMessages((prev) => {
+          // Check if there's already a streaming message (shouldn't happen, but prevent duplicates)
+          if (prev.some(m => m.isStreaming)) return prev;
+
+          const msg: EnhancedMessage = {
+            id: streamId,
+            role: "ai",
+            content: "",
+            timestamp: new Date(),
+            isStreaming: true,
+          };
+          return [...prev, msg];
+        });
+      } else if (data.type === "stream_chunk") {
+        // Append chunk to the currently streaming message (find by isStreaming flag)
+        setMessages((prev) => {
+          return prev.map((msg) => {
+            if (msg.isStreaming) {
+              return {
+                ...msg,
+                content: msg.content + (data.content || ""),
+              };
+            }
+            return msg;
+          });
+        });
+      } else if (data.type === "stream_end") {
+        // End streaming: mark the message as complete
+        setMessages((prev) => {
+          return prev.map((msg) => {
+            if (msg.isStreaming) {
+              return {
+                ...msg,
+                isStreaming: false,
+                message_id: data.message_id,
+              };
+            }
+            return msg;
+          });
+        });
       } else if (data.type === "error") {
         console.error("WebSocket error:", data.content);
       }

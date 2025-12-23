@@ -211,11 +211,13 @@ class ChatSession:
                 full_content += chunk
                 await self._send_stream_chunk(chunk)
 
-            await self._send_stream_end()
-
             # Save the complete message to database
-            await interviewer_service.save_message(
+            ai_msg = await interviewer_service.save_message(
                 db, self.assessment_id, ChatSender.AI, full_content
+            )
+
+            await self._send_stream_end(
+                message_id=ai_msg.id, timestamp=ai_msg.created_at
             )
 
             logger.info(
@@ -322,8 +324,6 @@ class ChatSession:
                     full_content += chunk
                     await self._send_stream_chunk(chunk)
 
-                await self._send_stream_end()
-
                 # Check for COMPLETED status in the response
                 if "`COMPLETED`" in full_content:
                     assessment.status = AssessmentStatus.COMPLETED
@@ -334,11 +334,17 @@ class ChatSession:
                     )
 
                 # Save complete AI response to database
-                await interviewer_service.save_message(
+                ai_msg = await interviewer_service.save_message(
                     db, self.assessment_id, ChatSender.AI, full_content
                 )
 
-                logger.info(f"Streamed AI response for assessment {self.assessment_id}")
+                await self._send_stream_end(
+                    message_id=ai_msg.id, timestamp=ai_msg.created_at
+                )
+
+                logger.info(
+                    f"Streamed AI response and saved message {ai_msg.id} for assessment {self.assessment_id}"
+                )
 
             except Exception as e:
                 await self._send_stream_end(error=True)
@@ -650,18 +656,23 @@ class ChatSession:
             ),
         )
 
-    async def _send_stream_end(self, error: bool = False) -> None:
+    async def _send_stream_end(
+        self,
+        error: bool = False,
+        message_id: Optional[int] = None,
+        timestamp: Optional[datetime] = None,
+    ) -> None:
         """Signal the end of a streaming response."""
-        await manager.send_personal_message(
-            self.websocket,
-            json.dumps(
-                {
-                    "type": MessageType.STREAM_END.value,
-                    "error": error,
-                    "timestamp": datetime.utcnow().isoformat(),
-                }
-            ),
-        )
+        data = {
+            "type": MessageType.STREAM_END.value,
+            "error": error,
+            "timestamp": (timestamp or datetime.utcnow()).isoformat(),
+        }
+
+        if message_id:
+            data["message_id"] = message_id
+
+        await manager.send_personal_message(self.websocket, json.dumps(data))
 
     async def _send_typing_indicator(self, is_typing: bool) -> None:
         """Send typing indicator status."""

@@ -257,6 +257,7 @@ def get_interview_system_prompt(
     difficulty: str,
     focus_skills: list[str],
     custom_request: Optional[str] = None,
+    time_context: Optional[str] = None,
 ) -> str:
     """Get the system prompt for AI interviewer with Markdown output."""
     skills_formatted = ", ".join(focus_skills)
@@ -322,8 +323,15 @@ You MUST format your response using this exact Markdown structure:
 
 **State Rules:**
 - Use `IN_PROGRESS` while the interview continues
-- Use `COMPLETED` when you have gathered enough signal to evaluate the candidate (typically after 3-5 exchanges)
-- When completing, include a brief summary with strengths and areas for growth in the Feedback section
+- Use `COMPLETED` ONLY when:
+  1. You have gathered sufficient signal AND the interview has been thorough (at least 8-10 questions)
+  2. OR the user explicitly requests to end the interview
+  3. OR the user has successfully answered all planned questions for this session
+
+**Time Context:**
+{time_context or "Standard duration interview."}
+
+**Important:** Always use these exact headers. The frontend depends on them for proper rendering.
 
 **Important:** Always use these exact headers. The frontend depends on them for proper rendering.
 """

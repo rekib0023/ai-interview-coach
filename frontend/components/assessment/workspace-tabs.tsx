@@ -58,13 +58,19 @@ export function WorkspaceTabs({
 }: WorkspaceTabsProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollToBottom = (instant = false) => {
+    messagesEndRef.current?.scrollIntoView({
+      behavior: instant ? "auto" : "smooth",
+      block: "end"
+    });
   };
 
   useEffect(() => {
     if (messages.length > 0) {
-      scrollToBottom();
+      const lastMessage = messages[messages.length - 1];
+      const isStreaming = lastMessage.isStreaming;
+
+      scrollToBottom(isStreaming);
     }
   }, [messages]);
 

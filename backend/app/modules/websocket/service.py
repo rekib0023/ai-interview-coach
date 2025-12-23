@@ -7,6 +7,7 @@ Provides AI interviewer functionality using the LLM service with:
 """
 
 import logging
+from datetime import datetime
 from typing import AsyncIterator, List, Optional
 
 from sqlalchemy.orm import Session
@@ -167,11 +168,30 @@ Could you please start by briefly describing your background and experience rele
         """
         llm_service = get_llm_service()
 
+        # Calculate time context
+        time_context = "Interview just started."
+        if assessment.created_at:
+            elapsed_minutes = (
+                datetime.utcnow() - assessment.created_at
+            ).total_seconds() / 60
+            time_context = (
+                f"Interview has been running for {int(elapsed_minutes)} minutes."
+            )
+            if elapsed_minutes < 25:
+                time_context += (
+                    " DO NOT COMPLETE THE INTERVIEW YET. Continue asking questions."
+                )
+            else:
+                time_context += (
+                    " You may complete the interview if you have sufficient signal."
+                )
+
         system_prompt = get_interview_system_prompt(
             topic=assessment.topic,
             role=assessment.role or "Software Engineer",
             difficulty=assessment.difficulty.value,
             focus_skills=assessment.skill_targets or [],
+            time_context=time_context,
         )
 
         memory = self._build_memory_from_history(
