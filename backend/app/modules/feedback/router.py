@@ -6,10 +6,9 @@ from typing import Annotated, Optional
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.core.dependencies import get_current_user, get_db
+from app.core.dependencies import get_current_user, get_db, get_feedback_service
 from app.modules.users.models import User
 
-from app.core.dependencies import get_feedback_service
 from .models import FeedbackStatus
 from .schemas import (
     FeedbackRequestResponse,
@@ -108,20 +107,9 @@ async def get_feedback_status(
         db=db, feedback_id=feedback_id, user_id=current_user.id
     )
 
-    # Calculate estimated completion time based on status
-    estimated_seconds = None
-    progress_message = None
-
-    if db_feedback.status == FeedbackStatus.PENDING:
-        progress_message = "Waiting to start processing"
-        estimated_seconds = 10
-    elif db_feedback.status == FeedbackStatus.PROCESSING:
-        progress_message = "Analyzing response and generating feedback"
-        estimated_seconds = 5
-    elif db_feedback.status == FeedbackStatus.COMPLETED:
-        progress_message = "Feedback ready"
-    elif db_feedback.status == FeedbackStatus.FAILED:
-        progress_message = f"Failed: {db_feedback.error_message or 'Unknown error'}"
+    progress_message, estimated_seconds = feedback_service.get_status_info(
+        db_feedback.status, db_feedback.error_message
+    )
 
     return FeedbackStatusResponse(
         id=db_feedback.id,
@@ -211,7 +199,7 @@ async def list_feedback_runs(
     summaries = [
         FeedbackRunSummary(
             id=f.id,
-            session_id=f.assessment_id,  # Mapping assessment_id to session_id for schema
+            assessment_id=f.assessment_id,
             status=f.status,
             overall_score=f.overall_score,
             created_at=f.created_at,

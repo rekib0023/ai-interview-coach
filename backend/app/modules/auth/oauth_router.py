@@ -12,8 +12,8 @@ from app.core.config import settings
 from app.core.cookies import set_auth_cookie
 from app.core.dependencies import get_db
 from app.core.oauth import oauth
-from app.modules.users import user_crud
-from app.modules.users.models import User
+
+from .service import AuthService, get_auth_service
 
 router = APIRouter()
 
@@ -50,97 +50,54 @@ async def oauth_login(request: Request, provider: str):
 
 @router.get("/login/{provider}/callback")
 async def oauth_callback(
-    request: Request, provider: str, db: Session = Depends(get_db)
+    request: Request,
+    provider: str,
+    db: Session = Depends(get_db),
+    auth_service: "AuthService" = Depends(get_auth_service),
 ) -> Any:
     """
-    Handle OAuth callback, create/retrieve user, and redirect to frontend with token
+    Handle OAuth callback, create/retrieve user, and redirect to frontend with token.
+    Delegates all business logic to AuthService.
     """
     client = oauth.create_client(provider)
     try:
         token = await client.authorize_access_token(request)
     except Exception as e:
-        # Redirect to frontend with error
         return RedirectResponse(
             url=f"{settings.FRONTEND_URL}/signin?error=oauth_failed&details={str(e)}"
         )
 
-    # Fetch user info based on provider
-    user_info = None
-    email = None
-    full_name = None
-    provider_id = None
+    # Extract user info based on provider - delegated to service
+    try:
+        if provider == "google":
+            user_info = token.get("userinfo")
+            if not user_info:
+                user_info = await client.parse_id_token(request, token)
 
-    if provider == "google":
-        # Get user info from token
-        user_info = token.get("userinfo")
-        if not user_info:
-            user_info = await client.parse_id_token(request, token)
-
-        # Validate issuer for security
-        iss = user_info.get("iss")
-        if iss not in ["https://accounts.google.com", "accounts.google.com"]:
-            return RedirectResponse(
-                url=f"{settings.FRONTEND_URL}/signin?error=invalid_issuer"
+            email, full_name, provider_id = auth_service.extract_google_user_info(
+                user_info
             )
 
-        email = user_info.get("email")
-        full_name = user_info.get("name")
-        provider_id = user_info.get("sub")
+        elif provider == "github":
+            resp = await client.get("https://api.github.com/user", token=token)
+            if resp.status_code != 200:
+                return RedirectResponse(
+                    url=f"{settings.FRONTEND_URL}/signin?error=github_api_error"
+                )
 
-    elif provider == "github":
-        resp = await client.get("https://api.github.com/user", token=token)
-        if resp.status_code != 200:
+            profile = resp.json()
+            email, full_name, provider_id = await auth_service.extract_github_user_info(
+                client, token, profile
+            )
+        else:
             return RedirectResponse(
-                url=f"{settings.FRONTEND_URL}/signin?error=github_api_error"
+                url=f"{settings.FRONTEND_URL}/signin?error=unsupported_provider"
             )
 
-        profile = resp.json()
-        email = profile.get("email")
-        full_name = profile.get("name")
-        provider_id = str(
-            profile.get("id")
-        )  # Use durable ID as per GitHub best practices
-
-        # Revalidate user identity as recommended by GitHub
-        # This ensures we're getting the current user and not cached data
-        user_validation_resp = await client.get(
-            "https://api.github.com/user", token=token
+    except ValueError as e:
+        return RedirectResponse(
+            url=f"{settings.FRONTEND_URL}/signin?error={str(e).replace(' ', '_')}"
         )
-        if (
-            user_validation_resp.status_code == 200
-            and str(user_validation_resp.json().get("id")) != provider_id
-        ):
-            return RedirectResponse(
-                url=f"{settings.FRONTEND_URL}/signin?error=user_identity_mismatch"
-            )
-
-        # GitHub doesn't always provide email in the user profile
-        # Need to fetch from the user/emails endpoint
-        if not email:
-            emails_resp = await client.get(
-                "https://api.github.com/user/emails", token=token
-            )
-            if emails_resp.status_code == 200:
-                emails = emails_resp.json()
-                for e in emails:
-                    # Get primary and verified email as per GitHub recommendations
-                    if e.get("primary") and e.get("verified"):
-                        email = e.get("email")
-                        break
-
-            # If still no email, try to get any verified email
-            if not email and emails_resp.status_code == 200:
-                emails = emails_resp.json()
-                for e in emails:
-                    if e.get("verified"):
-                        email = e.get("email")
-                        break
-
-        # Validate that we got essential user information
-        if not provider_id:
-            return RedirectResponse(
-                url=f"{settings.FRONTEND_URL}/signin?error=missing_github_id"
-            )
 
     # Validate required fields
     if not email or not provider_id:
@@ -148,58 +105,21 @@ async def oauth_callback(
             url=f"{settings.FRONTEND_URL}/signin?error=missing_user_info"
         )
 
-    # Check if user exists by email
-    user = user_crud.get_by_email(db, email=email)
-    if not user:
-        # Check if user with this provider_id already exists (prevents duplicate accounts)
-        existing_user = (
-            db.query(User)
-            .filter(User.provider == provider, User.provider_id == provider_id)
-            .first()
+    # Get or create user - delegated to service
+    try:
+        user = auth_service.get_or_create_oauth_user(
+            db,
+            email=email,
+            full_name=full_name,
+            provider=provider,
+            provider_id=provider_id,
         )
-
-        if existing_user:
-            # User changed their email on GitHub/Google but same account
-            existing_user.email = email
-            existing_user.full_name = full_name or existing_user.full_name
-            db.commit()
-            user = existing_user
-        else:
-            # Create new user with OAuth info
-            user = User(
-                email=email,
-                full_name=full_name or email.split("@")[0],  # Fallback name
-                hashed_password="",  # OAuth users don't have passwords
-                provider=provider,
-                provider_id=provider_id,
-                is_active=True,
-            )
-            db.add(user)
-            db.commit()
-            db.refresh(user)
-    else:
-        # User exists - validate and update provider info if needed
-        if user.provider and user.provider != provider:
-            # User is trying to login with different OAuth provider
-            # This could be account linking or a security issue
-            return RedirectResponse(
-                url=f"{settings.FRONTEND_URL}/signin?error=account_already_exists&provider={user.provider}"
-            )
-        elif not user.provider:
-            # Link OAuth account to existing email/password account
-            user.provider = provider
-            user.provider_id = provider_id
-            db.commit()
-        elif user.provider_id != provider_id:
-            # Same provider but different provider_id - suspicious
-            return RedirectResponse(
-                url=f"{settings.FRONTEND_URL}/signin?error=provider_id_mismatch"
-            )
-        else:
-            # Update user info in case it changed on the OAuth provider
-            user.full_name = full_name or user.full_name
-            user.is_active = True  # Reactivate if was deactivated
-            db.commit()
+    except HTTPException as e:
+        # Handle account conflicts
+        error_detail = str(e.detail).replace(" ", "_").replace(":", "")
+        return RedirectResponse(
+            url=f"{settings.FRONTEND_URL}/signin?error={error_detail}"
+        )
 
     # Generate JWT with proper expiration
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)

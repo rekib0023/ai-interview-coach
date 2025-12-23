@@ -6,11 +6,13 @@ from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_llm_service
 from app.modules.feedback.crud import feedback as feedback_crud
-from app.modules.llm.prompts import (
-    get_practice_generation_prompt,
-    get_practice_system_prompt,
+from app.modules.llm.prompts import PracticePrompts
+from app.modules.practices.models import (
+    Practice,
+    PracticeDifficulty,
+    PracticeStatus,
+    PracticeType,
 )
-from app.modules.practices.models import Practice, PracticeDifficulty, PracticeType
 from app.modules.practices.schemas import PracticeCreate, PracticeSubmitResponse
 
 from . import crud
@@ -50,8 +52,8 @@ class PracticeService:
             assessment = db_feedback.assessment
 
             # Generate prompt
-            system_prompt = get_practice_system_prompt()
-            user_prompt = get_practice_generation_prompt(
+            system_prompt = PracticePrompts.get_system_prompt()
+            user_prompt = PracticePrompts.get_generation_prompt(
                 weaknesses=weaknesses,
                 topic=assessment.topic,
                 count=count,
@@ -96,7 +98,7 @@ class PracticeService:
                 practice_creates.append(practice_create)
 
             # Batch create practices
-            practices = crud.create_practices_batch(
+            practices = crud.practice.create_batch(
                 db=db, user_id=user_id, practices_in=practice_creates
             )
 
@@ -159,7 +161,7 @@ class PracticeService:
         status: Optional[str] = None,
     ) -> list[Practice]:
         """Get practices for a user."""
-        return crud.get_practices_by_user(
+        return crud.practice.get_multi_by_user(
             db=db, user_id=user_id, skip=skip, limit=limit, status=status
         )
 
@@ -167,44 +169,98 @@ class PracticeService:
         self, db: Session, user_id: int, status: Optional[str] = None
     ) -> int:
         """Count practices for a user."""
-        return crud.count_practices_by_user(db=db, user_id=user_id, status=status)
+        return crud.practice.count_by_user(db=db, user_id=user_id, status=status)
 
     def get_pending_practices_by_user(
         self, db: Session, user_id: int, limit: int = 10
     ) -> list[Practice]:
         """Get pending practices for a user."""
-        return crud.get_pending_practices_by_user(db=db, user_id=user_id, limit=limit)
+        return crud.practice.get_pending_by_user(db=db, user_id=user_id, limit=limit)
 
     def get_practice_by_user(
         self, db: Session, practice_id: int, user_id: int
     ) -> Optional[Practice]:
         """Get a specific practice for a user."""
-        return crud.get_practice_by_user(
+        return crud.practice.get_by_user(
             db=db, practice_id=practice_id, user_id=user_id
         )
 
     def deliver_practice(self, db: Session, db_practice: Practice) -> Practice:
         """Mark a practice as delivered."""
-        return crud.deliver_practice(db=db, db_practice=db_practice)
+        return crud.practice.deliver(db=db, db_obj=db_practice)
 
     def start_practice(self, db: Session, db_practice: Practice) -> Practice:
         """Start a practice."""
-        return crud.start_practice(db=db, db_practice=db_practice)
+        return crud.practice.start(db=db, db_obj=db_practice)
 
     def submit_practice_response(
         self, db: Session, db_practice: Practice, response: PracticeSubmitResponse
     ) -> Practice:
         """Submit a response for a practice."""
-        return crud.submit_practice_response(
-            db=db, db_practice=db_practice, response=response
+        return crud.practice.submit_response(
+            db=db, db_obj=db_practice, response=response
         )
 
     def complete_practice(
         self, db: Session, db_practice: Practice, score: Optional[int] = None
     ) -> Practice:
         """Complete a practice."""
-        return crud.complete_practice(db=db, db_practice=db_practice, score=score)
+        return crud.practice.complete(db=db, db_obj=db_practice, score=score)
 
     def skip_practice(self, db: Session, db_practice: Practice) -> Practice:
         """Skip a practice."""
-        return crud.skip_practice(db=db, db_practice=db_practice)
+        return crud.practice.skip(db=db, db_obj=db_practice)
+
+    def validate_for_start(self, db_practice: Practice) -> None:
+        """
+        Validate that a practice can be started.
+
+        Args:
+            db_practice: Practice to validate
+
+        Raises:
+            ValueError: If practice cannot be started
+        """
+        from app.shared.exceptions import ValidationError
+
+        if db_practice.status not in [PracticeStatus.PENDING]:
+            raise ValidationError(
+                f"Cannot start practice with status: {db_practice.status}"
+            )
+
+    def validate_for_submit(self, db_practice: Practice) -> None:
+        """
+        Validate that a practice can accept submissions.
+
+        Args:
+            db_practice: Practice to validate
+
+        Raises:
+            ValueError: If practice cannot accept submissions
+        """
+        from app.shared.exceptions import ValidationError
+
+        if db_practice.status in [PracticeStatus.COMPLETED, PracticeStatus.SKIPPED]:
+            raise ValidationError(
+                f"Cannot submit response for practice with status: {db_practice.status}"
+            )
+
+    def validate_for_complete(self, db_practice: Practice) -> None:
+        """
+        Validate that a practice can be completed.
+
+        Args:
+            db_practice: Practice to validate
+
+        Raises:
+            ValueError: If practice is already completed
+        """
+        from app.shared.exceptions import ValidationError
+
+        if db_practice.status == PracticeStatus.COMPLETED:
+            raise ValidationError("Practice is already completed")
+
+
+def get_practice_service() -> PracticeService:
+    """Dependency injection for PracticeService."""
+    return PracticeService()

@@ -83,7 +83,6 @@ def get_current_user(
     Raises:
         HTTPException: If authentication fails
     """
-    from app.modules.users.models import User
 
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -108,7 +107,9 @@ def get_current_user(
         logging.warning(f"JWT decode error: {e}")
         raise credentials_exception
 
-    user = db.query(User).filter(User.id == int(user_id)).first()
+    from app.modules.users.crud import user as user_crud
+
+    user = user_crud.get(db, id=int(user_id))
     if user is None:
         raise credentials_exception
 
@@ -119,63 +120,6 @@ def get_current_user(
         )
 
     return user
-
-
-def get_current_active_user(
-    current_user=Depends(get_current_user),
-):
-    """
-    Get current active user (optional additional check).
-
-    Args:
-        current_user: User from get_current_user dependency
-
-    Returns:
-        User: Active user object
-
-    Raises:
-        HTTPException: If user is inactive
-    """
-    if hasattr(current_user, "is_active") and not current_user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="User account is disabled"
-        )
-    return current_user
-
-
-def get_optional_user(
-    db: Session = Depends(get_db),
-    access_token: Optional[str] = Cookie(None, alias="access_token"),
-):
-    """
-    Get current user if authenticated, None otherwise.
-
-    Useful for endpoints that work differently for authenticated vs anonymous users.
-
-    Args:
-        db: Database session
-        access_token: JWT access token from cookie
-
-    Returns:
-        Optional[User]: User object or None
-    """
-    from app.modules.users.models import User
-
-    if not access_token:
-        return None
-
-    try:
-        payload = jwt.decode(
-            access_token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
-        )
-        user_id: str = payload.get("sub")
-        if user_id is None:
-            return None
-
-        user = db.query(User).filter(User.id == int(user_id)).first()
-        return user
-    except JWTError:
-        return None
 
 
 # ============================================================================
@@ -331,93 +275,6 @@ def get_pagination_params(
         PaginationParams: Validated pagination parameters
     """
     return PaginationParams(skip=skip, limit=limit)
-
-
-# ============================================================================
-# Resource Access Dependencies
-# ============================================================================
-
-
-def get_assessment_by_id(
-    assessment_id: int,
-    db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
-):
-    """
-    Get assessment by ID with ownership verification.
-
-    Args:
-        assessment_id: Assessment ID
-        db: Database session
-        current_user: Current authenticated user
-
-    Returns:
-        Assessment: Assessment object
-
-    Raises:
-        HTTPException: If assessment not found or access denied
-    """
-    from app.modules.assessments.models import Assessment
-
-    assessment = db.query(Assessment).filter(Assessment.id == assessment_id).first()
-
-    if not assessment:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Assessment not found"
-        )
-
-    # Check ownership (or admin access)
-    is_owner = assessment.user_id == current_user.id
-    is_admin = hasattr(current_user, "is_admin") and current_user.is_admin
-
-    if not (is_owner or is_admin):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied to this assessment",
-        )
-
-    return assessment
-
-
-def get_practice_by_id(
-    practice_id: int,
-    db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
-):
-    """
-    Get practice by ID with ownership verification.
-
-    Args:
-        practice_id: Practice ID
-        db: Database session
-        current_user: Current authenticated user
-
-    Returns:
-        Practice: Practice object
-
-    Raises:
-        HTTPException: If practice not found or access denied
-    """
-    from app.modules.practices.models import Practice
-
-    practice = db.query(Practice).filter(Practice.id == practice_id).first()
-
-    if not practice:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Practice not found"
-        )
-
-    # Check ownership
-    is_owner = practice.user_id == current_user.id
-    is_admin = hasattr(current_user, "is_admin") and current_user.is_admin
-
-    if not (is_owner or is_admin):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied to this practice",
-        )
-
-    return practice
 
 
 # ============================================================================

@@ -3,7 +3,7 @@
 import logging
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_assessment_service, get_current_user, get_db
@@ -115,23 +115,12 @@ async def update_assessment(
     """Update an assessment."""
     logger.info(f"Updating assessment {assessment_id} for user {current_user.id}")
 
-    assessment = assessment_service.get_assessment(
-        db=db, assessment_id=assessment_id, user_id=current_user.id
-    )
-
-    if not assessment:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Assessment not found",
-        )
-
-    assessment = assessment_service.update_assessment(
+    return assessment_service.update_assessment(
         db=db,
         assessment_id=assessment_id,
         user_id=current_user.id,
         assessment_in=assessment_in,
     )
-    return assessment
 
 
 @router.post(

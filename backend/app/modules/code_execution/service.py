@@ -73,14 +73,64 @@ class CodeExecutionService:
 
     def get_submissions(self, db: Session, assessment_id: int) -> list:
         """Get all submissions for an assessment."""
-        from .models import CodeSubmission
+        from .crud import code_submission
 
-        return (
-            db.query(CodeSubmission)
-            .filter(CodeSubmission.assessment_id == assessment_id)
-            .order_by(CodeSubmission.created_at)
-            .all()
-        )
+        return code_submission.get_by_assessment(db, assessment_id=assessment_id)
+
+    def validate_assessment_for_execution(
+        self, db: Session, *, assessment_id: int, user_id: int
+    ):
+        """
+        Validate that an assessment exists and can accept code execution.
+
+        Args:
+            db: Database session
+            assessment_id: Assessment ID to validate
+            user_id: User ID to verify ownership
+
+        Returns:
+            Assessment object if valid
+
+        Raises:
+            NotFoundError: If assessment not found
+            ValidationError: If assessment status doesn't allow code execution
+        """
+        from app.modules.assessments.crud import assessment as assessment_crud
+        from app.modules.assessments.models import AssessmentStatus
+        from app.shared.exceptions import NotFoundError, ValidationError
+
+        assessment = assessment_crud.get_by_user(db, user_id=user_id, id=assessment_id)
+
+        if not assessment:
+            raise NotFoundError("Assessment not found")
+
+        if assessment.status not in [
+            AssessmentStatus.IN_PROGRESS,
+            AssessmentStatus.CREATED,
+        ]:
+            raise ValidationError(
+                f"Cannot execute code for assessment with status: {assessment.status.value}"
+            )
+
+        return assessment
+
+    def validate_code_length(self, code: str, max_length: int = 10000) -> None:
+        """
+        Validate code length doesn't exceed maximum.
+
+        Args:
+            code: Code to validate
+            max_length: Maximum allowed length (default: 10,000 characters)
+
+        Raises:
+            ValidationError: If code exceeds maximum length
+        """
+        from app.core.exceptions import ValidationError
+
+        if len(code) > max_length:
+            raise ValidationError(
+                f"Code exceeds maximum length of {max_length:,} characters"
+            )
 
     async def execute_code(
         self,

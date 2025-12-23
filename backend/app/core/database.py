@@ -11,5 +11,11 @@ SQLALCHEMY_DATABASE_URL = (
     or f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@localhost/{settings.POSTGRES_DB}"
 )
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    pool_pre_ping=True,  # Verify connections before use
+    pool_size=5,  # Max connections in pool
+    max_overflow=10,  # Extra connections beyond pool_size
+    pool_recycle=3600,  # Recycle connections after 1 hour (prevents stale connections)
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

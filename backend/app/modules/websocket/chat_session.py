@@ -1,12 +1,13 @@
 """
-Enhanced WebSocket chat session handler with improved error handling,
-resource management, and separation of concerns.
+WebSocket Chat Session Handler.
+Manages the lifecycle of an interview assessment chat, including authentication,
+message routing, and real-time AI streaming.
 """
 
 import json
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Optional
 
 from fastapi import WebSocket, WebSocketDisconnect, status
 from sqlalchemy.orm import Session
@@ -18,677 +19,297 @@ from app.core.dependencies import (
 )
 from app.core.security import verify_token
 from app.core.websocket import manager
-from app.modules.assessments.models import AssessmentStatus
+from app.modules.assessments.models import Assessment, AssessmentStatus
 from app.modules.websocket.exceptions import (
     AssessmentAccessError,
     AuthenticationError,
 )
-from app.modules.websocket.models import ChatSender, CommandAction, MessageType
+from app.modules.websocket.models import ChatSender, MessageType
 from app.modules.websocket.service import interviewer_service
 
 logger = logging.getLogger(__name__)
 
 
 class ChatSession:
-    """
-    Manages WebSocket chat session lifecycle for interview assessments.
-
-    Responsibilities:
-    - Authentication and authorization
-    - Message routing and processing
-    - State management
-    - Error handling and recovery
-    """
-
-    def __init__(
-        self,
-        websocket: WebSocket,
-        assessment_id: int,
-        access_token: Optional[str] = None,
-    ):
-        self.websocket = websocket
+    def __init__(self, websocket: WebSocket, assessment_id: int):
+        self.ws = websocket
         self.assessment_id = assessment_id
-        self.access_token = access_token
         self.user_id: Optional[int] = None
-        self.is_connected = False
-        self.assessment_service = get_assessment_service()
-        self.user_service = get_user_service()
+        self.is_active = False
 
-    async def run(self):
-        """Main entry point for the chat session lifecycle."""
+    async def start_session(self):
+        """
+        Main entry point. Orchestrates the connection, authentication,
+        and message processing loop.
+        """
         try:
-            # 1. Accept connection
-            await self.websocket.accept()
-            self.is_connected = True
-            logger.info(
-                f"WebSocket connection established for assessment {self.assessment_id}"
-            )
-
-            # 2. Authenticate and authorize
-            await self._authenticate()
-
-            # 3. Register with connection manager
-            await manager.connect(self.websocket, self.assessment_id)
-
-            # 4. Initialize chat (send history or welcome)
-            await self._initialize_chat()
-
-            # 5. Enter message processing loop
-            await self._message_loop()
+            await self._accept_connection()
+            await self._authenticate_and_validate()
+            await manager.connect(self.ws, self.assessment_id)
+            await self._restore_or_initialize_chat()
+            await self._receive_loop()
 
         except AuthenticationError as e:
-            logger.warning(f"Authentication failed: {e}")
-            await self._send_error("Authentication failed", close=True)
+            logger.warning(f"Auth failed for assessment {self.assessment_id}: {e}")
+            await self._send_error(str(e), close_code=status.WS_1008_POLICY_VIOLATION)
         except AssessmentAccessError as e:
-            logger.warning(f"Assessment access denied: {e}")
-            await self._send_error(str(e), close=True)
+            logger.warning(f"Access denied for assessment {self.assessment_id}: {e}")
+            await self._send_error(str(e), close_code=status.WS_1008_POLICY_VIOLATION)
         except WebSocketDisconnect:
-            logger.info(f"Client disconnected from assessment {self.assessment_id}")
+            logger.info(f"Client disconnected: Assessment {self.assessment_id}")
         except Exception as e:
-            logger.error(f"Unexpected error in chat session: {e}", exc_info=True)
-            await self._send_error("An unexpected error occurred")
+            logger.error(f"Unexpected session error: {e}", exc_info=True)
+            await self._send_error("An internal error occurred.")
         finally:
             await self._cleanup()
 
-    async def _authenticate(self) -> None:
+    # =========================================================================
+    # Connection & Authentication
+    # =========================================================================
+
+    async def _accept_connection(self):
+        """Accepts the WebSocket handshake."""
+        await self.ws.accept()
+        self.is_active = True
+
+    async def _authenticate_and_validate(self):
         """
-        Validates token, user, and assessment access.
-
-        Raises:
-            AuthenticationError: If authentication fails
-            AssessmentAccessError: If assessment access is denied
+        Verifies the JWT token and ensures the user has access to a valid assessment.
+        Updates assessment status to IN_PROGRESS if it was CREATED.
         """
-        # Get token from parameter or query string
-        if not self.access_token:
-            self.access_token = self.websocket.query_params.get("token")
+        # 1. Verify Token
+        token = self.ws.query_params.get("token")
+        if not token:
+            raise AuthenticationError("Missing access token")
 
-        if not self.access_token:
-            raise AuthenticationError("No access token provided")
-
-        # Verify token and extract user ID
         try:
-            user_id = verify_token(self.access_token)
-            if not user_id:
-                raise AuthenticationError("Invalid or expired token")
-            self.user_id = int(user_id)
-        except Exception as e:
-            raise AuthenticationError(f"Token verification failed: {e}")
+            self.user_id = int(verify_token(token))
+        except Exception:
+            raise AuthenticationError("Invalid or expired token")
 
-        # Verify user and assessment access
+        # 2. Verify DB Access (Scoped Session)
         async with get_db_session() as db:
-            # Check user exists
-            user = self.user_service.get_user(db=db, user_id=self.user_id)
-            if not user:
-                raise AuthenticationError("User not found")
+            # Get services within session scope
+            user_service = get_user_service()
+            assessment_service = get_assessment_service()
 
-            # Check assessment exists and user has access
-            assessment = self.assessment_service.get_assessment(
-                db=db, assessment_id=self.assessment_id, user_id=self.user_id
+            user = user_service.get_user(db, self.user_id)
+            if not user:
+                raise AuthenticationError("User account not found")
+
+            assessment = assessment_service.get_assessment(
+                db, self.assessment_id, self.user_id
             )
             if not assessment:
                 raise AssessmentAccessError("Assessment not found or access denied")
 
-            # Verify assessment is in valid state
-            if assessment.status not in [
-                AssessmentStatus.CREATED,
-                AssessmentStatus.IN_PROGRESS,
-            ]:
-                raise AssessmentAccessError(
-                    f"Assessment is {assessment.status.value}. Cannot continue chat."
+            # 3. Check Status (delegated to service)
+            allowed_statuses = [AssessmentStatus.CREATED, AssessmentStatus.IN_PROGRESS]
+            if not assessment_service.validate_assessment_status(
+                assessment, allowed_statuses
+            ):
+                raise AssessmentAccessError(f"Assessment is {assessment.status.value}")
+
+            # 4. Update Status if needed (delegated to service)
+            if assessment.status == AssessmentStatus.CREATED:
+                assessment_service.update_assessment_status(
+                    db=db,
+                    assessment_id=self.assessment_id,
+                    user_id=self.user_id,
+                    new_status=AssessmentStatus.IN_PROGRESS,
                 )
 
-            # Update assessment status if needed
-            if assessment.status == AssessmentStatus.CREATED:
-                assessment.status = AssessmentStatus.IN_PROGRESS
-                db.commit()
-                logger.info(f"Assessment {self.assessment_id} started")
+    async def _restore_or_initialize_chat(self):
+        """Sends chat history if it exists, otherwise sends the welcome message."""
+        async with get_db_session() as db:
+            history = interviewer_service.get_chat_history(db, self.assessment_id)
 
-        logger.info(
-            f"User {self.user_id} authenticated for assessment {self.assessment_id}"
-        )
+            if history:
+                await self._send_history(history)
+            else:
+                await self._send_welcome_message()
 
-    async def _initialize_chat(self) -> None:
+    # =========================================================================
+    # Message Processing Loop
+    # =========================================================================
+
+    async def _receive_loop(self):
+        """Continuously listens for messages from the client."""
+        while self.is_active:
+            try:
+                data = await self.ws.receive_text()
+                await self._dispatch_message(data)
+            except WebSocketDisconnect:
+                raise  # Handled in start_session
+            except json.JSONDecodeError:
+                await self._send_error("Invalid JSON format")
+            except Exception as e:
+                logger.error(f"Message processing error: {e}", exc_info=True)
+                await self._send_error("Failed to process message")
+
+    async def _dispatch_message(self, raw_data: str):
+        """Parses raw JSON and routes to the correct handler."""
+        try:
+            payload = json.loads(raw_data)
+            msg_type = payload.get("type", MessageType.USER_MESSAGE.value)
+            content = payload.get("content", "")
+        except json.JSONDecodeError:
+            # Fallback for plain text messages
+            msg_type = MessageType.USER_MESSAGE.value
+            content = raw_data
+
+        if not content and msg_type != MessageType.COMMAND.value:
+            return
+
+        if msg_type == MessageType.USER_MESSAGE.value:
+            await self._process_text_message(content)
+        else:
+            logger.warning(f"Ignored unknown message type: {msg_type}")
+
+    # =========================================================================
+    # Core Business Logic (The "Unit of Work")
+    # =========================================================================
+
+    async def _process_text_message(self, content: str):
         """
-        Initializes the chat by sending either:
-        - Conversation history (for reconnection)
-        - Welcome message and initial question (for new session)
+        Handles a user message:
+        1. Saves user message.
+        2. Refreshes assessment context.
+        3. Generates and streams AI response (delegated to service).
+        All within a SINGLE database transaction.
         """
         async with get_db_session() as db:
-            # Check for existing conversation history
-            existing_messages = interviewer_service.get_chat_history(
-                db, self.assessment_id
+            # 1. Re-fetch context (prevents DetachedInstanceError)
+            assessment_service = get_assessment_service()
+            assessment = assessment_service.get_assessment(
+                db, self.assessment_id, self.user_id
+            )
+            if not assessment:
+                await self._send_error("Assessment context lost.")
+                return
+
+            # 2. Save User Message
+            await interviewer_service.save_message(
+                db, self.assessment_id, ChatSender.USER, content
             )
 
-            if existing_messages and len(existing_messages) > 0:
-                # Reconnection - send recent history
-                await self._send_conversation_history(existing_messages)
-            else:
-                # New session - send welcome and initial question
-                await self._send_initial_messages(db)
+            # 3. Generate and Stream AI Response (delegated to service)
+            await self._handle_ai_response(db, assessment, content)
 
-    async def _send_conversation_history(
-        self, messages: List, max_messages: int = 20
-    ) -> None:
-        """Send recent conversation history on reconnection."""
-        recent_messages = (
-            messages[-max_messages:] if len(messages) > max_messages else messages
-        )
+    async def _handle_ai_response(
+        self, db: Session, assessment: Assessment, user_input: str
+    ):
+        """
+        Handles AI response generation and streaming.
+        Business logic delegated to service layer.
+        """
+        await self._send_protocol_message(MessageType.STREAM_START)
 
-        logger.info(
-            f"Sending {len(recent_messages)} history messages for assessment {self.assessment_id}"
-        )
+        try:
+            # Generate and save AI response (business logic in service)
+            (
+                ai_msg,
+                is_completed,
+            ) = await interviewer_service.generate_and_save_ai_response(
+                db, assessment, user_input
+            )
 
-        for msg in recent_messages:
+            # Stream the response content to client
+            await self._send_protocol_message(
+                MessageType.STREAM_CHUNK, content=ai_msg.content
+            )
+
+            # Notify client if interview is completed
+            if is_completed:
+                await self._send_protocol_message(
+                    MessageType.STATUS,
+                    data={"status": "completed", "message": "Interview Finished"},
+                )
+
+            # Finalize stream
+            await self._send_stream_end(
+                message_id=ai_msg.id, timestamp=ai_msg.created_at
+            )
+
+        except Exception as e:
+            logger.error(f"AI response failed: {e}", exc_info=True)
+            await self._send_stream_end(error=True)
+            await self._send_error("AI response generation failed.")
+
+    # =========================================================================
+    # Output & Protocol Helpers
+    # =========================================================================
+
+    async def _send_history(self, messages: list):
+        """Sends the last N messages to the client."""
+        for msg in messages[-20:]:
             msg_type = (
                 MessageType.AI_MESSAGE
                 if msg.sender == ChatSender.AI
                 else MessageType.USER_MESSAGE
             )
-            await self._send_message(
-                msg_type=msg_type,
+            await self._send_protocol_message(
+                msg_type,
                 content=msg.content,
                 message_id=msg.id,
                 timestamp=msg.created_at,
             )
 
-    async def _send_initial_messages(self, db: Session) -> None:
-        """Stream welcome message and initial question for new session."""
-        assessment = self.assessment_service.get_assessment(
-            db=db, assessment_id=self.assessment_id, user_id=self.user_id
+    async def _send_welcome_message(self):
+        """Sends the initial welcome message (content from service)."""
+        welcome_text = interviewer_service.generate_welcome_message()
+        await self._send_protocol_message(MessageType.STREAM_START)
+        await self._send_protocol_message(
+            MessageType.STREAM_CHUNK, content=welcome_text
         )
-
-        if not assessment:
-            raise AssessmentAccessError("Assessment not found")
-
-        # Stream initial response (Intro + First Question)
-        full_content = ""
-        await self._send_stream_start()
-
-        try:
-            async for chunk in interviewer_service.generate_initial_session_stream(
-                assessment
-            ):
-                full_content += chunk
-                await self._send_stream_chunk(chunk)
-
-            # Save the complete message to database
-            ai_msg = await interviewer_service.save_message(
-                db, self.assessment_id, ChatSender.AI, full_content
-            )
-
-            await self._send_stream_end(
-                message_id=ai_msg.id, timestamp=ai_msg.created_at
-            )
-
-            logger.info(
-                f"Streamed initial messages for assessment {self.assessment_id}"
-            )
-
-        except Exception as e:
-            await self._send_stream_end(error=True)
-            logger.error(f"Failed to stream initial messages: {e}")
-            raise
-
-    async def _message_loop(self) -> None:
-        """Main loop for processing incoming WebSocket messages."""
-        while self.is_connected:
-            try:
-                data = await self.websocket.receive_text()
-                await self._process_message(data)
-            except WebSocketDisconnect:
-                logger.info(
-                    f"WebSocket disconnected for assessment {self.assessment_id}"
-                )
-                raise
-            except json.JSONDecodeError as e:
-                logger.warning(f"Invalid JSON received: {e}")
-                await self._send_error("Invalid message format")
-            except Exception as e:
-                logger.error(f"Error processing message: {e}", exc_info=True)
-                await self._send_error("Failed to process message")
-
-    async def _process_message(self, data: str) -> None:
-        """
-        Parse and route incoming message to appropriate handler.
-
-        Args:
-            data: Raw message data from WebSocket
-        """
-        try:
-            message_data = json.loads(data)
-            message_type = message_data.get("type", MessageType.USER_MESSAGE.value)
-            content = message_data.get("content", "")
-
-            # Validate message has content (except for commands)
-            if not content and message_type != MessageType.COMMAND.value:
-                logger.warning("Received empty message")
-                return
-
-        except json.JSONDecodeError:
-            # Fallback: treat raw text as user message
-            message_type = MessageType.USER_MESSAGE.value
-            content = data
-            message_data = {"type": message_type, "content": content}
-
-        # Route to appropriate handler
-        if message_type == MessageType.USER_MESSAGE.value:
-            await self._handle_user_message(content)
-        elif message_type == MessageType.COMMAND.value:
-            await self._handle_command(message_data)
-        else:
-            logger.warning(f"Unknown message type: {message_type}")
-
-    async def _handle_user_message(self, content: str) -> None:
-        """
-        Process user's chat message and stream AI response.
-
-        Args:
-            content: User's message content
-        """
-        async with get_db_session() as db:
-            # Save user message
-            user_msg = await interviewer_service.save_message(
-                db, self.assessment_id, ChatSender.USER, content
-            )
-            logger.debug(f"Saved user message {user_msg.id}")
-
-            # Get assessment and verify it's still active
-            assessment = self.assessment_service.get_assessment(
-                db=db, assessment_id=self.assessment_id, user_id=self.user_id
-            )
-
-            if not assessment:
-                await self._send_error("Assessment not found")
-                return
-
-            if assessment.status != AssessmentStatus.IN_PROGRESS:
-                await self._send_error(
-                    f"Assessment is {assessment.status.value}. Cannot continue."
-                )
-                return
-
-            # Stream AI response
-            await self._send_stream_start()
-            full_content = ""
-
-            try:
-                # Get conversation history
-                conversation_history = interviewer_service.get_chat_history(
-                    db, self.assessment_id
-                )
-
-                # Stream AI response chunks
-                async for chunk in interviewer_service.generate_ai_response_stream(
-                    assessment, content, conversation_history
-                ):
-                    full_content += chunk
-                    await self._send_stream_chunk(chunk)
-
-                # Check for COMPLETED status in the response
-                if "`COMPLETED`" in full_content:
-                    assessment.status = AssessmentStatus.COMPLETED
-                    db.commit()
-                    logger.info(f"Assessment {self.assessment_id} completed")
-                    await self._send_status_update(
-                        {"status": "completed", "message": "Interview completed"}
-                    )
-
-                # Save complete AI response to database
-                ai_msg = await interviewer_service.save_message(
-                    db, self.assessment_id, ChatSender.AI, full_content
-                )
-
-                await self._send_stream_end(
-                    message_id=ai_msg.id, timestamp=ai_msg.created_at
-                )
-
-                logger.info(
-                    f"Streamed AI response and saved message {ai_msg.id} for assessment {self.assessment_id}"
-                )
-
-            except Exception as e:
-                await self._send_stream_end(error=True)
-                logger.error(f"Failed to stream AI response: {e}", exc_info=True)
-                await self._send_error("Failed to generate response. Please try again.")
-
-    def _build_display_message(self, ai_response_model) -> str:
-        """
-        Build display message from structured AI response.
-
-        Args:
-            ai_response_model: Structured response from AI service
-
-        Returns:
-            Formatted message string
-        """
-        parts = []
-
-        if ai_response_model.interviewer_intro:
-            parts.append(ai_response_model.interviewer_intro)
-
-        if ai_response_model.feedback:
-            parts.append(ai_response_model.feedback)
-
-        if ai_response_model.follow_up_question:
-            parts.append(ai_response_model.follow_up_question)
-        elif ai_response_model.interview_question:
-            parts.append(ai_response_model.interview_question)
-
-        if ai_response_model.final_remarks:
-            parts.append(ai_response_model.final_remarks)
-
-        display_content = "\n\n".join(filter(None, parts))
-        return (
-            display_content or "Thank you for your response. Let me think about that..."
-        )
-
-    def _extract_response_metadata(self, ai_response_model) -> Dict[str, Any]:
-        """Extract metadata from AI response for client."""
-        metadata = {}
-
-        if (
-            hasattr(ai_response_model, "interview_summary")
-            and ai_response_model.interview_summary
-        ):
-            metadata["status"] = ai_response_model.interview_summary.status.value
-
-            if hasattr(ai_response_model.interview_summary, "overall_rating"):
-                metadata["rating"] = ai_response_model.interview_summary.overall_rating
-
-        if hasattr(ai_response_model, "focus_skills_addressed"):
-            metadata["skills_addressed"] = ai_response_model.focus_skills_addressed
-
-        return metadata if metadata else None
-
-    async def _process_interview_status(
-        self, db: Session, assessment, ai_response_model
-    ) -> None:
-        """
-        Update assessment status based on AI response.
-
-        Args:
-            db: Database session
-            assessment: Assessment model
-            ai_response_model: AI response with status information
-        """
-        if not ai_response_model.interview_summary:
-            return
-
-        from app.modules.llm.schemas import InterviewStatus
-
-        if ai_response_model.interview_summary.status == InterviewStatus.COMPLETED:
-            assessment.status = AssessmentStatus.COMPLETED
-
-            # Store summary data
-            summary_data = {
-                "completed_at": datetime.utcnow().isoformat(),
-                "overall_rating": getattr(
-                    ai_response_model.interview_summary, "overall_rating", None
-                ),
-                "strengths": getattr(
-                    ai_response_model.interview_summary, "strengths", []
-                ),
-                "areas_for_growth": getattr(
-                    ai_response_model.interview_summary, "areas_for_growth", []
-                ),
-            }
-
-            # Store in assessment metadata or dedicated fields
-            if hasattr(assessment, "metadata"):
-                assessment.metadata = assessment.metadata or {}
-                assessment.metadata["interview_summary"] = summary_data
-
-            db.commit()
-
-            logger.info(f"Assessment {self.assessment_id} completed")
-
-            # Notify client of completion
-            await self._send_status_update(
-                {
-                    "status": "completed",
-                    "message": "Interview completed",
-                    "data": summary_data,
-                }
-            )
-
-    async def _handle_command(self, message_data: Dict[str, Any]) -> None:
-        """
-        Process special commands from the user.
-
-        Supported commands:
-        - hint: Request a hint
-        - repeat: Repeat last AI message
-        - skip: Skip current question
-        - end: End interview early
-        - status: Get current interview status
-        """
-        action = message_data.get("action", "").lower()
-
-        try:
-            if action == CommandAction.HINT.value:
-                await self._handle_hint_command()
-            elif action == CommandAction.REPEAT.value:
-                await self._handle_repeat_command()
-            elif action == CommandAction.SKIP.value:
-                await self._handle_skip_command()
-            elif action == CommandAction.END.value:
-                await self._handle_end_command()
-            elif action == CommandAction.STATUS.value:
-                await self._handle_status_command()
-            else:
-                await self._send_error(f"Unknown command: {action}")
-                logger.warning(f"Unknown command received: {action}")
-        except Exception as e:
-            logger.error(f"Error handling command '{action}': {e}", exc_info=True)
-            await self._send_error(f"Failed to execute command: {action}")
-
-    async def _handle_hint_command(self) -> None:
-        """Provide a hint for the current question."""
-        # TODO: Generate contextual hints based on current question
-        hint_message = (
-            "💡 **Hint:** Break down the problem into smaller parts:\n"
-            "1. Identify the key components or requirements\n"
-            "2. Consider edge cases and constraints\n"
-            "3. Think about scalability and performance\n"
-            "4. Explain your reasoning step by step"
-        )
-
-        await self._send_message(
-            msg_type=MessageType.SYSTEM,
-            content=hint_message,
-        )
-
-    async def _handle_repeat_command(self) -> None:
-        """Repeat the last AI message."""
-        async with get_db_session() as db:
-            last_ai_msg = interviewer_service.get_last_ai_message(
-                db, self.assessment_id
-            )
-
-            if last_ai_msg:
-                await self._send_message(
-                    msg_type=MessageType.AI_MESSAGE,
-                    content=last_ai_msg.content,
-                    message_id=last_ai_msg.id,
-                    timestamp=last_ai_msg.created_at,
-                    metadata={"repeated": True},
-                )
-            else:
-                await self._send_error("No previous message to repeat")
-
-    async def _handle_skip_command(self) -> None:
-        """Skip current question and move to next."""
-        # TODO: Implement question skipping logic
-        await self._send_message(
-            msg_type=MessageType.SYSTEM,
-            content="⏭️ Question skipped. Moving to next question...",
-        )
-
-    async def _handle_end_command(self) -> None:
-        """End the interview early."""
-        async with get_db_session() as db:
-            assessment = self.assessment_service.get_assessment(
-                db=db, assessment_id=self.assessment_id, user_id=self.user_id
-            )
-
-            if assessment:
-                assessment.status = AssessmentStatus.COMPLETED
-                db.commit()
-
-                await self._send_message(
-                    msg_type=MessageType.SYSTEM,
-                    content="Interview ended. Thank you for your time!",
-                )
-
-                await self.websocket.close()
-
-    async def _handle_status_command(self) -> None:
-        """Send current interview status."""
-        async with get_db_session() as db:
-            assessment = self.assessment_service.get_assessment(
-                db=db, assessment_id=self.assessment_id, user_id=self.user_id
-            )
-
-            if assessment:
-                status_info = {
-                    "status": assessment.status.value,
-                    "assessment_id": assessment.id,
-                    "topic": assessment.topic,
-                    "difficulty": assessment.difficulty,
-                }
-
-                await self._send_status_update(status_info)
-
-    async def _send_message(
-        self,
-        msg_type: MessageType,
-        content: str,
-        message_id: Optional[int] = None,
-        timestamp: Optional[datetime] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-    ) -> None:
-        """
-        Send a formatted message through WebSocket.
-
-        Args:
-            msg_type: Type of message
-            content: Message content
-            message_id: Database message ID
-            timestamp: Message timestamp
-            metadata: Additional metadata
-        """
-        message = {
-            "type": msg_type.value,
-            "content": content,
-        }
-
-        if message_id:
-            message["message_id"] = message_id
-
-        if timestamp:
-            message["timestamp"] = timestamp.isoformat()
-        else:
-            message["timestamp"] = datetime.utcnow().isoformat()
-
-        if metadata:
-            message["metadata"] = metadata
-
-        await manager.send_personal_message(self.websocket, json.dumps(message))
-
-    async def _send_error(self, error_message: str, close: bool = False) -> None:
-        """
-        Send an error message to the client.
-
-        Args:
-            error_message: Error description
-            close: Whether to close connection after sending
-        """
-        if self.is_connected:
-            await manager.send_personal_message(
-                self.websocket,
-                json.dumps(
-                    {
-                        "type": MessageType.ERROR.value,
-                        "content": error_message,
-                        "timestamp": datetime.utcnow().isoformat(),
-                    }
-                ),
-            )
-
-        if close:
-            await self.websocket.close(code=status.WS_1008_POLICY_VIOLATION)
-            self.is_connected = False
-
-    async def _send_status_update(self, status_data: Dict[str, Any]) -> None:
-        """Send a status update to the client."""
-        await manager.send_personal_message(
-            self.websocket,
-            json.dumps(
-                {
-                    "type": MessageType.STATUS.value,
-                    "data": status_data,
-                    "timestamp": datetime.utcnow().isoformat(),
-                }
-            ),
-        )
-
-    async def _send_stream_start(self) -> None:
-        """Signal the start of a streaming response."""
-        await manager.send_personal_message(
-            self.websocket,
-            json.dumps(
-                {
-                    "type": MessageType.STREAM_START.value,
-                    "timestamp": datetime.utcnow().isoformat(),
-                }
-            ),
-        )
-
-    async def _send_stream_chunk(self, content: str) -> None:
-        """Send a single chunk of streaming content."""
-        await manager.send_personal_message(
-            self.websocket,
-            json.dumps(
-                {
-                    "type": MessageType.STREAM_CHUNK.value,
-                    "content": content,
-                }
-            ),
-        )
+        await self._send_stream_end()
 
     async def _send_stream_end(
+        self, error: bool = False, message_id: int = None, timestamp=None
+    ):
+        """Helper to send the stream end signal."""
+        payload = {"error": error}
+        if message_id:
+            payload["message_id"] = message_id
+
+        await self._send_protocol_message(
+            MessageType.STREAM_END, timestamp=timestamp, **payload
+        )
+
+    async def _send_error(self, message: str, close_code: int = None):
+        """Sends an error message and optionally closes the socket."""
+        if self.is_active:
+            await self._send_protocol_message(MessageType.ERROR, content=message)
+            if close_code:
+                await self.ws.close(code=close_code)
+                self.is_active = False
+
+    async def _send_protocol_message(
         self,
-        error: bool = False,
-        message_id: Optional[int] = None,
-        timestamp: Optional[datetime] = None,
-    ) -> None:
-        """Signal the end of a streaming response."""
-        data = {
-            "type": MessageType.STREAM_END.value,
-            "error": error,
+        msg_type: MessageType,
+        content: str = None,
+        timestamp: datetime = None,
+        **kwargs,
+    ):
+        """
+        Low-level helper to format and send JSON messages.
+        """
+        payload = {
+            "type": msg_type.value if hasattr(msg_type, "value") else msg_type,
             "timestamp": (timestamp or datetime.utcnow()).isoformat(),
         }
 
-        if message_id:
-            data["message_id"] = message_id
+        if content is not None:
+            payload["content"] = content
 
-        await manager.send_personal_message(self.websocket, json.dumps(data))
+        # Merge extra data (like 'data' for status updates, or 'message_id')
+        if kwargs:
+            payload.update(kwargs)
 
-    async def _send_typing_indicator(self, is_typing: bool) -> None:
-        """Send typing indicator status."""
-        await manager.send_personal_message(
-            self.websocket,
-            json.dumps(
-                {
-                    "type": MessageType.TYPING.value,
-                    "is_typing": is_typing,
-                }
-            ),
-        )
+        await manager.send_personal_message(self.ws, json.dumps(payload))
 
-    async def _cleanup(self) -> None:
-        """Clean up resources and disconnect."""
-        if self.is_connected:
-            manager.disconnect(self.websocket, self.assessment_id)
-            self.is_connected = False
-            logger.info(f"Cleaned up session for assessment {self.assessment_id}")
+    async def _cleanup(self):
+        """Disconnects from the manager."""
+        if self.is_active:
+            manager.disconnect(self.ws, self.assessment_id)
+            self.is_active = False

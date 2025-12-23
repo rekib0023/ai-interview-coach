@@ -8,12 +8,7 @@ from app.core.dependencies import get_llm_service
 from app.modules.assessments.crud import assessment as assessment_crud
 from app.modules.feedback.models import FeedbackRun, FeedbackStatus
 from app.modules.feedback.schemas import FeedbackRunCreate
-from app.modules.llm.prompts import (
-    FEEDBACK_PROMPT_VERSION,
-    generate_prompt_id,
-    get_feedback_system_prompt,
-    get_feedback_user_prompt,
-)
+from app.modules.llm.prompts import FeedbackPrompts, generate_prompt_id
 from app.shared.exceptions import BusinessLogicError, NotFoundError
 
 from . import crud
@@ -66,9 +61,9 @@ class FeedbackService:
                 rubric_criteria = feedback_run.rubric.criteria
 
             # Generate prompt
-            prompt_id = generate_prompt_id("feedback", FEEDBACK_PROMPT_VERSION)
-            system_prompt = get_feedback_system_prompt()
-            user_prompt = get_feedback_user_prompt(
+            prompt_id = generate_prompt_id("feedback", FeedbackPrompts.VERSION)
+            system_prompt = FeedbackPrompts.get_system_prompt()
+            user_prompt = FeedbackPrompts.get_user_prompt(
                 question=question,
                 response_text=response_text,
                 topic=db_assessment.topic,
@@ -102,7 +97,7 @@ class FeedbackService:
                 detailed_feedback=feedback_data.get("detailed_feedback"),
                 model_name=llm_response.model,
                 prompt_id=prompt_id,
-                prompt_template_version=FEEDBACK_PROMPT_VERSION,
+                prompt_template_version=FeedbackPrompts.VERSION,
                 latency_ms=llm_response.latency_ms,
                 input_tokens=llm_response.input_tokens,
                 output_tokens=llm_response.output_tokens,
@@ -228,3 +223,24 @@ class FeedbackService:
             raise BusinessLogicError("Maximum retry attempts reached")
 
         return crud.feedback.retry(db=db, db_feedback=db_feedback)
+
+    def get_status_info(
+        self, status: str, error_message: Optional[str] = None
+    ) -> tuple[str, int]:
+        """Get status info."""
+        estimated_seconds = None
+        progress_message = None
+
+        if status == FeedbackStatus.PENDING:
+            progress_message = "Waiting to start processing"
+            estimated_seconds = 10
+        elif status == FeedbackStatus.PROCESSING:
+            progress_message = "Analyzing response and generating feedback"
+            estimated_seconds = 5
+        elif status == FeedbackStatus.COMPLETED:
+            progress_message = "Feedback ready"
+            estimated_seconds = 0
+        elif status == FeedbackStatus.FAILED:
+            progress_message = f"Failed: {error_message or 'Unknown error'}"
+
+        return progress_message, estimated_seconds

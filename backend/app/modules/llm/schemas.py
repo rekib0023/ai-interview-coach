@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -26,89 +25,89 @@ class StreamChunk:
 # =============================================================================
 
 
-class ConversationRole(str, Enum):
-    """Role in a conversation turn."""
+# class ConversationRole(str, Enum):
+#     """Role in a conversation turn."""
 
-    USER = "user"
-    MODEL = "model"
-    SYSTEM = "system"
-
-
-class ConversationMessage(BaseModel):
-    """A single message in conversation history."""
-
-    role: ConversationRole
-    content: str
-    timestamp: Optional[datetime] = None
-
-    class Config:
-        use_enum_values = True
+#     USER = "user"
+#     MODEL = "model"
+#     SYSTEM = "system"
 
 
-class ConversationMemory(BaseModel):
-    """
-    Manages conversation history for context-aware LLM generation.
+# class ConversationMessage(BaseModel):
+#     """A single message in conversation history."""
 
-    Provides automatic truncation based on message count and supports
-    conversion to Google GenAI Content format.
-    """
+#     role: ConversationRole
+#     content: str
+#     timestamp: Optional[datetime] = None
 
-    messages: List[ConversationMessage] = Field(default_factory=list)
-    system_instruction: Optional[str] = None
-    max_messages: int = Field(default=50, description="Maximum messages to retain")
-    conversation_id: Optional[str] = None
+#     class Config:
+#         use_enum_values = True
 
-    def add_message(self, role: ConversationRole, content: str) -> None:
-        """Add a message and enforce max_messages limit."""
-        self.messages.append(
-            ConversationMessage(
-                role=role,
-                content=content,
-                timestamp=datetime.utcnow(),
-            )
-        )
-        # Truncate oldest messages if exceeding limit
-        if len(self.messages) > self.max_messages:
-            self.messages = self.messages[-self.max_messages :]
 
-    def add_user_message(self, content: str) -> None:
-        """Convenience method to add a user message."""
-        self.add_message(ConversationRole.USER, content)
+# class ConversationMemory(BaseModel):
+#     """
+#     Manages conversation history for context-aware LLM generation.
 
-    def add_model_message(self, content: str) -> None:
-        """Convenience method to add a model/assistant message."""
-        self.add_message(ConversationRole.MODEL, content)
+#     Provides automatic truncation based on message count and supports
+#     conversion to Google GenAI Content format.
+#     """
 
-    def get_history_for_genai(self) -> List[Dict[str, Any]]:
-        """
-        Convert messages to Google GenAI Content format.
+#     messages: List[ConversationMessage] = Field(default_factory=list)
+#     system_instruction: Optional[str] = None
+#     max_messages: int = Field(default=50, description="Maximum messages to retain")
+#     conversation_id: Optional[str] = None
 
-        Returns list suitable for passing to genai.Client.models.generate_content
-        or chats.create history parameter.
-        """
-        contents = []
-        for msg in self.messages:
-            # Get role value (handle both enum and string)
-            role = msg.role.value if hasattr(msg.role, "value") else msg.role
+#     def add_message(self, role: ConversationRole, content: str) -> None:
+#         """Add a message and enforce max_messages limit."""
+#         self.messages.append(
+#             ConversationMessage(
+#                 role=role,
+#                 content=content,
+#                 timestamp=datetime.utcnow(),
+#             )
+#         )
+#         # Truncate oldest messages if exceeding limit
+#         if len(self.messages) > self.max_messages:
+#             self.messages = self.messages[-self.max_messages :]
 
-            # Skip system messages as they go in system_instruction
-            if role == ConversationRole.SYSTEM.value or role == "system":
-                continue
+#     def add_user_message(self, content: str) -> None:
+#         """Convenience method to add a user message."""
+#         self.add_message(ConversationRole.USER, content)
 
-            contents.append(
-                {
-                    "role": role,
-                    "parts": [{"text": msg.content}],
-                }
-            )
-        return contents
+#     def add_model_message(self, content: str) -> None:
+#         """Convenience method to add a model/assistant message."""
+#         self.add_message(ConversationRole.MODEL, content)
 
-    def clear(self) -> None:
-        """Clear all messages from memory."""
-        self.messages = []
+#     def get_history_for_genai(self) -> List[Dict[str, Any]]:
+#         """
+#         Convert messages to Google GenAI Content format.
 
-    def __len__(self) -> int:
-        return len(self.messages)
+#         Returns list suitable for passing to genai.Client.models.generate_content
+#         or chats.create history parameter.
+#         """
+#         contents = []
+#         for msg in self.messages:
+#             # Get role value (handle both enum and string)
+#             role = msg.role.value if hasattr(msg.role, "value") else msg.role
+
+#             # Skip system messages as they go in system_instruction
+#             if role == ConversationRole.SYSTEM.value or role == "system":
+#                 continue
+
+#             contents.append(
+#                 {
+#                     "role": role,
+#                     "parts": [{"text": msg.content}],
+#                 }
+#             )
+#         return contents
+
+#     def clear(self) -> None:
+#         """Clear all messages from memory."""
+#         self.messages = []
+
+#     def __len__(self) -> int:
+#         return len(self.messages)
 
 
 # =============================================================================

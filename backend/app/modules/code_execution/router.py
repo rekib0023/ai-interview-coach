@@ -8,7 +8,6 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_code_execution_service, get_current_user, get_db
-from app.modules.assessments.models import Assessment, AssessmentStatus
 from app.modules.users.models import User
 
 from .models import CodeLanguage
@@ -57,37 +56,11 @@ async def execute_code(
         f"Code execution request for assessment {assessment_id} by user {current_user.id}"
     )
 
-    # Verify assessment ownership and status
-    assessment = (
-        db.query(Assessment)
-        .filter(
-            Assessment.id == assessment_id,
-            Assessment.user_id == current_user.id,
-        )
-        .first()
+    # Validation delegated to service
+    code_service.validate_assessment_for_execution(
+        db, assessment_id=assessment_id, user_id=current_user.id
     )
-
-    if not assessment:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Assessment not found",
-        )
-
-    if assessment.status not in [
-        AssessmentStatus.IN_PROGRESS,
-        AssessmentStatus.CREATED,
-    ]:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Cannot execute code for assessment with status: {assessment.status.value}",
-        )
-
-    # Validate code length
-    if len(request.code) > 10000:  # 10KB limit
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Code exceeds maximum length of 10,000 characters",
-        )
+    code_service.validate_code_length(request.code)
 
     # Execute code and save submission via service
     try:
@@ -131,24 +104,14 @@ async def get_code_submissions(
     db: Session = Depends(get_db),
 ):
     """Get all code submissions for an assessment."""
-    # Verify assessment ownership
-    assessment = (
-        db.query(Assessment)
-        .filter(
-            Assessment.id == assessment_id,
-            Assessment.user_id == current_user.id,
-        )
-        .first()
+    # Validation delegated to service (will raise exception if not found)
+    code_service.validate_assessment_for_execution(
+        db, assessment_id=assessment_id, user_id=current_user.id
     )
-
-    if not assessment:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Assessment not found",
-        )
 
     submissions = code_service.get_submissions(db=db, assessment_id=assessment_id)
 
+    # Simple dict conversion (no complex business logic)
     return [
         {
             "id": s.id,

@@ -87,7 +87,7 @@ class FeedbackRunSummary(BaseModel):
     """Lightweight summary of feedback run."""
 
     id: int
-    session_id: int
+    assessment_id: int
     status: FeedbackStatus
     overall_score: Optional[int] = None
     created_at: datetime

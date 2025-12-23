@@ -14,7 +14,6 @@ from .schemas import (
     Practice,
     PracticeList,
     PracticeSubmitResponse,
-    PracticeSummary,
     PracticeWithHints,
 )
 from .service import PracticeService
@@ -52,19 +51,7 @@ async def list_practices(
         db=db, user_id=current_user.id, status=status_filter
     )
 
-    summaries = [
-        PracticeSummary(
-            id=d.id,
-            title=d.title,
-            practice_type=d.practice_type,
-            difficulty=d.difficulty,
-            status=d.status,
-            score=d.score,
-        )
-        for d in practices
-    ]
-
-    return PracticeList(practices=summaries, total=total)
+    return PracticeList(practices=practices, total=total)
 
 
 @router.get(
@@ -86,19 +73,7 @@ async def get_pending_practices(
         db=db, user_id=current_user.id, limit=limit
     )
 
-    summaries = [
-        PracticeSummary(
-            id=d.id,
-            title=d.title,
-            practice_type=d.practice_type,
-            difficulty=d.difficulty,
-            status=d.status,
-            score=d.score,
-        )
-        for d in practices
-    ]
-
-    return PracticeList(practices=summaries, total=len(practices))
+    return PracticeList(practices=practices, total=len(practices))
 
 
 @router.get(
@@ -120,14 +95,8 @@ async def get_practice(
         db=db, practice_id=practice_id, user_id=current_user.id
     )
 
-    if not db_practice:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Practice not found",
-        )
-
-    # Mark as delivered if not already
-    if not db_practice.is_delivered:
+    # Mark as delivered if not already (business logic)
+    if db_practice and not db_practice.is_delivered:
         db_practice = practice_service.deliver_practice(db=db, db_practice=db_practice)
 
     return db_practice
@@ -152,33 +121,7 @@ async def get_practice_with_hints(
         db=db, practice_id=practice_id, user_id=current_user.id
     )
 
-    if not db_practice:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Practice not found",
-        )
-
-    return PracticeWithHints(
-        id=db_practice.id,
-        feedback_run_id=db_practice.feedback_run_id,
-        user_id=db_practice.user_id,
-        title=db_practice.title,
-        prompt=db_practice.prompt,
-        practice_type=db_practice.practice_type,
-        difficulty=db_practice.difficulty,
-        target_weakness=db_practice.target_weakness,
-        target_skill=db_practice.target_skill,
-        hints=db_practice.hints,
-        status=db_practice.status,
-        is_delivered=db_practice.is_delivered,
-        delivered_at=db_practice.delivered_at,
-        user_response=db_practice.user_response,
-        score=db_practice.score,
-        sequence_order=db_practice.sequence_order,
-        created_at=db_practice.created_at,
-        started_at=db_practice.started_at,
-        completed_at=db_practice.completed_at,
-    )
+    return db_practice
 
 
 @router.post(
@@ -200,18 +143,7 @@ async def start_practice(
         db=db, practice_id=practice_id, user_id=current_user.id
     )
 
-    if not db_practice:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Practice not found",
-        )
-
-    if db_practice.status not in [PracticeStatus.PENDING]:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Cannot start practice with status: {db_practice.status}",
-        )
-
+    practice_service.validate_for_start(db_practice)
     db_practice = practice_service.start_practice(db=db, db_practice=db_practice)
 
     return db_practice
@@ -239,18 +171,7 @@ async def submit_practice_response(
         db=db, practice_id=practice_id, user_id=current_user.id
     )
 
-    if not db_practice:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Practice not found",
-        )
-
-    if db_practice.status in [PracticeStatus.COMPLETED, PracticeStatus.SKIPPED]:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Cannot submit response for practice with status: {db_practice.status}",
-        )
-
+    practice_service.validate_for_submit(db_practice)
     db_practice = practice_service.submit_practice_response(
         db=db, db_practice=db_practice, response=response_in
     )
@@ -278,18 +199,7 @@ async def complete_practice(
         db=db, practice_id=practice_id, user_id=current_user.id
     )
 
-    if not db_practice:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Practice not found",
-        )
-
-    if db_practice.status == PracticeStatus.COMPLETED:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Practice is already completed",
-        )
-
+    practice_service.validate_for_complete(db_practice)
     db_practice = practice_service.complete_practice(
         db=db, db_practice=db_practice, score=score
     )

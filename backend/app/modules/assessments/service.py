@@ -4,6 +4,7 @@ from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
+from app.modules.assessments.models import Assessment
 from app.shared.exceptions import BusinessLogicError, NotFoundError
 
 from .crud import assessment as assessment_crud
@@ -128,3 +129,24 @@ class AssessmentService:
         """Delete an assessment."""
         self.get_assessment(db=db, assessment_id=assessment_id, user_id=user_id)
         return self.crud.remove(db=db, id=assessment_id)
+
+    def update_assessment_status(
+        self,
+        db: Session,
+        *,
+        assessment_id: int,
+        user_id: int,
+        new_status: AssessmentStatus,
+    ) -> None:
+        """Update assessment status and commit to database."""
+        assessment = self.get_assessment(
+            db=db, assessment_id=assessment_id, user_id=user_id
+        )
+        assessment.status = new_status
+        db.commit()
+
+    def validate_assessment_status(
+        self, assessment: Assessment, allowed_statuses: List[AssessmentStatus]
+    ) -> bool:
+        """Check if assessment status is in allowed list."""
+        return assessment.status in allowed_statuses

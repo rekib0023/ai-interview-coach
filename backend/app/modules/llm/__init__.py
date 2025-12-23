@@ -1,9 +1,6 @@
 """LLM module exports."""
 
 from .schemas import (
-    ConversationMemory,
-    ConversationMessage,
-    ConversationRole,
     InterviewResponse,
     LLMResponse,
     ModelCapability,
@@ -19,10 +16,6 @@ __all__ = [
     # Response Types
     "LLMResponse",
     "StreamChunk",
-    # Conversation Memory
-    "ConversationMemory",
-    "ConversationMessage",
-    "ConversationRole",
     # Model Configuration
     "ModelCapability",
     "ModelConfig",
