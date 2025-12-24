@@ -221,7 +221,7 @@ class PracticeService:
         Raises:
             ValueError: If practice cannot be started
         """
-        from app.shared.exceptions import ValidationError
+        from app.core.exceptions import ValidationError
 
         if db_practice.status not in [PracticeStatus.PENDING]:
             raise ValidationError(
@@ -238,7 +238,7 @@ class PracticeService:
         Raises:
             ValueError: If practice cannot accept submissions
         """
-        from app.shared.exceptions import ValidationError
+        from app.core.exceptions import ValidationError
 
         if db_practice.status in [PracticeStatus.COMPLETED, PracticeStatus.SKIPPED]:
             raise ValidationError(
@@ -255,7 +255,7 @@ class PracticeService:
         Raises:
             ValueError: If practice is already completed
         """
-        from app.shared.exceptions import ValidationError
+        from app.core.exceptions import ValidationError
 
         if db_practice.status == PracticeStatus.COMPLETED:
             raise ValidationError("Practice is already completed")

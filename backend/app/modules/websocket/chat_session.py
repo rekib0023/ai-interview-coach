@@ -17,15 +17,15 @@ from app.core.dependencies import (
     get_db_session,
     get_user_service,
 )
+from app.core.exceptions import (
+    AssessmentAccessError,
+    AuthenticationError,
+)
 from app.core.security import verify_token
 from app.core.websocket import manager
 from app.modules.assessments.models import Assessment, AssessmentStatus
 from app.modules.websocket.models import ChatSender, MessageType
 from app.modules.websocket.service import message_service
-from app.shared.exceptions import (
-    AssessmentAccessError,
-    AuthenticationError,
-)
 
 logger = logging.getLogger(__name__)
 

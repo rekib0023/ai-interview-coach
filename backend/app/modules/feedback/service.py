@@ -5,11 +5,11 @@ from typing import Any, Optional
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_llm_service
+from app.core.exceptions import BusinessLogicError, NotFoundError
 from app.modules.assessments.crud import assessment as assessment_crud
 from app.modules.feedback.models import FeedbackRun, FeedbackStatus
 from app.modules.feedback.schemas import FeedbackRunCreate
 from app.modules.llm.prompts import FeedbackPrompts, generate_prompt_id
-from app.shared.exceptions import BusinessLogicError, NotFoundError
 
 from . import crud
 

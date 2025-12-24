@@ -95,9 +95,9 @@ class CodeExecutionService:
             NotFoundError: If assessment not found
             ValidationError: If assessment status doesn't allow code execution
         """
+        from app.core.exceptions import NotFoundError, ValidationError
         from app.modules.assessments.crud import assessment as assessment_crud
         from app.modules.assessments.models import AssessmentStatus
-        from app.shared.exceptions import NotFoundError, ValidationError
 
         assessment = assessment_crud.get_by_user(db, user_id=user_id, id=assessment_id)
 

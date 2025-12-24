@@ -1,12 +1,12 @@
-"""Interview session model for storing interview history."""
+"""Assessment model for storing interview session data."""
 
-from datetime import datetime
 from enum import Enum as PyEnum
 
 from sqlalchemy import JSON, Column, DateTime, Enum, ForeignKey, Integer, String, Text
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
-from app.shared.base_model import Base
+from app.shared.base_model import Base, TimestampMixin, UUIDMixin
 
 
 class DifficultyLevel(str, PyEnum):
@@ -27,61 +27,58 @@ class AssessmentStatus(str, PyEnum):
     CANCELLED = "cancelled"
 
 
-class Assessment(Base):
+class Assessment(UUIDMixin, TimestampMixin, Base):
     """Model for storing assessment (interview) session data."""
 
-    __tablename__ = "assessment"
+    __tablename__ = "assessments"
 
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("user.id"), nullable=False, index=True)
+    user_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    # Interview setup
     topic = Column(String(255), nullable=False)
+    role = Column(String(100), nullable=True)
     difficulty = Column(
         Enum(DifficultyLevel), nullable=False, default=DifficultyLevel.MEDIUM
     )
-    score = Column(Integer, nullable=True)  # 0-100
-    duration_minutes = Column(Integer, nullable=True)
+    skill_targets = Column(JSON, nullable=True)
 
-    # Session status
+    # Interview content
+    question = Column(Text, nullable=True)
+    question_context = Column(Text, nullable=True)
+
+    # User response
+    response_text = Column(Text, nullable=True)
+    response_audio_url = Column(String(500), nullable=True)
+    transcript = Column(Text, nullable=True)
+    transcript_status = Column(String(50), nullable=True)
+
+    # Status & scoring
     status = Column(
         Enum(AssessmentStatus, values_callable=lambda x: [e.value for e in x]),
         default=AssessmentStatus.CREATED,
         nullable=False,
     )
-
-    # Role and skill targeting
-    role = Column(
-        String(100), nullable=True
-    )  # e.g., "Software Engineer", "Data Scientist"
-    skill_targets = Column(JSON, nullable=True)  # List of skill areas being tested
-
-    # Interview content
-    question = Column(Text, nullable=True)  # The interview question
-    question_context = Column(
-        Text, nullable=True
-    )  # Additional context for the question
-
-    # User responses
-    response_audio_url = Column(
-        String(500), nullable=True
-    )  # URL to audio file if audio response
-    response_text = Column(Text, nullable=True)  # Text response or transcript
-    transcript = Column(
-        Text, nullable=True
-    )  # Full transcript (if transcribed from audio)
-    transcript_status = Column(String(50), nullable=True)  # pending, completed, failed
+    score = Column(Integer, nullable=True)
+    duration_minutes = Column(Integer, nullable=True)
 
     # Metadata
-    session_metadata = Column(JSON, nullable=True)  # Additional session metadata
-
-    # Timestamps
-    started_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    session_metadata = Column(JSON, nullable=True)
+    started_at = Column(DateTime, nullable=True)
     completed_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
-    )
 
-    # Relationships
     # Relationships
     user = relationship("User", backref="assessments")
-    feedback_runs = relationship("FeedbackRun", back_populates="assessment")
+    feedback_runs = relationship(
+        "FeedbackRun", back_populates="assessment", cascade="all, delete-orphan"
+    )
+    code_submissions = relationship(
+        "CodeSubmission", back_populates="assessment", cascade="all, delete-orphan"
+    )
+    messages = relationship(
+        "Message", back_populates="assessment", cascade="all, delete-orphan"
+    )

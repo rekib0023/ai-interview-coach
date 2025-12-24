@@ -5,9 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.core.config import settings
-from app.core.exception_handlers import exception_handler
+from app.core.exceptions import setup_exception_handlers
 from app.modules.router import api_router
-from app.shared.exceptions import AppException
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -30,7 +29,7 @@ app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 # Register exception handlers
-app.add_exception_handler(AppException, exception_handler)
+setup_exception_handlers(app)
 
 
 @app.get("/")

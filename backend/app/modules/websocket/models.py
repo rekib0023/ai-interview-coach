@@ -1,24 +1,39 @@
+"""WebSocket models for chat functionality."""
+
 import enum
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, String
+from sqlalchemy import Column, DateTime, Enum, ForeignKey, Text
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 
-from app.shared.base_model import Base
+from app.shared.base_model import Base, UUIDMixin
 
 
 class ChatSender(str, enum.Enum):
+    """Chat message sender types."""
+
     USER = "user"
     AI = "ai"
 
 
-class Message(Base):
+class Message(UUIDMixin, Base):
+    """Model for storing chat messages."""
+
     __tablename__ = "messages"
 
-    id = Column(Integer, primary_key=True, index=True)
-    assessment_id = Column(Integer, ForeignKey("assessment.id"))
-    sender = Column(Enum(ChatSender))
-    content = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    assessment_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("assessments.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    sender = Column(Enum(ChatSender), nullable=False)
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    # Relationships
+    assessment = relationship("Assessment", back_populates="messages")
 
 
 class MessageType(str, enum.Enum):

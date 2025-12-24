@@ -4,8 +4,8 @@ from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
+from app.core.exceptions import BusinessLogicError, NotFoundError
 from app.modules.assessments.models import Assessment
-from app.shared.exceptions import BusinessLogicError, NotFoundError
 
 from .crud import assessment as assessment_crud
 from .models import AssessmentStatus

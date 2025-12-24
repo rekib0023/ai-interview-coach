@@ -4,8 +4,8 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
+from app.core.exceptions import NotFoundError, ValidationError
 from app.core.security import get_password_hash, verify_password
-from app.shared.exceptions import NotFoundError, ValidationError
 
 from .crud import user as user_crud
 from .schemas import UserCreate, UserUpdate

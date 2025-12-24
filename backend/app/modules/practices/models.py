@@ -1,9 +1,10 @@
-"""Drill models for follow-up practice exercises."""
+"""Practice models for follow-up practice exercises."""
 
 from datetime import datetime
 from enum import Enum as PyEnum
 
 from sqlalchemy import (
+    JSON,
     Boolean,
     Column,
     DateTime,
@@ -13,9 +14,10 @@ from sqlalchemy import (
     String,
     Text,
 )
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
-from app.shared.base_model import Base
+from app.shared.base_model import Base, UUIDMixin
 
 
 class PracticeDifficulty(str, PyEnum):
@@ -44,18 +46,25 @@ class PracticeType(str, PyEnum):
     MOCK_SCENARIO = "mock_scenario"
 
 
-class Practice(Base):
+class Practice(UUIDMixin, Base):
     """Model for follow-up practice exercises."""
 
-    __tablename__ = "practice"
+    __tablename__ = "practices"
 
-    id = Column(Integer, primary_key=True, index=True)
     feedback_run_id = Column(
-        Integer, ForeignKey("feedback_run.id"), nullable=False, index=True
+        UUID(as_uuid=True),
+        ForeignKey("feedback_runs.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
-    user_id = Column(Integer, ForeignKey("user.id"), nullable=False, index=True)
+    user_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
 
-    # Drill content
+    # Practice content
     title = Column(String(255), nullable=False)
     prompt = Column(Text, nullable=False)
     practice_type = Column(
@@ -69,13 +78,13 @@ class Practice(Base):
         nullable=False,
     )
 
-    # Target weakness/skill this drill addresses
+    # Target weakness/skill this practice addresses
     target_weakness = Column(String(255), nullable=True)
     target_skill = Column(String(255), nullable=True)
 
     # Expected answer/solution (for reference, not shown to user)
     expected_answer = Column(Text, nullable=True)
-    hints = Column(Text, nullable=True)  # JSON array of hints
+    hints = Column(JSON, nullable=True)  # JSON array of hints
 
     # Status tracking
     status = Column(
@@ -88,9 +97,9 @@ class Practice(Base):
 
     # User response tracking
     user_response = Column(Text, nullable=True)
-    score = Column(Integer, nullable=True)  # 0-100
+    score = Column(Integer, nullable=True)
 
-    # Ordering for multi-drill sequences
+    # Ordering for multi-practice sequences
     sequence_order = Column(Integer, default=0, nullable=False)
 
     # Timestamps
