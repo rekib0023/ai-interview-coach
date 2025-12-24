@@ -1,24 +1,49 @@
+"use client";
+
+import { CTA } from "@/components/landing/cta";
+import { Features } from "@/components/landing/features";
+import { Footer } from "@/components/landing/footer";
 import { Header } from "@/components/landing/header";
 import { Hero } from "@/components/landing/hero";
-import { Stats } from "@/components/landing/stats";
-import { Features } from "@/components/landing/features";
 import { HowItWorks } from "@/components/landing/how-it-works";
 import { Pricing } from "@/components/landing/pricing";
-import { CTA } from "@/components/landing/cta";
-import { Footer } from "@/components/landing/footer";
+import { Stats } from "@/components/landing/stats";
+import { Testimonials } from "@/components/landing/testimonials";
+import { TrustedBy } from "@/components/landing/trusted-by";
 
 export default function Home() {
   return (
-    <div className="min-h-screen scroll-smooth">
+    <div className="min-h-screen w-full overflow-x-hidden bg-background relative">
+      {/* Fixed Header */}
       <Header />
-      <main>
+
+      <main className="relative">
+        {/* Hero Section */}
         <Hero />
+
+        {/* Trusted By / Logos Marquee */}
+        <TrustedBy />
+
+        {/* Stats Section */}
         <Stats />
+
+        {/* Features Section */}
         <Features />
+
+        {/* How It Works */}
         <HowItWorks />
+
+        {/* Testimonials Section */}
+        <Testimonials />
+
+        {/* Pricing Section */}
         <Pricing />
+
+        {/* CTA Section */}
         <CTA />
       </main>
+
+      {/* Footer */}
       <Footer />
     </div>
   );

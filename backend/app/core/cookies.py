@@ -18,7 +18,7 @@ def set_auth_cookie(response: Response, token: str, max_age: int) -> None:
         value=token,
         httponly=True,
         secure=SECURE_AUTH_COOKIE,
-        samesite="strict",
+        samesite="lax",
         max_age=max_age,
     )
 
@@ -30,6 +30,6 @@ def clear_auth_cookie(response: Response) -> None:
         value="",
         httponly=True,
         secure=SECURE_AUTH_COOKIE,
-        samesite="strict",
+        samesite="lax",
         max_age=0,
     )

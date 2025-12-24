@@ -43,3 +43,18 @@ def create_access_token(
         to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
     )
     return encoded_jwt
+
+
+def verify_token(token: str) -> str | None:
+    """
+    Verify a JWT access token and return the subject (user_id).
+    Returns None if token is invalid or expired.
+    """
+    try:
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
+        user_id: str = payload.get("sub")
+        return user_id
+    except jwt.JWTError:
+        return None

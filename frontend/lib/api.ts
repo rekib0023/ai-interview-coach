@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 interface LoginRequest {
     username: string; // FastAPI OAuth2PasswordRequestForm expects 'username' field
@@ -102,4 +102,5 @@ export const authApi = {
 };
 
 export { ApiError };
-export type { User, AuthResponse, LoginRequest, SignupRequest };
+export type { AuthResponse, LoginRequest, SignupRequest, User };
+

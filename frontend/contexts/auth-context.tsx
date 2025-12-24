@@ -1,8 +1,8 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { authApi, type User } from "@/lib/api";
+import { useRouter } from "next/navigation";
+import { createContext, useContext, useEffect, useState } from "react";
 
 interface AuthContextType {
   user: User | null;
@@ -28,8 +28,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(userData);
       })
       .catch((error) => {
-        // Most likely unauthenticated; log for debugging but don't block UI
-        console.error("Failed to fetch user data:", error);
+        // Token expired or invalid - log out the user
+        console.error("Authentication failed:", error);
+        setUser(null);
+        // Redirect to login if we're not already there
+        if (
+          typeof window !== "undefined" &&
+          window.location.pathname !== "/signin"
+        ) {
+          router.push("/signin?message=session_expired");
+        }
       })
       .finally(() => {
         setIsLoading(false);
