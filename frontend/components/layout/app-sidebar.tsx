@@ -1,16 +1,6 @@
 "use client";
 
 import { NavMain } from "@/components/layout/nav-main";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import {
   Sidebar,
   SidebarContent,
@@ -24,8 +14,10 @@ import {
   BookOpen,
   Clock,
   Command,
+  Dumbbell,
   LayoutDashboard,
   Settings2,
+  Target,
 } from "lucide-react";
 import * as React from "react";
 import { UpgradeCard } from "./upgrade-card";
@@ -41,7 +33,16 @@ const data = {
       title: "Dashboard",
       url: "/dashboard",
       icon: LayoutDashboard,
-      isActive: true,
+    },
+    {
+      title: "Assessment",
+      url: "/assessment",
+      icon: Target,
+    },
+    {
+      title: "Practice",
+      url: "/practice",
+      icon: Dumbbell,
     },
     {
       title: "History",
@@ -68,12 +69,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="#">
-                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+              <a href="/dashboard">
+                <div className="bg-gradient-to-br from-primary to-blue-600 text-white flex aspect-square size-8 items-center justify-center rounded-lg shadow-md shadow-primary/20">
                   <Command className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">MockMind</span>
+                  <span className="truncate font-semibold">
+                    AI Interview Coach
+                  </span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    Pro Plan
+                  </span>
                 </div>
               </a>
             </SidebarMenuButton>

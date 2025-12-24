@@ -25,7 +25,7 @@ export interface QuickStatsResponse {
     stats: StatItem[];
 }
 
-export interface InterviewSession {
+export interface Assessment {
     id: number;
     topic: string;
     date: string;
@@ -35,8 +35,8 @@ export interface InterviewSession {
     trend: Trend;
 }
 
-export interface RecentSessionsResponse {
-    sessions: InterviewSession[];
+export interface RecentAssessmentsResponse {
+    assessments: Assessment[];
     total_count: number;
 }
 
@@ -124,11 +124,11 @@ export const dashboardApi = {
     },
 
     /**
-     * Get recent interview sessions.
+     * Get recent assessments.
      */
-    async getRecentSessions(limit = 5): Promise<RecentSessionsResponse> {
-        return dashboardRequest<RecentSessionsResponse>(
-            `/recent-sessions?limit=${limit}`
+    async getRecentAssessments(limit = 5): Promise<RecentAssessmentsResponse> {
+        return dashboardRequest<RecentAssessmentsResponse>(
+            `/recent-assessments?limit=${limit}`
         );
     },
 

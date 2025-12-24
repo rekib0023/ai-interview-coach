@@ -3,7 +3,7 @@
 import {
     dashboardApi,
     type GoalsResponse,
-    type RecentSessionsResponse,
+    type RecentAssessmentsResponse,
     type SkillsResponse,
 } from "@/lib/dashboard-api";
 import { useCallback, useEffect, useState } from "react";
@@ -13,7 +13,7 @@ import { useCallback, useEffect, useState } from "react";
 // ============================================================================
 
 interface DashboardData {
-    sessions: RecentSessionsResponse | null;
+    assessments: RecentAssessmentsResponse | null;
     skills: SkillsResponse | null;
     goals: GoalsResponse | null;
 }
@@ -31,11 +31,11 @@ interface UseDashboardDataReturn {
 
 /**
  * Custom hook for fetching all dashboard data.
- * Fetches sessions, skills, and goals in parallel.
+ * Fetches assessments, skills, and goals in parallel.
  */
 export function useDashboardData(enabled: boolean = true): UseDashboardDataReturn {
     const [data, setData] = useState<DashboardData>({
-        sessions: null,
+        assessments: null,
         skills: null,
         goals: null,
     });
@@ -48,13 +48,13 @@ export function useDashboardData(enabled: boolean = true): UseDashboardDataRetur
             setError(null);
 
             // Fetch all data in parallel
-            const [sessions, skills, goals] = await Promise.all([
-                dashboardApi.getRecentSessions(),
+            const [assessments, skills, goals] = await Promise.all([
+                dashboardApi.getRecentAssessments(),
                 dashboardApi.getSkills(),
                 dashboardApi.getGoals(),
             ]);
 
-            setData({ sessions, skills, goals });
+            setData({ assessments, skills, goals });
         } catch (err) {
             console.error("Failed to fetch dashboard data:", err);
             setError("Failed to load dashboard data. Please try again.");
@@ -91,10 +91,10 @@ export function useGreeting(): string {
 // ============================================================================
 
 /**
- * Transforms API session data to component props format.
+ * Transforms API assessment data to component props format.
  */
-export function transformSessions(sessions: RecentSessionsResponse | null) {
-    return sessions?.sessions.map((s) => ({
+export function transformAssessments(response: RecentAssessmentsResponse | null) {
+    return response?.assessments.map((s) => ({
         id: s.id,
         topic: s.topic,
         date: s.date,

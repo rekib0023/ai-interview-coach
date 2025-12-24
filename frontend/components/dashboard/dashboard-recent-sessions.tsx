@@ -1,3 +1,5 @@
+"use client";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +19,7 @@ import {
   Eye,
   Minus,
   MoreVertical,
+  Play,
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
@@ -41,26 +44,32 @@ interface DashboardRecentSessionsSectionProps {
 
 const difficultyConfig = {
   Easy: {
-    badge:
-      "bg-chart-2/10 text-chart-2 border-chart-2/30 dark:bg-chart-2/20 dark:text-chart-2 dark:border-chart-2/40",
-    dot: "bg-chart-2",
+    badge: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+    dot: "bg-emerald-500",
+    glow: "shadow-emerald-500/20",
   },
   Medium: {
-    badge:
-      "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800",
+    badge: "bg-amber-500/20 text-amber-400 border-amber-500/30",
     dot: "bg-amber-500",
+    glow: "shadow-amber-500/20",
   },
   Hard: {
-    badge:
-      "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800",
+    badge: "bg-rose-500/20 text-rose-400 border-rose-500/30",
     dot: "bg-rose-500",
+    glow: "shadow-rose-500/20",
   },
 };
 
 function getScoreColor(score: number) {
-  if (score >= 85) return "text-chart-2";
-  if (score >= 70) return "text-amber-600 dark:text-amber-400";
-  return "text-rose-600 dark:text-rose-400";
+  if (score >= 85) return "text-emerald-400";
+  if (score >= 70) return "text-amber-400";
+  return "text-rose-400";
+}
+
+function getScoreGlow(score: number) {
+  if (score >= 85) return "shadow-emerald-500/30";
+  if (score >= 70) return "shadow-amber-500/30";
+  return "shadow-rose-500/30";
 }
 
 export function DashboardRecentSessionsSection({
@@ -71,11 +80,12 @@ export function DashboardRecentSessionsSection({
     <DashboardCard
       title="Recent Sessions"
       description="Review your latest interview performance"
+      icon={<BarChart3 className="h-5 w-5 text-primary" />}
       action={
         <Button
           variant="ghost"
           size="sm"
-          className="gap-1 text-muted-foreground hover:text-foreground h-8"
+          className="gap-1.5 text-muted-foreground hover:text-foreground h-8 hover:bg-white/5"
           onClick={onViewAll}
         >
           <span className="text-sm">View All</span>
@@ -83,14 +93,15 @@ export function DashboardRecentSessionsSection({
         </Button>
       }
       className="col-span-full"
+      gradient="primary"
     >
       {interviews.length === 0 ? (
         <EmptyState />
       ) : (
         <div className="space-y-4">
           {/* Desktop View */}
-          <div className="hidden md:block rounded-md border border-border/50 overflow-hidden">
-            <div className="bg-muted/40 px-6 py-3 border-b border-border/50">
+          <div className="hidden md:block rounded-xl border border-white/10 overflow-hidden bg-white/5">
+            <div className="bg-white/5 px-6 py-3 border-b border-white/5">
               <div className="grid grid-cols-12 gap-4 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 <div className="col-span-5">Topic</div>
                 <div className="col-span-3">Date & Time</div>
@@ -98,14 +109,16 @@ export function DashboardRecentSessionsSection({
                 <div className="col-span-2 text-right">Score</div>
               </div>
             </div>
-            <div className="divide-y divide-border/50 bg-card">
+            <div className="divide-y divide-white/5">
               {interviews.map((interview, index) => (
-                <motion.div key={interview.id} variants={itemVariants}>
-                  <DesktopSessionRow
-                    interview={interview}
-                    index={index}
-                    totalRows={interviews.length}
-                  />
+                <motion.div
+                  key={interview.id}
+                  variants={itemVariants}
+                  initial="hidden"
+                  animate="visible"
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <DesktopSessionRow interview={interview} />
                 </motion.div>
               ))}
             </div>
@@ -114,7 +127,13 @@ export function DashboardRecentSessionsSection({
           {/* Mobile View */}
           <div className="md:hidden space-y-3">
             {interviews.map((interview, index) => (
-              <motion.div key={interview.id} variants={itemVariants}>
+              <motion.div
+                key={interview.id}
+                variants={itemVariants}
+                initial="hidden"
+                animate="visible"
+                transition={{ delay: index * 0.05 }}
+              >
                 <MobileSessionCard interview={interview} />
               </motion.div>
             ))}
@@ -125,22 +144,17 @@ export function DashboardRecentSessionsSection({
   );
 }
 
-function DesktopSessionRow({
-  interview,
-}: {
-  interview: Interview;
-  index: number;
-  totalRows: number;
-}) {
+function DesktopSessionRow({ interview }: { interview: Interview }) {
   return (
-    <div className="group hover:bg-muted/30 transition-colors">
+    <div className="group hover:bg-white/5 transition-colors">
       <div className="grid grid-cols-12 gap-4 items-center px-6 py-4">
         {/* Topic */}
         <div className="col-span-5 flex items-center gap-3 min-w-0">
           <span
             className={cn(
-              "h-2 w-2 rounded-full flex-shrink-0 ring-4 ring-background",
-              difficultyConfig[interview.difficulty].dot
+              "h-2.5 w-2.5 rounded-full flex-shrink-0 ring-4 ring-background shadow-lg",
+              difficultyConfig[interview.difficulty].dot,
+              difficultyConfig[interview.difficulty].glow
             )}
           />
           <div className="min-w-0">
@@ -176,62 +190,31 @@ function DesktopSessionRow({
 
         {/* Score & Actions */}
         <div className="col-span-2 flex items-center justify-end gap-3">
-          <div className="flex flex-col items-end">
-            <div className="flex items-center gap-1.5">
-              <span
-                className={cn(
-                  "text-sm font-bold tabular-nums",
-                  getScoreColor(interview.score)
-                )}
-              >
-                {interview.score}%
-              </span>
-              {interview.trend && (
-                <span>
-                  {interview.trend === "up" && (
-                    <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
-                  )}
-                  {interview.trend === "down" && (
-                    <TrendingDown className="h-3.5 w-3.5 text-rose-500" />
-                  )}
-                  {interview.trend === "same" && (
-                    <Minus className="h-3.5 w-3.5 text-muted-foreground" />
-                  )}
-                </span>
+          <div className="flex items-center gap-2">
+            <span
+              className={cn(
+                "text-sm font-bold tabular-nums px-2 py-0.5 rounded-md bg-white/5",
+                getScoreColor(interview.score)
               )}
-            </div>
+            >
+              {interview.score}%
+            </span>
+            {interview.trend && (
+              <span>
+                {interview.trend === "up" && (
+                  <TrendingUp className="h-4 w-4 text-emerald-400" />
+                )}
+                {interview.trend === "down" && (
+                  <TrendingDown className="h-4 w-4 text-rose-400" />
+                )}
+                {interview.trend === "same" && (
+                  <Minus className="h-4 w-4 text-muted-foreground" />
+                )}
+              </span>
+            )}
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-foreground"
-              >
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link href={`/dashboard/sessions/${interview.id}`}>
-                  <Eye className="mr-2 h-4 w-4" />
-                  View Details
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href={`/dashboard/analytics/${interview.id}`}>
-                  <BarChart3 className="mr-2 h-4 w-4" />
-                  View Analytics
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Download className="mr-2 h-4 w-4" />
-                Export Session
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <SessionActionsMenu interviewId={interview.id} />
         </div>
       </div>
     </div>
@@ -240,48 +223,20 @@ function DesktopSessionRow({
 
 function MobileSessionCard({ interview }: { interview: Interview }) {
   return (
-    <div className="rounded-lg border border-border/50 bg-card p-4 hover:border-border transition-colors">
+    <div className="rounded-xl border border-white/10 bg-white/5 p-4 hover:border-white/20 hover:bg-white/10 transition-all">
       <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-2 flex-1 min-w-0">
+        <div className="flex items-center gap-2.5 flex-1 min-w-0">
           <span
             className={cn(
-              "h-2 w-2 rounded-full flex-shrink-0",
-              difficultyConfig[interview.difficulty].dot
+              "h-2.5 w-2.5 rounded-full flex-shrink-0 shadow-lg",
+              difficultyConfig[interview.difficulty].dot,
+              difficultyConfig[interview.difficulty].glow
             )}
           />
           <h3 className="font-medium text-sm truncate">{interview.topic}</h3>
         </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 -mr-2 text-muted-foreground"
-            >
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <Link href={`/dashboard/sessions/${interview.id}`}>
-                <Eye className="mr-2 h-4 w-4" />
-                View Details
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href={`/dashboard/analytics/${interview.id}`}>
-                <BarChart3 className="mr-2 h-4 w-4" />
-                View Analytics
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <Download className="mr-2 h-4 w-4" />
-              Export Session
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <SessionActionsMenu interviewId={interview.id} />
       </div>
 
       <div className="flex items-center gap-3 text-xs text-muted-foreground mb-3">
@@ -312,10 +267,10 @@ function MobileSessionCard({ interview }: { interview: Interview }) {
           {interview.trend && (
             <>
               {interview.trend === "up" && (
-                <TrendingUp className="h-4 w-4 text-emerald-500" />
+                <TrendingUp className="h-4 w-4 text-emerald-400" />
               )}
               {interview.trend === "down" && (
-                <TrendingDown className="h-4 w-4 text-rose-500" />
+                <TrendingDown className="h-4 w-4 text-rose-400" />
               )}
               {interview.trend === "same" && (
                 <Minus className="h-4 w-4 text-muted-foreground" />
@@ -324,7 +279,7 @@ function MobileSessionCard({ interview }: { interview: Interview }) {
           )}
           <span
             className={cn(
-              "text-sm font-bold tabular-nums",
+              "text-sm font-bold tabular-nums px-2 py-0.5 rounded-md bg-white/5",
               getScoreColor(interview.score)
             )}
           >
@@ -336,17 +291,58 @@ function MobileSessionCard({ interview }: { interview: Interview }) {
   );
 }
 
+function SessionActionsMenu({ interviewId }: { interviewId: number }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-white/10"
+        >
+          <MoreVertical className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        className="border-white/10 bg-card/95 backdrop-blur-xl"
+      >
+        <DropdownMenuItem asChild>
+          <Link href={`/dashboard/sessions/${interviewId}`}>
+            <Eye className="mr-2 h-4 w-4" />
+            View Details
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href={`/dashboard/analytics/${interviewId}`}>
+            <BarChart3 className="mr-2 h-4 w-4" />
+            View Analytics
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator className="bg-white/10" />
+        <DropdownMenuItem>
+          <Download className="mr-2 h-4 w-4" />
+          Export Session
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center py-12 px-4 text-center border-dashed border-2 rounded-lg bg-muted/10">
-      <div className="rounded-full bg-muted p-4 mb-4">
-        <BarChart3 className="h-8 w-8 text-muted-foreground" />
+    <div className="flex flex-col items-center justify-center py-16 px-4 text-center rounded-xl border-2 border-dashed border-white/10 bg-white/5">
+      <div className="rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 p-4 mb-4">
+        <Play className="h-8 w-8 text-primary" />
       </div>
       <h3 className="text-base font-semibold mb-1">No sessions yet</h3>
       <p className="text-sm text-muted-foreground mb-4 max-w-xs mx-auto">
         Start your first interview to see your progress here
       </p>
-      <Button variant="outline">Start Interview</Button>
+      <Button className="gap-2 bg-gradient-to-r from-primary to-accent hover:opacity-90 shadow-lg shadow-primary/25">
+        <Play className="h-4 w-4" />
+        Start Interview
+      </Button>
     </div>
   );
 }

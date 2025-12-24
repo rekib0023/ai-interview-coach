@@ -19,9 +19,9 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Code2 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 
-export default function SignInPage() {
+function SignInContent() {
   const searchParams = useSearchParams();
   const urlError = searchParams.get("error");
   const oauthProvider = searchParams.get("provider");
@@ -251,5 +251,13 @@ export default function SignInPage() {
         </p>
       </motion.div>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense>
+      <SignInContent />
+    </Suspense>
   );
 }

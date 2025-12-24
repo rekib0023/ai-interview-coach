@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Card,
   CardContent,
@@ -19,7 +21,7 @@ interface DashboardCardProps {
   contentClassName?: string;
   containerClassName?: string;
   icon?: ReactNode;
-  gradient?: "primary" | "accent" | "secondary" | "none";
+  gradient?: "primary" | "accent" | "secondary" | "purple" | "none";
 }
 
 export function DashboardCard({
@@ -35,11 +37,12 @@ export function DashboardCard({
 }: DashboardCardProps) {
   const showHeader = title || description || action || icon;
 
-  // Gradient border styles
-  const gradientClasses = {
-    primary: "before:from-primary/20 before:to-accent/20",
-    accent: "before:from-accent/20 before:to-primary/20",
-    secondary: "before:from-secondary/20 before:to-accent/20",
+  // Gradient glow colors
+  const gradientGlowClasses = {
+    primary: "group-hover:shadow-primary/20",
+    accent: "group-hover:shadow-accent/20",
+    secondary: "group-hover:shadow-secondary/20",
+    purple: "group-hover:shadow-purple-500/20",
     none: "",
   };
 
@@ -48,32 +51,37 @@ export function DashboardCard({
       variants={cardVariants}
       initial="hidden"
       animate="visible"
-      className={containerClassName}
+      className={cn("group", containerClassName)}
     >
       <Card
         className={cn(
-          "relative overflow-hidden border-border shadow-sm transition-all duration-300",
-          "dark:border-border/80",
-          "hover:shadow-lg hover:border-primary/20 dark:hover:border-primary/30",
-          gradient !== "none" && [
-            "before:absolute before:inset-0 before:rounded-xl before:p-[1px]",
-            "before:bg-gradient-to-br before:opacity-0 before:transition-opacity before:duration-300",
-            "hover:before:opacity-100",
-            gradientClasses[gradient],
-          ],
+          "relative overflow-hidden",
+          "border-white/10 bg-card/50 backdrop-blur-md",
+          "transition-all duration-500",
+          "hover:border-white/20 hover:bg-card/70",
+          "hover:shadow-xl",
+          gradient !== "none" && gradientGlowClasses[gradient],
           className
         )}
       >
+        {/* Gradient background on hover */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+        {/* Glow effect */}
+        <div className="absolute -top-32 -right-32 w-64 h-64 bg-primary/10 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
         {showHeader && (
-          <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+          <CardHeader className="relative z-10 flex flex-row items-start justify-between space-y-0 pb-2">
             <div className="space-y-1">
-              <CardTitle className="text-lg font-semibold flex items-center gap-2">
+              <CardTitle className="text-lg font-semibold flex items-center gap-2.5">
                 {icon && (
-                  <span className="flex items-center justify-center p-1.5 rounded-lg bg-muted/80 border border-border/50">
+                  <span className="flex items-center justify-center p-2 rounded-xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 shadow-inner">
                     {icon}
                   </span>
                 )}
-                {title}
+                <span className="bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+                  {title}
+                </span>
               </CardTitle>
               {description && (
                 <CardDescription className="text-xs text-muted-foreground">
@@ -84,7 +92,7 @@ export function DashboardCard({
             {action && <div className="shrink-0">{action}</div>}
           </CardHeader>
         )}
-        <CardContent className={cn("pt-4", contentClassName)}>
+        <CardContent className={cn("relative z-10 pt-4", contentClassName)}>
           {children}
         </CardContent>
       </Card>

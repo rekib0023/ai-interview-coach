@@ -1,3 +1,5 @@
+"use client";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -31,15 +33,13 @@ export function DashboardSkillsSection({
       <DashboardCard
         title="Areas to Improve"
         description="Focus on these for maximum growth"
-        icon={
-          <TrendingUp className="h-5 w-5 text-orange-500 dark:text-orange-400" />
-        }
+        icon={<TrendingUp className="h-5 w-5 text-orange-400" />}
         action={
           onViewAll && (
             <Button
               variant="ghost"
               size="sm"
-              className="gap-1 text-muted-foreground hover:text-foreground h-8"
+              className="gap-1.5 text-muted-foreground hover:text-foreground h-8 hover:bg-white/5"
               onClick={() => onViewAll("improve")}
             >
               <span className="text-sm">View All</span>
@@ -50,13 +50,14 @@ export function DashboardSkillsSection({
         containerClassName="h-full"
         className="h-full flex flex-col"
         contentClassName="flex-1"
+        gradient="accent"
       >
-        <div className="space-y-5">
+        <div className="space-y-4">
           {areasToImprove.map((skill, index) => (
             <SkillItem
               key={skill.name}
               skill={skill}
-              progressColor="bg-accent"
+              progressGradient="from-orange-500 to-amber-500"
               index={index}
               onClick={(name) => onSkillClick?.(name, "improve")}
             />
@@ -68,15 +69,13 @@ export function DashboardSkillsSection({
       <DashboardCard
         title="Your Strengths"
         description="Keep practicing to maintain excellence"
-        icon={
-          <BarChart3 className="h-5 w-5 text-blue-500 dark:text-blue-400" />
-        }
+        icon={<BarChart3 className="h-5 w-5 text-blue-400" />}
         action={
           onViewAll && (
             <Button
               variant="ghost"
               size="sm"
-              className="gap-1 text-muted-foreground hover:text-foreground h-8"
+              className="gap-1.5 text-muted-foreground hover:text-foreground h-8 hover:bg-white/5"
               onClick={() => onViewAll("strengths")}
             >
               <span className="text-sm">View All</span>
@@ -87,13 +86,14 @@ export function DashboardSkillsSection({
         containerClassName="h-full"
         className="h-full flex flex-col"
         contentClassName="flex-1"
+        gradient="primary"
       >
-        <div className="space-y-5">
+        <div className="space-y-4">
           {strengths.map((skill, index) => (
             <SkillItem
               key={skill.name}
               skill={skill}
-              progressColor="bg-primary"
+              progressGradient="from-blue-500 to-cyan-500"
               index={index}
               onClick={(name) => onSkillClick?.(name, "strengths")}
             />
@@ -107,12 +107,17 @@ export function DashboardSkillsSection({
 // Skill Item Component
 interface SkillItemProps {
   skill: SkillMetric;
-  progressColor: string;
+  progressGradient: string;
   onClick?: (skillName: string) => void;
   index: number;
 }
 
-function SkillItem({ skill, progressColor, onClick, index }: SkillItemProps) {
+function SkillItem({
+  skill,
+  progressGradient,
+  onClick,
+  index,
+}: SkillItemProps) {
   const clickable = !!onClick;
   const { name, progress, trend } = skill;
 
@@ -122,32 +127,29 @@ function SkillItem({ skill, progressColor, onClick, index }: SkillItemProps) {
   return (
     <motion.div
       variants={itemVariants}
+      initial="hidden"
+      animate="visible"
+      transition={{ delay: index * 0.05 }}
       className={cn(
-        "space-y-2 rounded-lg p-2 -mx-2 transition-colors",
-        clickable && "cursor-pointer hover:bg-muted/50"
+        "space-y-2.5 rounded-xl p-3 -mx-1 transition-all duration-300",
+        "bg-white/5 border border-transparent",
+        clickable && "cursor-pointer hover:bg-white/10 hover:border-white/10"
       )}
       onClick={() => onClick?.(name)}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <span
-            className={cn(
-              "text-sm font-medium truncate",
-              clickable && "group-hover:text-primary transition-colors"
-            )}
-          >
-            {name}
-          </span>
+          <span className="text-sm font-medium truncate">{name}</span>
 
           {trend !== undefined && trend !== 0 && (
             <Badge
-              variant="secondary"
+              variant="outline"
               className={cn(
-                "h-5 gap-0.5 px-1.5 text-xs font-medium shrink-0",
+                "h-5 gap-0.5 px-1.5 text-xs font-medium shrink-0 border",
                 trendPositive &&
-                  "bg-chart-4/10 text-chart-4 border-chart-4/30 dark:bg-chart-4/20 dark:text-chart-4 dark:border-chart-4/40",
+                  "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
                 trendNegative &&
-                  "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-800"
+                  "bg-rose-500/20 text-rose-400 border-rose-500/30"
               )}
             >
               {trendPositive ? (
@@ -160,17 +162,21 @@ function SkillItem({ skill, progressColor, onClick, index }: SkillItemProps) {
           )}
         </div>
 
-        <span className="text-sm font-semibold tabular-nums shrink-0 ml-2">
+        <span className="text-sm font-bold tabular-nums shrink-0 ml-2 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
           {progress}%
         </span>
       </div>
 
-      <div className="h-2 w-full overflow-hidden rounded-full bg-muted/50">
+      {/* Progress Bar */}
+      <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${progress}%` }}
           transition={{ duration: 0.8, ease: "easeOut", delay: index * 0.1 }}
-          className={cn("h-full rounded-full", progressColor)}
+          className={cn(
+            "h-full rounded-full bg-gradient-to-r",
+            progressGradient
+          )}
         />
       </div>
     </motion.div>

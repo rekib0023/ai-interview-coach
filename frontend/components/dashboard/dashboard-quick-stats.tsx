@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { motion, useInView, useSpring, useTransform } from "framer-motion";
 import {
   CircleCheck,
   Clock,
@@ -11,55 +11,87 @@ import {
   Trophy,
   TrendingUp,
 } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { cardVariants, staggerContainer } from "./shared-animation-variants";
 
 interface StatItem {
   title: string;
-  value: string | number;
+  value: number;
+  suffix: string;
   subtitle?: string;
   change?: string;
   icon: LucideIcon;
-  iconColor: string;
-  iconBg: string;
+  gradient: string;
   trend?: "up" | "down" | "neutral";
 }
 
 const statsData: StatItem[] = [
   {
     title: "Overall Score",
-    value: "78%",
+    value: 78,
+    suffix: "%",
     change: "+5%",
     subtitle: "from last week",
     icon: Trophy,
-    iconColor: "text-primary",
-    iconBg: "bg-primary/10 dark:bg-primary/20",
+    gradient: "from-yellow-500 to-orange-500",
     trend: "up",
   },
   {
     title: "Problems Solved",
     value: 42,
+    suffix: "",
     subtitle: "Top 15% of users",
     icon: CircleCheck,
-    iconColor: "text-chart-2",
-    iconBg: "bg-chart-2/10 dark:bg-chart-2/20",
+    gradient: "from-emerald-500 to-teal-500",
   },
   {
     title: "Current Streak",
-    value: "5 Days",
+    value: 5,
+    suffix: " Days",
     subtitle: "Keep it up!",
     icon: Flame,
-    iconColor: "text-accent",
-    iconBg: "bg-accent/10 dark:bg-accent/20",
+    gradient: "from-orange-500 to-red-500",
   },
   {
     title: "Time Invested",
-    value: "12.5h",
+    value: 12.5,
+    suffix: "h",
     subtitle: "This week",
     icon: Clock,
-    iconColor: "text-chart-3",
-    iconBg: "bg-chart-3/10 dark:bg-chart-3/20",
+    gradient: "from-blue-500 to-cyan-500",
   },
 ];
+
+function AnimatedNumber({ value, suffix }: { value: number; suffix: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-50px" });
+
+  const spring = useSpring(0, {
+    mass: 0.8,
+    stiffness: 75,
+    damping: 15,
+  });
+
+  const display = useTransform(spring, (current) => {
+    if (value < 10 && value % 1 !== 0) {
+      return current.toFixed(1);
+    }
+    return Math.round(current).toLocaleString();
+  });
+
+  useEffect(() => {
+    if (isInView) {
+      spring.set(value);
+    }
+  }, [isInView, spring, value]);
+
+  return (
+    <span ref={ref}>
+      <motion.span>{display}</motion.span>
+      {suffix}
+    </span>
+  );
+}
 
 export function DashboardQuickStats() {
   return (
@@ -83,41 +115,50 @@ interface StatsCardProps extends StatItem {
 function StatsCard({
   title,
   value,
+  suffix,
   subtitle,
   change,
   icon: Icon,
-  iconColor,
-  iconBg,
+  gradient,
   trend,
 }: StatsCardProps) {
   return (
-    <motion.div variants={cardVariants}>
+    <motion.div variants={cardVariants} className="group">
       <Card
         className={cn(
-          "relative overflow-hidden border-border shadow-sm",
-          "dark:border-border/80",
-          "transition-all duration-300 group",
-          "hover:shadow-lg hover:border-primary/20 dark:hover:border-primary/30 hover:-translate-y-0.5"
+          "relative overflow-hidden",
+          "border-white/10 bg-card/50 backdrop-blur-md",
+          "transition-all duration-500",
+          "hover:border-white/20 hover:bg-card/70",
+          "hover:shadow-xl hover:-translate-y-1"
         )}
       >
-        <CardContent className="p-5">
+        {/* Gradient glow on hover */}
+        <div
+          className={cn(
+            "absolute -top-20 -right-20 w-40 h-40 blur-3xl rounded-full opacity-0 group-hover:opacity-30 transition-opacity duration-500",
+            `bg-gradient-to-br ${gradient}`
+          )}
+        />
+
+        <CardContent className="relative z-10 p-5">
           <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+            <div className="flex-1 space-y-1">
+              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                 {title}
               </p>
               <div className="flex items-baseline gap-2">
-                <h3 className="text-2xl font-bold text-foreground tracking-tight">
-                  {value}
+                <h3 className="text-3xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                  <AnimatedNumber value={value} suffix={suffix} />
                 </h3>
                 {change && (
                   <span
                     className={cn(
-                      "inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded",
+                      "inline-flex items-center gap-0.5 text-xs font-semibold px-2 py-0.5 rounded-full",
                       trend === "up" &&
-                        "text-chart-4 bg-chart-4/10 dark:text-chart-4 dark:bg-chart-4/20",
+                        "text-emerald-400 bg-emerald-500/20 border border-emerald-500/30",
                       trend === "down" &&
-                        "text-rose-700 bg-rose-100 dark:text-rose-400 dark:bg-rose-950/50",
+                        "text-rose-400 bg-rose-500/20 border border-rose-500/30",
                       !trend && "text-muted-foreground bg-muted"
                     )}
                   >
@@ -127,20 +168,21 @@ function StatsCard({
                 )}
               </div>
               {subtitle && (
-                <p className="text-xs text-muted-foreground mt-1.5">
-                  {subtitle}
-                </p>
+                <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
               )}
             </div>
-            <div
+
+            <motion.div
               className={cn(
-                "flex items-center justify-center h-11 w-11 rounded-xl border border-border/50",
-                "transition-transform duration-300 group-hover:scale-110",
-                iconBg
+                "flex items-center justify-center h-12 w-12 rounded-xl",
+                "bg-gradient-to-br shadow-lg",
+                gradient,
+                "group-hover:scale-110 transition-transform duration-300"
               )}
+              whileHover={{ rotate: 5 }}
             >
-              <Icon className={cn("h-5 w-5", iconColor)} />
-            </div>
+              <Icon className="h-6 w-6 text-white" />
+            </motion.div>
           </div>
         </CardContent>
       </Card>
