@@ -27,4 +27,4 @@ async def websocket_endpoint(
     from app.modules.websocket.chat_session import ChatSession
 
     session = ChatSession(websocket, assessment_id, access_token)
-    await session.run()
+    await session.start_session()

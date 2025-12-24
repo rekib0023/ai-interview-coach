@@ -21,7 +21,7 @@ from .crud import message as message_crud
 logger = logging.getLogger(__name__)
 
 
-class InterviewerService:
+class MessageService:
     """
     Service for AI interviewer with streaming Markdown responses.
     Handles business logic for interview sessions.
@@ -110,4 +110,4 @@ class InterviewerService:
         return ai_msg, is_completed
 
 
-interviewer_service = InterviewerService()
+message_service = MessageService()

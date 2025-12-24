@@ -20,22 +20,28 @@ from app.core.dependencies import (
 from app.core.security import verify_token
 from app.core.websocket import manager
 from app.modules.assessments.models import Assessment, AssessmentStatus
-from app.modules.websocket.exceptions import (
+from app.modules.websocket.models import ChatSender, MessageType
+from app.modules.websocket.service import message_service
+from app.shared.exceptions import (
     AssessmentAccessError,
     AuthenticationError,
 )
-from app.modules.websocket.models import ChatSender, MessageType
-from app.modules.websocket.service import interviewer_service
 
 logger = logging.getLogger(__name__)
 
 
 class ChatSession:
-    def __init__(self, websocket: WebSocket, assessment_id: int):
+    def __init__(
+        self,
+        websocket: WebSocket,
+        assessment_id: int,
+        access_token: Optional[str] = None,
+    ):
         self.ws = websocket
         self.assessment_id = assessment_id
         self.user_id: Optional[int] = None
         self.is_active = False
+        self.access_token: Optional[str] = access_token
 
     async def start_session(self):
         """
@@ -78,12 +84,11 @@ class ChatSession:
         Updates assessment status to IN_PROGRESS if it was CREATED.
         """
         # 1. Verify Token
-        token = self.ws.query_params.get("token")
-        if not token:
+        if not self.access_token:
             raise AuthenticationError("Missing access token")
 
         try:
-            self.user_id = int(verify_token(token))
+            self.user_id = int(verify_token(self.access_token))
         except Exception:
             raise AuthenticationError("Invalid or expired token")
 
@@ -93,12 +98,12 @@ class ChatSession:
             user_service = get_user_service()
             assessment_service = get_assessment_service()
 
-            user = user_service.get_user(db, self.user_id)
+            user = user_service.get_user(db, user_id=self.user_id)
             if not user:
                 raise AuthenticationError("User account not found")
 
             assessment = assessment_service.get_assessment(
-                db, self.assessment_id, self.user_id
+                db, assessment_id=self.assessment_id, user_id=self.user_id
             )
             if not assessment:
                 raise AssessmentAccessError("Assessment not found or access denied")
@@ -122,7 +127,7 @@ class ChatSession:
     async def _restore_or_initialize_chat(self):
         """Sends chat history if it exists, otherwise sends the welcome message."""
         async with get_db_session() as db:
-            history = interviewer_service.get_chat_history(db, self.assessment_id)
+            history = message_service.get_chat_history(db, self.assessment_id)
 
             if history:
                 await self._send_history(history)
@@ -189,7 +194,7 @@ class ChatSession:
                 return
 
             # 2. Save User Message
-            await interviewer_service.save_message(
+            await message_service.save_message(
                 db, self.assessment_id, ChatSender.USER, content
             )
 
@@ -210,7 +215,7 @@ class ChatSession:
             (
                 ai_msg,
                 is_completed,
-            ) = await interviewer_service.generate_and_save_ai_response(
+            ) = await message_service.generate_and_save_ai_response(
                 db, assessment, user_input
             )
 
@@ -257,7 +262,7 @@ class ChatSession:
 
     async def _send_welcome_message(self):
         """Sends the initial welcome message (content from service)."""
-        welcome_text = interviewer_service.generate_welcome_message()
+        welcome_text = message_service.generate_welcome_message()
         await self._send_protocol_message(MessageType.STREAM_START)
         await self._send_protocol_message(
             MessageType.STREAM_CHUNK, content=welcome_text
